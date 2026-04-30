@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Navbar from '@/components/Navbar'
+import { FaChevronLeft } from 'react-icons/fa6'
 
 export default async function CourseDetailPage(props: {
   params: Promise<{ slug: string }>
@@ -47,10 +49,18 @@ export default async function CourseDetailPage(props: {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
+    <div className="min-h-screen bg-gray-50 pb-12 font-sans">
+      <Navbar activePage="courses" />
+      
       {/* Course Header */}
-      <div className="bg-indigo-700 text-white py-16">
+      <div className="bg-indigo-700 text-white py-12 sm:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Link 
+            href="/dashboard" 
+            className="inline-flex items-center gap-2 text-indigo-200 hover:text-white mb-6 transition-colors font-medium text-sm"
+          >
+            <FaChevronLeft className="w-3 h-3" /> Kembali ke Dashboard
+          </Link>
           <div className="inline-block px-3 py-1 bg-indigo-600 rounded-full text-xs font-semibold tracking-wide uppercase mb-4 border border-indigo-500">
             Level: {course.level}
           </div>
