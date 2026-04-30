@@ -86,7 +86,7 @@ export async function forgotPassword(formData: FormData) {
     return redirect(`/forgot-password?error=${encodeURIComponent(error.message)}`)
   }
 
-  return redirect(`/forgot-password?message=${encodeURIComponent('Link reset password telah dikirim ke email Anda. Silakan cek inbox atau folder spam.')}`)
+  return redirect(`/forgot-password?message=${encodeURIComponent('Tautan pemulihan kata sandi telah dikirim ke email Anda. Tautan ini hanya berlaku selama 24 jam. Jangan lupa periksa folder spam jika tidak menemukannya.')}`)
 }
 
 export async function resetPassword(formData: FormData) {

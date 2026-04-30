@@ -22,7 +22,7 @@ export default async function ForgotPasswordPage(props: {
             Lupa Password?
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Masukkan email Anda dan kami akan mengirimkan link untuk mengatur ulang password.
+            Masukkan email Anda yang terdaftar. Kami akan mengirimkan tautan pemulihan yang <span className="font-semibold text-gray-900">berlaku selama 24 jam</span>.
           </p>
         </div>
 
