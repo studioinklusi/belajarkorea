@@ -65,8 +65,16 @@ export async function updateSession(request: NextRequest) {
   )
 
   if (isAuthRoute && user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    const isAdmin = profile && ['admin', 'super_admin', 'content_admin'].includes(profile.role)
+
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = isAdmin ? '/admin' : '/dashboard'
     return NextResponse.redirect(url)
   }
 
