@@ -64,3 +64,44 @@ export async function signout() {
   await supabase.auth.signOut()
   redirect('/login')
 }
+
+export async function forgotPassword(formData: FormData) {
+  const email = formData.get('email') as string
+  const supabase = await createClient()
+  const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://belajarkorea.vercel.app'
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/reset-password`,
+  })
+
+  if (error) {
+    return redirect(`/forgot-password?error=${encodeURIComponent(error.message)}`)
+  }
+
+  return redirect(`/forgot-password?message=${encodeURIComponent('Link reset password telah dikirim ke email Anda. Silakan cek inbox atau folder spam.')}`)
+}
+
+export async function resetPassword(formData: FormData) {
+  const password = formData.get('password') as string
+  const confirmPassword = formData.get('confirmPassword') as string
+
+  if (password !== confirmPassword) {
+    return redirect(`/reset-password?error=${encodeURIComponent('Password dan konfirmasi password tidak cocok.')}`)
+  }
+
+  if (password.length < 6) {
+    return redirect(`/reset-password?error=${encodeURIComponent('Password minimal 6 karakter.')}`)
+  }
+
+  const supabase = await createClient()
+
+  const { error } = await supabase.auth.updateUser({
+    password,
+  })
+
+  if (error) {
+    return redirect(`/reset-password?error=${encodeURIComponent(error.message)}`)
+  }
+
+  return redirect(`/login?message=${encodeURIComponent('Password berhasil diubah! Silakan login dengan password baru Anda.')}`)
+}
