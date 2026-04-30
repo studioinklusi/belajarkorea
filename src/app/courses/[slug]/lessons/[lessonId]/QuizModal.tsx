@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { FaXmark, FaSpinner, FaChevronRight, FaChevronLeft, FaCheck, FaCircleCheck, FaCircleXmark, FaTrophy, FaLightbulb } from 'react-icons/fa6'
-import Confetti from 'react-confetti'
-import { useWindowSize } from 'react-use'
 
 type Question = {
   id: string
@@ -20,8 +18,6 @@ export default function QuizModal({ lessonId, lessonName, onClose }: { lessonId:
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<{ score: number; passed: boolean; correct: number; total: number } | null>(null)
-  
-  const { width, height } = useWindowSize()
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -92,7 +88,6 @@ export default function QuizModal({ lessonId, lessonName, onClose }: { lessonId:
   if (result) {
     return (
       <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center z-[100] p-4">
-        {result.passed && <Confetti width={width} height={height} recycle={false} numberOfPieces={500} gravity={0.15} colors={['#8B5CF6', '#D946EF', '#6366F1', '#10B981']} />}
         
         <div className="bg-white rounded-[2.5rem] p-10 max-w-xl w-full text-center shadow-[0_32px_64px_-15px_rgba(0,0,0,0.3)] relative overflow-hidden animate-fade-in-up">
           {/* Decorative background circle */}
