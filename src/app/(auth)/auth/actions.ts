@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
 
 export async function login(formData: FormData) {
   const email = formData.get('email') as string
@@ -37,7 +38,10 @@ export async function signup(formData: FormData) {
   const supabase = await createClient()
 
   // Origin is needed to construct the confirmation link
-  const origin = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const headersList = await headers()
+  const host = headersList.get('host') || 'belajarkorea.vercel.app'
+  const protocol = host.includes('localhost') ? 'http' : 'https'
+  const origin = `${protocol}://${host}`
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -68,7 +72,11 @@ export async function signout() {
 export async function forgotPassword(formData: FormData) {
   const email = formData.get('email') as string
   const supabase = await createClient()
-  const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://belajarkorea.vercel.app'
+  
+  const headersList = await headers()
+  const host = headersList.get('host') || 'belajarkorea.vercel.app'
+  const protocol = host.includes('localhost') ? 'http' : 'https'
+  const origin = `${protocol}://${host}`
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/auth/callback?next=/reset-password`,
