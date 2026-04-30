@@ -18,7 +18,7 @@ export default async function AdminLayout({
     .from('profiles')
     .select('role')
     .eq('id', user.id)
-    .single()
+    .single() as { data: { role: string } | null }
 
   if (!profile || !['content_admin', 'super_admin'].includes(profile.role)) {
     redirect('/dashboard')
