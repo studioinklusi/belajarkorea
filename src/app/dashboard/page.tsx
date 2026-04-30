@@ -53,6 +53,33 @@ export default async function DashboardPage() {
     }
   }
 
+  // 4. Hitung Target Harian
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const todayStr = today.toISOString()
+
+  // Cek apakah ada video yang diselesaikan hari ini
+  const { data: todayProgress } = await supabase
+    .from('user_progress')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('status', 'completed')
+    .gte('completed_at', todayStr)
+    .limit(1)
+
+  const hasWatchedVideoToday = todayProgress && todayProgress.length > 0
+
+  // Cek apakah ada kuis yang lulus hari ini
+  const { data: todayQuiz } = await supabase
+    .from('quiz_attempts')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('passed', true)
+    .gte('completed_at', todayStr)
+    .limit(1)
+
+  const hasPassedQuizToday = todayQuiz && todayQuiz.length > 0
+
   const isSubscribed = !!subscription
   const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin'
 
@@ -120,18 +147,18 @@ export default async function DashboardPage() {
                 <FaBullseye className="text-rose-500" /> Target Harian
               </h3>
               <div className="space-y-4">
-                <label className="flex items-center gap-4 p-3 rounded-2xl hover:bg-violet-50 transition-colors cursor-pointer group border border-transparent hover:border-violet-100">
-                  <div className="relative flex items-center justify-center w-6 h-6 rounded-md border-2 border-gray-300 group-hover:border-violet-500 bg-white">
-                    <input type="checkbox" className="sr-only" />
+                <div className="flex items-center gap-4 p-3 rounded-2xl transition-colors group border border-transparent">
+                  <div className={`relative flex items-center justify-center w-6 h-6 rounded-md border-2 transition-colors ${hasWatchedVideoToday ? 'border-green-500 bg-green-500 text-white' : 'border-gray-300 bg-white'}`}>
+                    {hasWatchedVideoToday && <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
                   </div>
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-violet-900">Tonton 1 materi video</span>
-                </label>
-                <label className="flex items-center gap-4 p-3 rounded-2xl hover:bg-violet-50 transition-colors cursor-pointer group border border-transparent hover:border-violet-100">
-                  <div className="relative flex items-center justify-center w-6 h-6 rounded-md border-2 border-gray-300 group-hover:border-violet-500 bg-white">
-                    <input type="checkbox" className="sr-only" />
+                  <span className={`text-sm font-medium ${hasWatchedVideoToday ? 'text-green-700 line-through opacity-80' : 'text-gray-700'}`}>Tonton 1 materi video</span>
+                </div>
+                <div className="flex items-center gap-4 p-3 rounded-2xl transition-colors group border border-transparent">
+                  <div className={`relative flex items-center justify-center w-6 h-6 rounded-md border-2 transition-colors ${hasPassedQuizToday ? 'border-green-500 bg-green-500 text-white' : 'border-gray-300 bg-white'}`}>
+                    {hasPassedQuizToday && <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
                   </div>
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-violet-900">Kerjakan kuis dengan skor 80+</span>
-                </label>
+                  <span className={`text-sm font-medium ${hasPassedQuizToday ? 'text-green-700 line-through opacity-80' : 'text-gray-700'}`}>Kerjakan kuis dengan skor 80+</span>
+                </div>
               </div>
             </div>
             
