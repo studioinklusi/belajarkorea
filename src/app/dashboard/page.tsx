@@ -37,6 +37,22 @@ export default async function DashboardPage() {
     .select('*')
     .eq('user_id', user.id)
 
+  // Ambil slug untuk setiap course di progress
+  let courseSlugs: Record<string, string> = {}
+  if (progresses && progresses.length > 0) {
+    const courseIds = progresses.map(p => p.course_id)
+    const { data: courses } = await supabase
+      .from('courses')
+      .select('id, slug')
+      .in('id', courseIds)
+    
+    if (courses) {
+      courses.forEach(c => {
+        courseSlugs[c.id] = c.slug
+      })
+    }
+  }
+
   const isSubscribed = !!subscription
   const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin'
 
@@ -145,7 +161,7 @@ export default async function DashboardPage() {
                           <h4 className="text-lg font-extrabold text-gray-900 group-hover:text-violet-700 transition-colors">{prog.course_title}</h4>
                         </div>
                         <Link 
-                          href={`/courses/${prog.course_id}`} 
+                          href={`/courses/${courseSlugs[prog.course_id] || prog.course_id}`} 
                           className="w-full sm:w-auto px-5 py-2.5 bg-gray-900 text-white rounded-full text-sm font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
                         >
                           Lanjut <PlayCircleIcon className="w-5 h-5" />
