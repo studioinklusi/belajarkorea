@@ -55,12 +55,14 @@ export default async function CourseDetailPage(props: {
       {/* Course Header */}
       <div className="bg-indigo-700 text-white py-12 sm:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link 
-            href="/dashboard" 
-            className="inline-flex items-center gap-2 text-indigo-200 hover:text-white mb-6 transition-colors font-medium text-sm"
-          >
-            <FaChevronLeft className="w-3 h-3" /> Kembali ke Dashboard
-          </Link>
+          <div className="mb-6">
+            <Link 
+              href="/dashboard" 
+              className="inline-flex items-center gap-2 text-indigo-200 hover:text-white transition-colors font-medium text-sm"
+            >
+              <FaChevronLeft className="w-3 h-3" /> Kembali ke Dashboard
+            </Link>
+          </div>
           <div className="inline-block px-3 py-1 bg-indigo-600 rounded-full text-xs font-semibold tracking-wide uppercase mb-4 border border-indigo-500">
             Level: {course.level}
           </div>
