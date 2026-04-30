@@ -167,15 +167,4 @@ export default function AddLessonForm({ courseId, courseName, onClose }: { cours
       </div>
     </div>
   )
-
-  function extractVideoId(input: string): string {
-    if (/^[a-zA-Z0-9_-]{11}$/.test(input.trim())) return input.trim()
-    try {
-      const url = new URL(input)
-      if (url.hostname === 'youtu.be') return url.pathname.slice(1)
-      const v = url.searchParams.get('v')
-      if (v) return v
-    } catch { /* ignore */ }
-    return input.trim()
-  }
 }
