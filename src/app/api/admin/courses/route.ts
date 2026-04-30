@@ -117,3 +117,66 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
+
+// ========== UPDATE COURSE ==========
+export async function PATCH(request: Request) {
+  try {
+    const admin = await verifyAdmin()
+    if (!admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+    const formData = await request.formData()
+    const id = formData.get('id') as string
+    const title = formData.get('title') as string
+    const description = formData.get('description') as string
+    const level = formData.get('level') as string
+    const is_published = formData.get('is_published') === 'true'
+    const sort_order = parseInt(formData.get('sort_order') as string) || 0
+    const thumbnail = formData.get('thumbnail') as File | null
+
+    if (!id || !title || !level) {
+      return NextResponse.json({ error: 'ID, Title, dan level wajib diisi.' }, { status: 400 })
+    }
+
+    const updates: any = {
+      title,
+      description: description || null,
+      level,
+      is_published,
+      sort_order,
+      updated_at: new Date().toISOString()
+    }
+
+    // Upload thumbnail jika ada
+    if (thumbnail && thumbnail.size > 0) {
+      const fileName = `courses/${Date.now()}_${thumbnail.name.replace(/\s+/g, '_')}`
+      const fileBuffer = Buffer.from(await thumbnail.arrayBuffer())
+
+      const { error: uploadError } = await supabaseAdmin.storage
+        .from('thumbnails')
+        .upload(fileName, fileBuffer, {
+          contentType: thumbnail.type,
+          upsert: false,
+        })
+
+      if (!uploadError) {
+        const { data: urlData } = supabaseAdmin.storage.from('thumbnails').getPublicUrl(fileName)
+        updates.thumbnail_url = urlData.publicUrl
+      }
+    }
+
+    const { data: course, error } = await supabaseAdmin
+      .from('courses')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      return NextResponse.json({ error: `Gagal mengupdate kursus: ${error.message}` }, { status: 500 })
+    }
+
+    return NextResponse.json({ course }, { status: 200 })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}

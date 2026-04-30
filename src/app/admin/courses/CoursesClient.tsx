@@ -3,10 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FaPlus, FaBook, FaListOl, FaTrash, FaSpinner, FaChevronDown, FaChevronUp, FaYoutube, FaEye, FaCircleQuestion } from 'react-icons/fa6'
+import { FaPlus, FaBook, FaListOl, FaTrash, FaSpinner, FaChevronDown, FaChevronUp, FaYoutube, FaEye, FaCircleQuestion, FaPen } from 'react-icons/fa6'
 import AddCourseForm from './AddCourseForm'
 import AddLessonForm from './AddLessonForm'
 import AddQuizForm from './AddQuizForm'
+import EditCourseForm from './EditCourseForm'
+import EditLessonForm from './EditLessonForm'
 
 type Lesson = {
   id: string
@@ -37,6 +39,8 @@ export default function CoursesClient({ courses }: { courses: Course[] | null })
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deletingLessonId, setDeletingLessonId] = useState<string | null>(null)
   const [addQuizFor, setAddQuizFor] = useState<{ id: string; title: string } | null>(null)
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null)
+  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
 
   async function handleDeleteCourse(courseId: string, title: string) {
     if (!confirm(`Yakin ingin menghapus kursus "${title}"? Semua materi di dalamnya juga akan terhapus.`)) return
@@ -138,6 +142,13 @@ export default function CoursesClient({ courses }: { courses: Course[] | null })
                     <FaPlus className="text-xs" /> Tambah Materi
                   </button>
                   <button
+                    onClick={() => setEditingCourse(course)}
+                    className="p-2.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                    title="Edit Kursus"
+                  >
+                    <FaPen className="text-sm" />
+                  </button>
+                  <button
                     onClick={() => handleDeleteCourse(course.id, course.title)}
                     disabled={deletingId === course.id}
                     className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
@@ -198,10 +209,17 @@ export default function CoursesClient({ courses }: { courses: Course[] | null })
                           </a>
                           <button
                             onClick={() => setAddQuizFor({ id: lesson.id, title: lesson.title })}
-                            className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                            className="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors"
                             title="Tambah Soal Quiz"
                           >
                             <FaCircleQuestion />
+                          </button>
+                          <button
+                            onClick={() => setEditingLesson(lesson)}
+                            className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                            title="Edit Materi"
+                          >
+                            <FaPen />
                           </button>
                           <button
                             onClick={() => handleDeleteLesson(lesson.id, lesson.title)}
@@ -247,6 +265,8 @@ export default function CoursesClient({ courses }: { courses: Course[] | null })
       {showCourseForm && <AddCourseForm onClose={() => setShowCourseForm(false)} />}
       {addLessonFor && <AddLessonForm courseId={addLessonFor.id} courseName={addLessonFor.title} onClose={() => setAddLessonFor(null)} />}
       {addQuizFor && <AddQuizForm lessonId={addQuizFor.id} lessonName={addQuizFor.title} onClose={() => setAddQuizFor(null)} />}
+      {editingCourse && <EditCourseForm course={editingCourse} onClose={() => setEditingCourse(null)} />}
+      {editingLesson && <EditLessonForm lesson={editingLesson} onClose={() => setEditingLesson(null)} />}
     </>
   )
 }
