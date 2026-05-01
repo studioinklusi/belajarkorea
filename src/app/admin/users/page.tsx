@@ -35,9 +35,11 @@ export default async function AdminUsersPage() {
   const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 })
 
   const emailMap = new Map<string, string>()
+  const banMap = new Map<string, string | null>()
   if (authUsers?.users) {
     authUsers.users.forEach((u: any) => {
       emailMap.set(u.id, u.email || '')
+      banMap.set(u.id, u.banned_until || null)
     })
   }
 
@@ -59,11 +61,16 @@ export default async function AdminUsersPage() {
   }
 
   // Merge users
-  const users = (profiles || []).map((p: any) => ({
-    ...p,
-    email: emailMap.get(p.id) || '-',
-    subscription: subMap.get(p.id) || null,
-  }))
+  const users = (profiles || []).map((p: any) => {
+    const bannedUntil = banMap.get(p.id)
+    const isBanned = bannedUntil ? new Date(bannedUntil) > new Date() : false
+    return {
+      ...p,
+      email: emailMap.get(p.id) || '-',
+      subscription: subMap.get(p.id) || null,
+      is_banned: isBanned,
+    }
+  })
 
   // Fetch available packages for grant subscription form
   const { data: packages } = await supabaseAdmin
