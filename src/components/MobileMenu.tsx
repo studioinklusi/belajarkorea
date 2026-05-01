@@ -66,6 +66,16 @@ export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAct
               </form>
             </div>
           )}
+          {!isLoggedIn && (
+            <div className="mt-2 border-t border-gray-100 pt-4 flex flex-col gap-2">
+              <Link href="/login" onClick={() => setIsOpen(false)} className="block text-center text-gray-600 hover:bg-gray-50 px-4 py-3 rounded-xl text-base font-bold transition-colors">
+                Masuk
+              </Link>
+              <Link href="/register" onClick={() => setIsOpen(false)} className="block text-center bg-violet-600 text-white px-4 py-3 rounded-xl text-base font-bold shadow-md hover:bg-violet-700 transition-colors">
+                Mulai Belajar
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </div>

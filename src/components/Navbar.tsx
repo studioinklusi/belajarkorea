@@ -72,7 +72,7 @@ export default async function Navbar({ activePage }: { activePage?: 'dashboard' 
                 </form>
               </>
             ) : (
-              <>
+              <div className="hidden md:flex items-center gap-2">
                 <Link href="/login" className="text-gray-600 font-bold hover:text-gray-900 px-4 py-2">Masuk</Link>
                 <Link 
                   href="/register" 
@@ -80,7 +80,7 @@ export default async function Navbar({ activePage }: { activePage?: 'dashboard' 
                 >
                   Mulai Belajar
                 </Link>
-              </>
+              </div>
             )}
             <MobileMenu isLoggedIn={!!user} isAdmin={isAdmin} activePage={activePage} signoutAction={signout} />
           </div>
