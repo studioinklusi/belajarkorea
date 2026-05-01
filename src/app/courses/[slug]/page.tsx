@@ -97,8 +97,8 @@ export default async function CourseDetailPage(props: {
               return (
                 <li key={lesson.id} className="hover:bg-gray-50 transition-colors">
                   <Link href={`/courses/${course.slug}/lessons/${lesson.id}`} className="block px-6 py-5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center min-w-0">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center flex-1 min-w-0">
                         {/* Status Icon */}
                         <div className="flex-shrink-0 mr-4">
                           {status === 'completed' ? (
@@ -114,16 +114,18 @@ export default async function CourseDetailPage(props: {
                           )}
                         </div>
                         
-                        <div>
-                          <p className="text-sm font-medium text-indigo-600 truncate flex items-center gap-2">
-                            {lesson.title}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-indigo-600 truncate">
+                              {lesson.title}
+                            </span>
                             {lesson.is_preview && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                              <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
                                 Free Preview
                               </span>
                             )}
-                          </p>
-                          <p className="mt-1 text-sm text-gray-500 line-clamp-1">
+                          </div>
+                          <p className="mt-1 text-xs sm:text-sm text-gray-500 line-clamp-1 pr-2">
                             {lesson.description}
                           </p>
                         </div>
