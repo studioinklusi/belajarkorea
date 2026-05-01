@@ -58,16 +58,23 @@ export default async function AdminUsersPage() {
     })
   }
 
-  // Merge
+  // Merge users
   const users = (profiles || []).map((p: any) => ({
     ...p,
     email: emailMap.get(p.id) || '-',
     subscription: subMap.get(p.id) || null,
   }))
 
+  // Fetch available packages for grant subscription form
+  const { data: packages } = await supabaseAdmin
+    .from('packages')
+    .select('id, name, duration_days, price')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true })
+
   return (
     <div className="p-8 max-w-6xl mx-auto">
-      <UsersClient users={users} />
+      <UsersClient users={users} packages={packages || []} />
     </div>
   )
 }

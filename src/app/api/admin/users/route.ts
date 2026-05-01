@@ -128,3 +128,112 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
+
+// ========== POST: Grant subscription manually ==========
+export async function POST(request: Request) {
+  try {
+    const caller = await verifySuperAdmin()
+    if (!caller) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const { user_id, package_id, duration_days, note } = await request.json()
+
+    if (!user_id || !package_id) {
+      return NextResponse.json({ error: 'user_id dan package_id wajib diisi' }, { status: 400 })
+    }
+
+    // Get package info
+    const { data: pkg, error: pkgErr } = await supabaseAdmin
+      .from('packages')
+      .select('id, name, duration_days')
+      .eq('id', package_id)
+      .single()
+
+    if (pkgErr || !pkg) {
+      return NextResponse.json({ error: 'Paket tidak ditemukan' }, { status: 404 })
+    }
+
+    const actualDuration = duration_days || pkg.duration_days || 30
+
+    // Check if user already has an active subscription
+    const { data: existingSub } = await supabaseAdmin
+      .from('subscriptions')
+      .select('id, expires_at')
+      .eq('user_id', user_id)
+      .in('status', ['active', 'grace_period'])
+      .single()
+
+    const now = new Date()
+    let startDate = now
+    let expiresAt: Date
+
+    if (existingSub) {
+      // Extend existing subscription
+      const currentExpiry = new Date(existingSub.expires_at)
+      if (currentExpiry > now) {
+        startDate = currentExpiry // start from current expiry
+      }
+      expiresAt = new Date(startDate.getTime() + actualDuration * 24 * 60 * 60 * 1000)
+
+      const { error: updateErr } = await supabaseAdmin
+        .from('subscriptions')
+        .update({
+          package_id: package_id,
+          status: 'active',
+          expires_at: expiresAt.toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingSub.id)
+
+      if (updateErr) {
+        return NextResponse.json({ error: updateErr.message }, { status: 500 })
+      }
+    } else {
+      // Create new subscription
+      expiresAt = new Date(now.getTime() + actualDuration * 24 * 60 * 60 * 1000)
+
+      const { error: insertErr } = await supabaseAdmin
+        .from('subscriptions')
+        .insert({
+          user_id,
+          package_id,
+          status: 'active',
+          started_at: now.toISOString(),
+          expires_at: expiresAt.toISOString(),
+        })
+
+      if (insertErr) {
+        return NextResponse.json({ error: insertErr.message }, { status: 500 })
+      }
+    }
+
+    // Create a transaction record for audit trail
+    const orderId = `MANUAL-${Date.now()}-${caller.id.substring(0, 6).toUpperCase()}`
+
+    await supabaseAdmin
+      .from('transactions')
+      .insert({
+        user_id,
+        package_id,
+        order_id: orderId,
+        amount: 0,
+        status: 'success',
+        payment_type: 'manual_grant',
+        metadata: {
+          granted_by: caller.id,
+          note: note || 'Langganan diberikan manual oleh admin',
+          duration_days: actualDuration,
+        },
+      })
+
+    return NextResponse.json({
+      message: 'Langganan berhasil diberikan',
+      expires_at: expiresAt.toISOString(),
+      extended: !!existingSub,
+    })
+  } catch (error: any) {
+    console.error('Grant subscription error:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}

@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { FaUsers, FaCrown, FaUserShield, FaUserGraduate, FaSpinner, FaMagnifyingGlass, FaChevronDown } from 'react-icons/fa6'
+import { FaUsers, FaCrown, FaUserShield, FaUserGraduate, FaSpinner, FaMagnifyingGlass, FaChevronDown, FaGift } from 'react-icons/fa6'
+import GrantSubscriptionForm from './GrantSubscriptionForm'
 
 type UserSubscription = {
   status: string
@@ -20,17 +21,25 @@ type UserProfile = {
   subscription: UserSubscription | null
 }
 
+type Package = {
+  id: string
+  name: string
+  duration_days: number
+  price: number
+}
+
 const roleLabels: Record<string, { label: string; color: string; icon: any }> = {
   student: { label: 'Siswa', color: 'bg-blue-100 text-blue-700', icon: FaUserGraduate },
   content_admin: { label: 'Admin Konten', color: 'bg-amber-100 text-amber-700', icon: FaUserShield },
   super_admin: { label: 'Super Admin', color: 'bg-rose-100 text-rose-700', icon: FaCrown },
 }
 
-export default function UsersClient({ users }: { users: UserProfile[] | null }) {
+export default function UsersClient({ users, packages }: { users: UserProfile[] | null; packages: Package[] }) {
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [filterRole, setFilterRole] = useState<string>('all')
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [grantingUser, setGrantingUser] = useState<UserProfile | null>(null)
 
   async function handleRoleChange(userId: string, newRole: string) {
     if (!confirm(`Ubah role pengguna ini menjadi "${roleLabels[newRole]?.label || newRole}"?`)) return
@@ -65,7 +74,6 @@ export default function UsersClient({ users }: { users: UserProfile[] | null }) 
     return matchSearch && matchRole
   })
 
-  const totalStudents = (users || []).filter((u) => u.role === 'student').length
   const totalAdmins = (users || []).filter((u) => u.role !== 'student').length
   const totalWithSub = (users || []).filter((u) => u.subscription).length
 
@@ -198,22 +206,34 @@ export default function UsersClient({ users }: { users: UserProfile[] | null }) 
                         </span>
                       </td>
                       <td className="py-4 px-6 text-right">
-                        {updatingId === user.id ? (
-                          <FaSpinner className="animate-spin text-violet-500 inline" />
-                        ) : (
-                          <div className="relative inline-block">
-                            <select
-                              value={user.role}
-                              onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                              className="appearance-none text-xs font-bold py-2 pl-3 pr-7 rounded-lg border border-gray-200 bg-white hover:border-violet-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-100 outline-none transition-all cursor-pointer"
-                            >
-                              <option value="student">Siswa</option>
-                              <option value="content_admin">Admin Konten</option>
-                              <option value="super_admin">Super Admin</option>
-                            </select>
-                            <FaChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-[8px]" />
-                          </div>
-                        )}
+                        <div className="flex items-center justify-end gap-2">
+                          {/* Grant Subscription Button */}
+                          <button
+                            onClick={() => setGrantingUser(user)}
+                            className="p-2 text-amber-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors"
+                            title="Berikan Langganan"
+                          >
+                            <FaGift />
+                          </button>
+
+                          {/* Role Change */}
+                          {updatingId === user.id ? (
+                            <FaSpinner className="animate-spin text-violet-500" />
+                          ) : (
+                            <div className="relative inline-block">
+                              <select
+                                value={user.role}
+                                onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                className="appearance-none text-xs font-bold py-2 pl-3 pr-7 rounded-lg border border-gray-200 bg-white hover:border-violet-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-100 outline-none transition-all cursor-pointer"
+                              >
+                                <option value="student">Siswa</option>
+                                <option value="content_admin">Admin Konten</option>
+                                <option value="super_admin">Super Admin</option>
+                              </select>
+                              <FaChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-[8px]" />
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   )
@@ -239,6 +259,15 @@ export default function UsersClient({ users }: { users: UserProfile[] | null }) 
           Menampilkan {filteredUsers.length} dari {(users || []).length} pengguna
         </p>
       </div>
+
+      {/* Grant Subscription Modal */}
+      {grantingUser && (
+        <GrantSubscriptionForm
+          user={{ id: grantingUser.id, full_name: grantingUser.full_name, email: grantingUser.email }}
+          packages={packages}
+          onClose={() => setGrantingUser(null)}
+        />
+      )}
     </>
   )
 }
