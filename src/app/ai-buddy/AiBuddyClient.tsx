@@ -230,23 +230,20 @@ export default function AiBuddyClient() {
           {showSettings && (
             <div className="pt-3 pb-2 border-t border-gray-100/50 flex flex-col gap-3.5 animate-fade-in-up">
               {/* Level Selector */}
-              <div 
-                className="flex items-center gap-3 w-full overflow-x-auto pb-1 -mb-1 [&::-webkit-scrollbar]:hidden"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
-                <span className="w-[72px] text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest shrink-0">Level</span>
-                <div className="flex bg-gray-100/80 p-1 rounded-xl w-max shrink-0">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 w-full">
+                <span className="sm:w-[72px] text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest shrink-0 ml-1 sm:ml-0">Level</span>
+                <div className="flex bg-gray-100/80 p-1 rounded-xl w-full sm:w-max">
                   {LEVELS.map((level) => (
                     <button
                       key={level.id}
                       onClick={() => handleLevelChange(level.id)}
-                      className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
+                      className={`flex-1 sm:flex-none px-2 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-sm font-bold transition-all whitespace-nowrap text-center ${
                         selectedLevel === level.id
                           ? level.activeClass
                           : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                       }`}
                     >
-                      {level.emoji} {level.label}
+                      {level.emoji} <span className="hidden min-[375px]:inline">{level.label}</span><span className="min-[375px]:hidden">{level.id === 'advanced' ? 'Mahir' : level.id === 'intermediate' ? 'Menengah' : 'Pemula'}</span>
                     </button>
                   ))}
                 </div>
@@ -254,11 +251,8 @@ export default function AiBuddyClient() {
 
               {/* Persona Selector — Only Advanced */}
               {selectedLevel === 'advanced' && (
-                <div 
-                  className="flex items-center gap-3 w-full overflow-x-auto pb-1 -mb-1 [&::-webkit-scrollbar]:hidden"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                  <span className="w-[72px] text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest shrink-0">Persona</span>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 w-full">
+                  <span className="sm:w-[72px] text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest shrink-0 ml-1 sm:ml-0">Persona</span>
                   
                   {/* Desktop: inline buttons */}
                   <div className="hidden sm:flex bg-gray-100/80 p-1 rounded-xl shrink-0">
@@ -279,10 +273,10 @@ export default function AiBuddyClient() {
                   </div>
 
                   {/* Mobile: dropdown */}
-                  <div className="relative sm:hidden w-full max-w-[200px]">
+                  <div className="relative sm:hidden w-full">
                     <button
                       onClick={() => setShowPersonaDropdown(!showPersonaDropdown)}
-                      className="flex w-full justify-between items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-violet-100 to-fuchsia-100 text-violet-700 ring-2 ring-violet-300 shadow-sm"
+                      className="flex w-full justify-between items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-violet-100 to-fuchsia-100 text-violet-700 ring-1 ring-violet-200 shadow-sm"
                     >
                       <span>{activePersona.emoji} {activePersona.name}</span>
                       <FaChevronDown className={`w-3 h-3 transition-transform ${showPersonaDropdown ? 'rotate-180' : ''}`} />
