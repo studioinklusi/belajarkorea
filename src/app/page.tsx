@@ -7,7 +7,7 @@ export default async function LandingPage() {
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900 overflow-x-hidden">
       {/* Navigation */}
-      <Navbar />
+      <Navbar isLandingPage={true} />
 
       {/* Hero Section */}
       <div className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 lg:pb-32 overflow-hidden">
