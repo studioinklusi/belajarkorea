@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { signout } from '../(auth)/auth/actions'
 import { PlayCircleIcon } from '@heroicons/react/24/solid'
-import { FaTicket, FaLock, FaBullseye, FaBookOpen, FaCircleQuestion, FaHandSparkles } from 'react-icons/fa6'
+import { FaTicket, FaLock, FaBullseye, FaBookOpen, FaCircleQuestion, FaHandSparkles, FaRobot } from 'react-icons/fa6'
 import Navbar from '@/components/Navbar'
 
 export default async function DashboardPage() {
@@ -159,6 +159,25 @@ export default async function DashboardPage() {
                   </div>
                   <span className={`text-sm font-medium ${hasPassedQuizToday ? 'text-green-700 line-through opacity-80' : 'text-gray-700'}`}>Kerjakan kuis dengan skor 80+</span>
                 </div>
+              </div>
+            </div>
+
+            {/* AI Buddy CTA */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-violet-600 via-fuchsia-500 to-pink-500 rounded-3xl shadow-lg shadow-violet-200/50 p-6 text-white">
+              <div className="absolute top-0 right-0 w-28 h-28 bg-white/10 rounded-bl-full -mr-6 -mt-6"></div>
+              <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-tr-full -ml-4 -mb-4"></div>
+              <div className="relative z-10">
+                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-sm">
+                  <FaRobot className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-lg font-extrabold mb-2">AI Korean Buddy</h3>
+                <p className="text-sm text-white/80 mb-5 leading-relaxed">Latihan ngobrol langsung dengan AI tutor! Tersedia level pemula hingga mahir.</p>
+                <Link
+                  href="/ai-buddy"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-violet-700 rounded-full text-sm font-bold hover:bg-white/90 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                >
+                  <FaRobot className="w-4 h-4" /> Mulai Ngobrol
+                </Link>
               </div>
             </div>
             

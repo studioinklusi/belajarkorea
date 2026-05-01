@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { signout } from '@/app/(auth)/auth/actions'
-import { FaHandSparkles } from 'react-icons/fa6'
+import { FaHandSparkles, FaRobot } from 'react-icons/fa6'
 
 export default async function Navbar({ activePage }: { activePage?: 'dashboard' | 'courses' | 'products' }) {
   const supabase = await createClient()
@@ -38,6 +38,14 @@ export default async function Navbar({ activePage }: { activePage?: 'dashboard' 
             <div className="hidden md:flex items-center space-x-2">
               {user && (
                 <Link href="/dashboard" className={linkClass('dashboard')}>Dashboard</Link>
+              )}
+              {user && (
+                <Link 
+                  href="/ai-buddy" 
+                  className="flex items-center gap-1.5 text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-2.5 rounded-full text-sm font-bold hover:bg-violet-50 transition-colors"
+                >
+                  <FaRobot className="text-violet-500 w-4 h-4" /> AI Buddy
+                </Link>
               )}
               <Link href="/courses" className={linkClass('courses')}>Program Belajar</Link>
               <Link href="/products" className={linkClass('products')}>Produk Digital</Link>

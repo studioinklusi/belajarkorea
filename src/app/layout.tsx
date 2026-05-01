@@ -22,6 +22,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${plusJakarta.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans">        {children}
         {/* Midtrans Snap Script */}
