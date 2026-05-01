@@ -95,14 +95,14 @@ export default function CoursesClient({ courses }: { courses: Course[] | null })
 
   return (
     <>
-      <div className="flex justify-between items-end mb-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-10">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Kelola Kursus</h1>
           <p className="mt-2 text-gray-500 text-lg">Atur program belajar, video YouTube, dan materi.</p>
         </div>
         <button
           onClick={() => setShowCourseForm(true)}
-          className="bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-md shadow-violet-200"
+          className="w-full sm:w-auto bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-md shadow-violet-200"
         >
           <FaPlus /> Buat Kursus
         </button>
@@ -113,53 +113,53 @@ export default function CoursesClient({ courses }: { courses: Course[] | null })
           {courses.map((course) => (
             <div key={course.id} className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
               {/* Course Header Row */}
-              <div className="flex items-center justify-between p-6 hover:bg-gray-50/50 transition-colors">
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <FaBook className="text-xl" />
+              <div className="flex flex-col md:flex-row md:items-center justify-between p-4 sm:p-6 gap-4 hover:bg-gray-50/50 transition-colors">
+                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <FaBook className="text-lg sm:text-xl" />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-bold text-gray-900 truncate">{course.title}</p>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">
+                    <p className="font-bold text-gray-900 truncate text-sm sm:text-base">{course.title}</p>
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider">
                         {course.level}
                       </span>
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${course.is_published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold ${course.is_published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                         {course.is_published ? 'Published' : 'Draft'}
                       </span>
-                      <span className="text-xs text-gray-400 flex items-center gap-1">
+                      <span className="text-[10px] sm:text-xs text-gray-400 flex items-center gap-1">
                         <FaListOl /> {course.lessons?.length || 0} materi
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
                   <button
                     onClick={() => setAddLessonFor({ id: course.id, title: course.title })}
-                    className="px-4 py-2 text-sm font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors flex items-center gap-1.5"
+                    className="px-3 py-2 sm:px-4 text-xs sm:text-sm font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors flex items-center gap-1.5"
                   >
-                    <FaPlus className="text-xs" /> Tambah Materi
+                    <FaPlus className="text-[10px] sm:text-xs" /> <span className="hidden sm:inline">Tambah Materi</span><span className="sm:hidden">Materi</span>
                   </button>
                   <button
                     onClick={() => setEditingCourse(course)}
-                    className="p-2.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                    className="p-2 sm:p-2.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
                     title="Edit Kursus"
                   >
-                    <FaPen className="text-sm" />
+                    <FaPen className="text-xs sm:text-sm" />
                   </button>
                   <button
                     onClick={() => handleDeleteCourse(course.id, course.title)}
                     disabled={deletingId === course.id}
-                    className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                    className="p-2 sm:p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                   >
-                    {deletingId === course.id ? <FaSpinner className="animate-spin" /> : <FaTrash />}
+                    {deletingId === course.id ? <FaSpinner className="animate-spin text-xs sm:text-sm" /> : <FaTrash className="text-xs sm:text-sm" />}
                   </button>
                   <button
                     onClick={() => setExpandedCourse(expandedCourse === course.id ? null : course.id)}
-                    className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-2 sm:p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                   >
-                    {expandedCourse === course.id ? <FaChevronUp /> : <FaChevronDown />}
+                    {expandedCourse === course.id ? <FaChevronUp className="text-xs sm:text-sm" /> : <FaChevronDown className="text-xs sm:text-sm" />}
                   </button>
                 </div>
               </div>
