@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { FaUsers, FaCrown, FaUserShield, FaUserGraduate, FaSpinner, FaMagnifyingGlass, FaChevronDown, FaGift } from 'react-icons/fa6'
+import Link from 'next/link'
+import { FaUsers, FaCrown, FaUserShield, FaUserGraduate, FaSpinner, FaMagnifyingGlass, FaChevronDown, FaGift, FaEye } from 'react-icons/fa6'
 import GrantSubscriptionForm from './GrantSubscriptionForm'
 
 type UserSubscription = {
@@ -177,7 +178,9 @@ export default function UsersClient({ users, packages }: { users: UserProfile[] 
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-bold text-gray-900 truncate">{user.full_name || 'Belum diisi'}</p>
+                            <Link href={`/admin/users/${user.id}`} className="font-bold text-gray-900 truncate block hover:text-violet-600 transition-colors">
+                              {user.full_name || 'Belum diisi'}
+                            </Link>
                             <p className="text-xs text-gray-500 truncate">{user.email}</p>
                           </div>
                         </div>
@@ -207,6 +210,15 @@ export default function UsersClient({ users, packages }: { users: UserProfile[] 
                       </td>
                       <td className="py-4 px-6 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {/* Detail View Button */}
+                          <Link
+                            href={`/admin/users/${user.id}`}
+                            className="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors"
+                            title="Lihat Detail"
+                          >
+                            <FaEye />
+                          </Link>
+
                           {/* Grant Subscription Button */}
                           <button
                             onClick={() => setGrantingUser(user)}
