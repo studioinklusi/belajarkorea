@@ -55,7 +55,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Product file not found' }, { status: 404 })
     }
 
-    // Generate signed URL
+    // Jika file_path adalah link eksternal (Google Drive, Notion, dll), langsung redirect
+    if (product.file_path.startsWith('http://') || product.file_path.startsWith('https://')) {
+      return NextResponse.redirect(product.file_path)
+    }
+
+    // Generate signed URL untuk file yang di-upload ke Supabase Storage
     const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin
       .storage
       .from('digital-products')

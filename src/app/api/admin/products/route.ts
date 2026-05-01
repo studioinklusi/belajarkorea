@@ -36,29 +36,33 @@ export async function POST(request: Request) {
     const downloadLimit = parseInt(formData.get('download_limit') as string) || 5
     const isActive = formData.get('is_active') === 'true'
     const file = formData.get('file') as File | null
+    const externalUrl = formData.get('external_url') as string
     const thumbnail = formData.get('thumbnail') as File | null
 
-    if (!title || !price || !file) {
-      return NextResponse.json({ error: 'Title, price, dan file wajib diisi.' }, { status: 400 })
+    if (!title || !price || (!file && !externalUrl)) {
+      return NextResponse.json({ error: 'Title, price, dan file/link wajib diisi.' }, { status: 400 })
     }
 
-    // 3. Upload file ke Supabase Storage
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`
-    const filePath = `products/${fileName}`
+    let filePath = externalUrl || ''
 
-    const fileBuffer = Buffer.from(await file.arrayBuffer())
+    // 3. Upload file ke Supabase Storage jika ada file
+    if (file && file.size > 0) {
+      const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`
+      filePath = `products/${fileName}`
 
-    const { error: uploadError } = await supabaseAdmin.storage
-      .from('digital-products')
-      .upload(filePath, fileBuffer, {
-        contentType: file.type,
-        upsert: false,
-      })
+      const fileBuffer = Buffer.from(await file.arrayBuffer())
 
-    if (uploadError) {
-      console.error('Upload error:', uploadError)
-      return NextResponse.json({ error: `Gagal upload file: ${uploadError.message}` }, { status: 500 })
+      const { error: uploadError } = await supabaseAdmin.storage
+        .from('digital-products')
+        .upload(filePath, fileBuffer, {
+          contentType: file.type,
+          upsert: false,
+        })
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError)
+        return NextResponse.json({ error: `Gagal upload file: ${uploadError.message}` }, { status: 500 })
+      }
     }
 
     // 4. Simpan data produk ke database
@@ -132,22 +136,29 @@ export async function PATCH(request: Request) {
     const downloadLimit = parseInt(formData.get('download_limit') as string) || 5
     const isActive = formData.get('is_active') === 'true'
     const file = formData.get('file') as File | null
+    const externalUrl = formData.get('external_url') as string
     const thumbnail = formData.get('thumbnail') as File | null
 
     if (!productId || !title || !price) {
       return NextResponse.json({ error: 'product_id, title, dan price wajib diisi.' }, { status: 400 })
     }
 
-    // Jika ada file baru, upload dan hapus file lama
-    let newFilePath: string | undefined
-    if (file && file.size > 0) {
-      // Ambil file lama
-      const { data: oldProduct } = await supabaseAdmin
-        .from('digital_products')
-        .select('file_path')
-        .eq('id', productId)
-        .single()
+    // Ambil file lama
+    const { data: oldProduct } = await supabaseAdmin
+      .from('digital_products')
+      .select('file_path')
+      .eq('id', productId)
+      .single()
 
+    let newFilePath: string | undefined
+
+    if (externalUrl) {
+      newFilePath = externalUrl
+      // Hapus file lama jika sebelumnya berupa upload (bukan http)
+      if (oldProduct?.file_path && !oldProduct.file_path.startsWith('http')) {
+        await supabaseAdmin.storage.from('digital-products').remove([oldProduct.file_path])
+      }
+    } else if (file && file.size > 0) {
       // Upload file baru
       const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`
       const filePath = `products/${fileName}`
@@ -166,8 +177,8 @@ export async function PATCH(request: Request) {
 
       newFilePath = filePath
 
-      // Hapus file lama
-      if (oldProduct?.file_path) {
+      // Hapus file lama jika sebelumnya berupa upload
+      if (oldProduct?.file_path && !oldProduct.file_path.startsWith('http')) {
         await supabaseAdmin.storage.from('digital-products').remove([oldProduct.file_path])
       }
     }

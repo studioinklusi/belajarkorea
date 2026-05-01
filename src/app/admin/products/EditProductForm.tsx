@@ -226,6 +226,19 @@ export default function EditProductForm({ product, onClose }: { product: Product
                 <span className="text-xs text-gray-500">Klik untuk mengganti file (biarkan kosong jika tidak ingin ganti)</span>
               )}
             </label>
+
+            <div className="mt-4">
+              <p className="text-xs font-bold text-gray-500 mb-2 text-center">ATAU</p>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Gunakan Link Eksternal</label>
+              <input
+                type="url"
+                name="external_url"
+                placeholder="https://drive.google.com/... atau https://notion.so/..."
+                defaultValue={product.file_path.startsWith('http') ? product.file_path : ''}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-100 outline-none transition-all text-sm"
+              />
+              <p className="text-xs text-gray-500 mt-1">Jika diisi, file yang diupload di atas akan diabaikan/dihapus.</p>
+            </div>
           </div>
 
           {/* Submit */}

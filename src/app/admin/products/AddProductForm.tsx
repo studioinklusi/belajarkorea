@@ -184,12 +184,11 @@ export default function AddProductForm({ onClose }: { onClose: () => void }) {
 
           {/* File Upload */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Upload File *</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Upload File (atau gunakan Link)</label>
             <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 hover:border-violet-400 rounded-2xl p-8 cursor-pointer transition-colors group bg-gray-50 hover:bg-violet-50">
               <input
                 type="file"
                 name="file"
-                required
                 onChange={handleFileChange}
                 accept=".pdf,.zip,.rar,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
                 className="hidden"
@@ -201,6 +200,18 @@ export default function AddProductForm({ onClose }: { onClose: () => void }) {
                 <span className="text-sm text-gray-500">Klik untuk memilih file (PDF, ZIP, dll)</span>
               )}
             </label>
+
+            <div className="mt-4">
+              <p className="text-xs font-bold text-gray-500 mb-2 text-center">ATAU</p>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Gunakan Link Eksternal</label>
+              <input
+                type="url"
+                name="external_url"
+                placeholder="https://drive.google.com/... atau https://notion.so/..."
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-100 outline-none transition-all text-sm"
+              />
+              <p className="text-xs text-gray-500 mt-1">Jika diisi, Anda tidak perlu mengupload file di atas.</p>
+            </div>
           </div>
 
           {/* Submit */}
