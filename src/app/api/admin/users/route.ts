@@ -50,11 +50,13 @@ export async function GET() {
       console.error('Auth list error:', authErr)
     }
 
-    // Build email map
+    // Build email + ban map
     const emailMap = new Map<string, string>()
+    const banMap = new Map<string, string | null>()
     if (authUsers?.users) {
       authUsers.users.forEach((u: any) => {
         emailMap.set(u.id, u.email || '')
+        banMap.set(u.id, u.banned_until || null)
       })
     }
 
@@ -75,12 +77,16 @@ export async function GET() {
       })
     }
 
-    // Merge data
-    const users = (profiles || []).map((p: any) => ({
-      ...p,
-      email: emailMap.get(p.id) || '-',
-      subscription: subMap.get(p.id) || null,
-    }))
+    const users = (profiles || []).map((p: any) => {
+      const bannedUntil = banMap.get(p.id)
+      const isBanned = bannedUntil ? new Date(bannedUntil) > new Date() : false
+      return {
+        ...p,
+        email: emailMap.get(p.id) || '-',
+        subscription: subMap.get(p.id) || null,
+        is_banned: isBanned,
+      }
+    })
 
     return NextResponse.json({ users })
   } catch (error: any) {
@@ -234,6 +240,54 @@ export async function POST(request: Request) {
     })
   } catch (error: any) {
     console.error('Grant subscription error:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+
+// ========== PUT: Ban / Unban user ==========
+export async function PUT(request: Request) {
+  try {
+    const caller = await verifySuperAdmin()
+    if (!caller) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const { user_id, action } = await request.json()
+
+    if (!user_id || !['ban', 'unban'].includes(action)) {
+      return NextResponse.json({ error: 'user_id dan action (ban/unban) wajib diisi' }, { status: 400 })
+    }
+
+    // Prevent self-ban
+    if (user_id === caller.id) {
+      return NextResponse.json({ error: 'Anda tidak bisa memblokir akun Anda sendiri' }, { status: 400 })
+    }
+
+    if (action === 'ban') {
+      // Ban for 100 years (effectively permanent)
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(user_id, {
+        ban_duration: '876000h',
+      })
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 })
+      }
+
+      return NextResponse.json({ message: 'Pengguna berhasil diblokir' })
+    } else {
+      // Unban: set ban_duration to 'none'
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(user_id, {
+        ban_duration: 'none',
+      })
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 })
+      }
+
+      return NextResponse.json({ message: 'Pengguna berhasil diaktifkan kembali' })
+    }
+  } catch (error: any) {
+    console.error('Ban/unban error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

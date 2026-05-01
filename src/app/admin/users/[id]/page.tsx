@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {
   FaArrowLeft, FaUserGraduate, FaUserShield, FaCrown,
   FaBook, FaBox, FaReceipt, FaCalendarDays, FaEnvelope,
-  FaCircleCheck, FaClock, FaCircleXmark, FaGift, FaChartLine
+  FaCircleCheck, FaClock, FaCircleXmark, FaGift, FaChartLine, FaBan
 } from 'react-icons/fa6'
 
 const roleLabels: Record<string, { label: string; color: string; icon: any }> = {
@@ -61,9 +61,11 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
 
   if (!profile) redirect('/admin/users')
 
-  // 2. Email from auth
+  // 2. Email & Ban Status from auth
   const { data: authData } = await supabaseAdmin.auth.admin.getUserById(userId)
   const email = authData?.user?.email || '-'
+  const bannedUntil = authData?.user?.banned_until
+  const isBanned = bannedUntil ? new Date(bannedUntil) > new Date() : false
 
   // 3. All subscriptions (history)
   const { data: subscriptions } = await supabaseAdmin
@@ -132,10 +134,18 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
               </span>
             </div>
           </div>
-          <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold ${roleInfo.color}`}>
-            <RoleIcon className="text-xs" />
-            {roleInfo.label}
-          </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold ${roleInfo.color}`}>
+              <RoleIcon className="text-xs" />
+              {roleInfo.label}
+            </span>
+            {isBanned && (
+              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold bg-red-100 text-red-700">
+                <FaBan className="text-xs" />
+                Akun Diblokir
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Active Subscription Banner */}

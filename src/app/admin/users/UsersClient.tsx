@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FaUsers, FaCrown, FaUserShield, FaUserGraduate, FaSpinner, FaMagnifyingGlass, FaChevronDown, FaGift, FaEye } from 'react-icons/fa6'
+import { FaUsers, FaCrown, FaUserShield, FaUserGraduate, FaSpinner, FaMagnifyingGlass, FaChevronDown, FaGift, FaEye, FaBan } from 'react-icons/fa6'
 import GrantSubscriptionForm from './GrantSubscriptionForm'
 
 type UserSubscription = {
@@ -20,6 +20,7 @@ type UserProfile = {
   role: string
   created_at: string
   subscription: UserSubscription | null
+  is_banned: boolean
 }
 
 type Package = {
@@ -40,6 +41,7 @@ export default function UsersClient({ users, packages }: { users: UserProfile[] 
   const [search, setSearch] = useState('')
   const [filterRole, setFilterRole] = useState<string>('all')
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [banningId, setBanningId] = useState<string | null>(null)
   const [grantingUser, setGrantingUser] = useState<UserProfile | null>(null)
 
   async function handleRoleChange(userId: string, newRole: string) {
@@ -64,6 +66,36 @@ export default function UsersClient({ users, packages }: { users: UserProfile[] 
       alert('Terjadi kesalahan')
     } finally {
       setUpdatingId(null)
+    }
+  }
+
+  async function handleBanToggle(userId: string, currentlyBanned: boolean, userName: string) {
+    const action = currentlyBanned ? 'unban' : 'ban'
+    const confirmMsg = currentlyBanned
+      ? `Aktifkan kembali akun "${userName}"? Pengguna akan bisa login lagi.`
+      : `Blokir akun "${userName}"? Pengguna tidak akan bisa login sampai diaktifkan kembali.`
+
+    if (!confirm(confirmMsg)) return
+
+    setBanningId(userId)
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, action }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error || 'Gagal memproses')
+        return
+      }
+
+      router.refresh()
+    } catch {
+      alert('Terjadi kesalahan')
+    } finally {
+      setBanningId(null)
     }
   }
 
@@ -166,7 +198,7 @@ export default function UsersClient({ users, packages }: { users: UserProfile[] 
                   const RoleIcon = roleInfo.icon
 
                   return (
-                    <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                    <tr key={user.id} className={`border-b border-gray-50 transition-colors ${user.is_banned ? 'bg-red-50/50 opacity-75' : 'hover:bg-gray-50/50'}`}>
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-gradient-to-br from-violet-400 to-fuchsia-400 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden">
@@ -186,10 +218,18 @@ export default function UsersClient({ users, packages }: { users: UserProfile[] 
                         </div>
                       </td>
                       <td className="py-4 px-6">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${roleInfo.color}`}>
-                          <RoleIcon className="text-[10px]" />
-                          {roleInfo.label}
-                        </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${roleInfo.color}`}>
+                            <RoleIcon className="text-[10px]" />
+                            {roleInfo.label}
+                          </span>
+                          {user.is_banned && (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                              <FaBan className="text-[9px]" />
+                              Diblokir
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-4 px-6">
                         {user.subscription ? (
@@ -227,6 +267,23 @@ export default function UsersClient({ users, packages }: { users: UserProfile[] 
                           >
                             <FaGift />
                           </button>
+
+                          {/* Ban/Unban Button */}
+                          {banningId === user.id ? (
+                            <FaSpinner className="animate-spin text-red-400 p-2 w-8 h-8" />
+                          ) : (
+                            <button
+                              onClick={() => handleBanToggle(user.id, user.is_banned, user.full_name || user.email)}
+                              className={`p-2 rounded-lg transition-colors ${
+                                user.is_banned
+                                  ? 'text-green-500 hover:text-green-700 hover:bg-green-50'
+                                  : 'text-red-400 hover:text-red-600 hover:bg-red-50'
+                              }`}
+                              title={user.is_banned ? 'Aktifkan Kembali' : 'Blokir Akun'}
+                            >
+                              <FaBan />
+                            </button>
+                          )}
 
                           {/* Role Change */}
                           {updatingId === user.id ? (
