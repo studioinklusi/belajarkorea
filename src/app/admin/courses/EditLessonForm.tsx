@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { FaXmark, FaSpinner, FaCircleCheck, FaPen, FaYoutube } from 'react-icons/fa6'
+import { FaXmark, FaSpinner, FaCircleCheck, FaPen, FaYoutube, FaLink } from 'react-icons/fa6'
 
 export default function EditLessonForm({ lesson, onClose }: { lesson: any; onClose: () => void }) {
   const router = useRouter()
@@ -17,6 +17,8 @@ export default function EditLessonForm({ lesson, onClose }: { lesson: any; onClo
   const [sortOrder, setSortOrder] = useState(lesson.sort_order.toString())
   const [isPreview, setIsPreview] = useState(lesson.is_preview)
   const [isPublished, setIsPublished] = useState(lesson.is_published)
+  const [resourceTitle, setResourceTitle] = useState(lesson.resource_title || '')
+  const [resourceUrl, setResourceUrl] = useState(lesson.resource_url || '')
 
   function extractYoutubeId(urlOrId: string) {
     if (!urlOrId.includes('youtube.com') && !urlOrId.includes('youtu.be')) return urlOrId
@@ -51,6 +53,8 @@ export default function EditLessonForm({ lesson, onClose }: { lesson: any; onClo
           sort_order: parseInt(sortOrder) || 0,
           is_preview: isPreview,
           is_published: isPublished,
+          resource_title: resourceTitle,
+          resource_url: resourceUrl,
         }),
       })
 
@@ -155,6 +159,32 @@ export default function EditLessonForm({ lesson, onClose }: { lesson: any; onClo
               rows={2}
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-100 outline-none transition-all text-sm resize-none"
             />
+          </div>
+
+          <div className="bg-gray-50 border border-gray-100 p-5 rounded-2xl space-y-4">
+            <h4 className="font-bold text-gray-900 flex items-center gap-2 mb-2">
+              <FaLink className="text-violet-500" /> Materi Pendukung (Opsional)
+            </h4>
+            <div>
+              <label className="block text-xs font-bold text-gray-500 mb-1">Nama File / Tombol</label>
+              <input
+                type="text"
+                value={resourceTitle}
+                onChange={(e) => setResourceTitle(e.target.value)}
+                placeholder="Contoh: Download PDF Latihan"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-100 outline-none transition-all text-sm bg-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-500 mb-1">Link URL (Google Drive / Notion / PDF)</label>
+              <input
+                type="url"
+                value={resourceUrl}
+                onChange={(e) => setResourceUrl(e.target.value)}
+                placeholder="https://..."
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-100 outline-none transition-all text-sm bg-white"
+              />
+            </div>
           </div>
 
           <div className="space-y-3 pt-2">

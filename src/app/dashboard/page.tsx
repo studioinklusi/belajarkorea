@@ -108,8 +108,8 @@ export default async function DashboardPage() {
               {isSubscribed ? (
                 <div className="relative z-10">
                   <div className="bg-gradient-to-r from-green-500 to-emerald-400 rounded-2xl p-5 text-white shadow-lg shadow-green-500/20">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-black bg-white/20 text-white uppercase tracking-wider">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-black bg-white/20 text-white uppercase tracking-wider shrink-0">
                         {subscription.computed_status === 'active' ? 'AKTIF' : 'GRACE PERIOD'}
                       </span>
                       <span className="text-sm font-black uppercase tracking-widest opacity-80">
@@ -144,7 +144,7 @@ export default async function DashboardPage() {
             {/* Daily Target */}
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <FaBullseye className="text-rose-500" /> Target Harian
+                <FaBullseye className="text-rose-500 shrink-0" /> Target Harian
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center gap-4 p-3 rounded-2xl transition-colors group border border-transparent">
@@ -186,11 +186,11 @@ export default async function DashboardPage() {
           {/* Kolom Kanan: Progress Belajar */}
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 h-full">
-              <div className="flex justify-between items-center mb-8">
-                <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  <FaBookOpen className="text-violet-600" /> Lanjutkan Belajar
+              <div className="flex justify-between items-start sm:items-center mb-8 gap-4">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <FaBookOpen className="text-violet-600 shrink-0" /> Lanjutkan Belajar
                 </h3>
-                <Link href="/courses" className="text-sm text-violet-600 hover:text-violet-800 font-bold bg-violet-50 px-4 py-2 rounded-full transition-colors">
+                <Link href="/courses" className="text-xs sm:text-sm text-violet-600 hover:text-violet-800 font-bold bg-violet-50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-colors shrink-0">
                   Lihat Semua
                 </Link>
               </div>
@@ -238,7 +238,7 @@ export default async function DashboardPage() {
                   <p className="text-gray-500 text-sm mb-8 max-w-sm mx-auto">Anda belum memulai materi apapun. Yuk tonton video pertama Anda hari ini!</p>
                   <Link 
                     href="/courses" 
-                    className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full shadow-md shadow-violet-200 text-white bg-violet-600 hover:bg-violet-700 hover:shadow-lg font-bold transition-all transform hover:-translate-y-0.5"
+                    className="flex w-full sm:w-auto sm:inline-flex justify-center items-center gap-2 px-8 py-3.5 rounded-full shadow-md shadow-violet-200 text-white bg-violet-600 hover:bg-violet-700 hover:shadow-lg font-bold transition-all transform hover:-translate-y-0.5"
                   >
                     <PlayCircleIcon className="w-5 h-5" /> Mulai Belajar Sekarang
                   </Link>

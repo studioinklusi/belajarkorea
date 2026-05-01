@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { FaChevronLeft, FaPlay, FaLock, FaCircleCheck, FaRegCircle, FaTrophy, FaListUl } from 'react-icons/fa6'
+import { FaChevronLeft, FaPlay, FaLock, FaCircleCheck, FaRegCircle, FaTrophy, FaListUl, FaFileArrowDown } from 'react-icons/fa6'
 import { markLessonComplete } from '../../../actions'
 import { SubmitButton } from '@/components/SubmitButton'
 import LessonClient from './LessonClient'
@@ -148,18 +148,40 @@ export default async function LessonPage(props: {
                       )}
                     </div>
                     <h1 className="text-3xl font-extrabold text-white mb-3">{currentLesson.title}</h1>
-                    <p className="text-gray-400 text-lg leading-relaxed">{currentLesson.description}</p>
+                    <p className="text-gray-400 text-lg leading-relaxed mb-6">{currentLesson.description}</p>
+
+                    {/* Materi Pendukung / Attachment */}
+                    {currentLesson.resource_url && (
+                      <div className="inline-block">
+                        <a 
+                          href={currentLesson.resource_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-4 bg-gray-800/50 hover:bg-gray-800 border border-gray-700/50 hover:border-violet-500/50 p-4 rounded-2xl transition-all group"
+                        >
+                          <div className="w-12 h-12 bg-violet-500/10 text-violet-400 rounded-xl flex items-center justify-center group-hover:bg-violet-500 group-hover:text-white transition-colors">
+                            <FaFileArrowDown className="text-xl" />
+                          </div>
+                          <div>
+                            <h4 className="text-white font-bold text-sm mb-0.5 group-hover:text-violet-300 transition-colors">
+                              {currentLesson.resource_title || 'Materi Pendukung'}
+                            </h4>
+                            <p className="text-xs text-gray-500">Klik untuk mengunduh atau membuka file</p>
+                          </div>
+                        </a>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-3 min-w-[200px]">
+                  <div className="flex flex-col sm:flex-row gap-3 min-w-[200px] shrink-0">
                     {!isCompleted ? (
-                      <form action={handleMarkComplete}>
+                      <form action={handleMarkComplete} className="w-full sm:w-auto">
                         <SubmitButton 
                           pendingText="Menyimpan..."
                           className="!w-full !rounded-full !py-3 !bg-emerald-600 hover:!bg-emerald-500 !shadow-emerald-600/20"
                         >
-                          <span className="flex items-center gap-2"><FaCircleCheck /> Tandai Selesai</span>
+                          <span className="flex w-full items-center justify-center gap-2 font-bold whitespace-nowrap px-2"><FaCircleCheck className="w-5 h-5 shrink-0" /> Tandai Selesai</span>
                         </SubmitButton>
                       </form>
                     ) : (

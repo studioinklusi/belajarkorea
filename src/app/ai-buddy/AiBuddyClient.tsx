@@ -230,7 +230,10 @@ export default function AiBuddyClient() {
           {showSettings && (
             <div className="pt-3 pb-2 border-t border-gray-100/50 flex flex-col gap-3.5 animate-fade-in-up">
               {/* Level Selector */}
-              <div className="flex items-center gap-3 w-full">
+              <div 
+                className="flex items-center gap-3 w-full overflow-x-auto pb-1 -mb-1 [&::-webkit-scrollbar]:hidden"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
                 <span className="w-[72px] text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest shrink-0">Level</span>
                 <div className="flex bg-gray-100/80 p-1 rounded-xl w-max shrink-0">
                   {LEVELS.map((level) => (
@@ -251,7 +254,10 @@ export default function AiBuddyClient() {
 
               {/* Persona Selector — Only Advanced */}
               {selectedLevel === 'advanced' && (
-                <div className="flex items-center gap-3 w-full">
+                <div 
+                  className="flex items-center gap-3 w-full overflow-x-auto pb-1 -mb-1 [&::-webkit-scrollbar]:hidden"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
                   <span className="w-[72px] text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest shrink-0">Persona</span>
                   
                   {/* Desktop: inline buttons */}

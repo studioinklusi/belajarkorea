@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     if (!admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const body = await request.json()
-    const { course_id, title, description, youtube_video_id, duration_seconds, sort_order, is_published, is_preview } = body
+    const { course_id, title, description, youtube_video_id, duration_seconds, sort_order, is_published, is_preview, resource_title, resource_url } = body
 
     if (!course_id || !title || !youtube_video_id) {
       return NextResponse.json({ error: 'course_id, title, dan youtube_video_id wajib diisi.' }, { status: 400 })
@@ -46,6 +46,8 @@ export async function POST(request: Request) {
         sort_order: sort_order ?? 0,
         is_published: is_published ?? false,
         is_preview: is_preview ?? false,
+        resource_title: resource_title || null,
+        resource_url: resource_url || null,
       })
       .select()
       .single()
@@ -93,7 +95,7 @@ export async function PATCH(request: Request) {
     if (!admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const body = await request.json()
-    const { lesson_id, title, description, youtube_video_id, duration_seconds, sort_order, is_published, is_preview } = body
+    const { lesson_id, title, description, youtube_video_id, duration_seconds, sort_order, is_published, is_preview, resource_title, resource_url } = body
 
     if (!lesson_id || !title || !youtube_video_id) {
       return NextResponse.json({ error: 'lesson_id, title, dan youtube_video_id wajib diisi.' }, { status: 400 })
@@ -107,6 +109,8 @@ export async function PATCH(request: Request) {
       sort_order: sort_order ?? 0,
       is_published: is_published ?? false,
       is_preview: is_preview ?? false,
+      resource_title: resource_title || null,
+      resource_url: resource_url || null,
       updated_at: new Date().toISOString()
     }
 

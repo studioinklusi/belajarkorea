@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { signout } from '@/app/(auth)/auth/actions'
 import { FaHandSparkles, FaRobot } from 'react-icons/fa6'
+import MobileMenu from './MobileMenu'
 
 export default async function Navbar({ activePage }: { activePage?: 'dashboard' | 'courses' | 'products' }) {
   const supabase = await createClient()
@@ -25,12 +26,12 @@ export default async function Navbar({ activePage }: { activePage?: 'dashboard' 
     <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center md:gap-6">
             <Link href="/" className="flex-shrink-0 flex items-center gap-2">
               <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-violet-500/30">
                 K
               </div>
-              <span className="hidden sm:block font-extrabold text-2xl tracking-tight text-gray-900">
+              <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-gray-900">
                 belajarkorea<span className="text-violet-600">.id</span>
               </span>
             </Link>
@@ -61,7 +62,7 @@ export default async function Navbar({ activePage }: { activePage?: 'dashboard' 
                 <span className="text-sm font-bold text-gray-700 hidden sm:flex items-center gap-2">
                   안녕, {profile?.full_name?.split(' ')[0] || 'Chingu'}! <FaHandSparkles className="text-yellow-500" />
                 </span>
-                <form action={signout}>
+                <form action={signout} className="hidden md:block">
                   <button
                     type="submit"
                     className="bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-600 px-5 py-2.5 rounded-full text-sm font-bold transition-colors"
@@ -81,6 +82,7 @@ export default async function Navbar({ activePage }: { activePage?: 'dashboard' 
                 </Link>
               </>
             )}
+            <MobileMenu isLoggedIn={!!user} isAdmin={isAdmin} activePage={activePage} signoutAction={signout} />
           </div>
         </div>
       </div>

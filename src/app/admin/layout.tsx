@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { signout } from '../(auth)/auth/actions'
 import { FaBox, FaBook, FaUsers, FaChartLine, FaArrowLeft, FaRightFromBracket, FaGauge } from 'react-icons/fa6'
+import AdminMobileNav from './AdminMobileNav'
 
 export default async function AdminLayout({
   children,
@@ -25,9 +26,12 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex font-sans">
-      {/* Sidebar Admin */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm sticky top-0 h-screen">
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row font-sans">
+      {/* Mobile Header & Nav */}
+      <AdminMobileNav signoutAction={signout} />
+
+      {/* Sidebar Admin (Desktop) */}
+      <aside className="hidden md:flex w-64 bg-white border-r border-gray-200 flex-col shadow-sm sticky top-0 h-screen shrink-0">
         <div className="h-20 flex items-center px-6 border-b border-gray-100">
           <div className="flex-shrink-0 flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-lg flex items-center justify-center text-white font-black text-sm">

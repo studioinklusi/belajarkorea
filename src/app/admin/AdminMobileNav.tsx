@@ -1,0 +1,61 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { FaBars, FaXmark, FaBox, FaBook, FaUsers, FaChartLine, FaArrowLeft, FaRightFromBracket, FaGauge } from 'react-icons/fa6'
+
+export default function AdminMobileNav({ signoutAction }: { signoutAction: () => void }) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <div className="md:hidden bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="flex items-center justify-between p-4">
+        <div className="flex-shrink-0 flex items-center gap-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-lg flex items-center justify-center text-white font-black text-sm">
+            K
+          </div>
+          <span className="font-extrabold text-xl tracking-tight text-gray-900">
+            Admin<span className="text-violet-600">Panel</span>
+          </span>
+        </div>
+        <button 
+          onClick={() => setIsOpen(!isOpen)}
+          className="p-2 text-gray-500 hover:text-violet-600 hover:bg-violet-50 active:bg-violet-100 active:scale-95 rounded-xl transition-all"
+        >
+          {isOpen ? <FaXmark className="w-6 h-6" /> : <FaBars className="w-6 h-6" />}
+        </button>
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 w-full bg-white border-b border-gray-100 shadow-2xl flex flex-col z-50 animate-fade-in-up max-h-[calc(100vh-70px)] overflow-y-auto">
+          <nav className="p-4 space-y-2">
+            <Link href="/admin" onClick={() => setIsOpen(false)} className="text-gray-600 hover:bg-violet-50 hover:text-violet-700 group flex items-center px-4 py-3 rounded-xl text-base font-bold transition-colors">
+              <FaGauge className="w-5 h-5 mr-3 text-gray-400 group-hover:text-violet-500" />
+              Dashboard Utama
+            </Link>
+            <Link href="/admin/courses" onClick={() => setIsOpen(false)} className="text-gray-600 hover:bg-violet-50 hover:text-violet-700 group flex items-center px-4 py-3 rounded-xl text-base font-bold transition-colors">
+              <FaBook className="w-5 h-5 mr-3 text-gray-400 group-hover:text-violet-500" />
+              Kelola Kursus
+            </Link>
+            <Link href="/admin/products" onClick={() => setIsOpen(false)} className="text-gray-600 hover:bg-violet-50 hover:text-violet-700 group flex items-center px-4 py-3 rounded-xl text-base font-bold transition-colors">
+              <FaBox className="w-5 h-5 mr-3 text-gray-400 group-hover:text-violet-500" />
+              Produk Digital
+            </Link>
+          </nav>
+          <div className="p-4 border-t border-gray-100 space-y-2 bg-gray-50/50">
+            <Link href="/dashboard" onClick={() => setIsOpen(false)} className="text-base font-bold text-gray-600 hover:text-violet-600 flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white transition-colors">
+              <FaArrowLeft className="w-5 h-5 text-gray-400" />
+              Kembali ke App
+            </Link>
+            <form action={signoutAction}>
+              <button type="submit" onClick={() => setIsOpen(false)} className="w-full text-left text-base font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-3 px-4 py-3 rounded-xl transition-colors">
+                <FaRightFromBracket className="w-5 h-5 text-rose-500" />
+                Keluar
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
