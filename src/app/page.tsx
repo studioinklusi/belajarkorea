@@ -1,53 +1,13 @@
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
 import { ArrowRightIcon, SparklesIcon, CheckCircleIcon, PlayCircleIcon } from '@heroicons/react/24/solid'
+import Navbar from '@/components/Navbar'
 
 export default async function LandingPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900 overflow-x-hidden">
       {/* Navigation */}
-      <nav className="fixed w-full z-50 top-0 transition-all duration-300 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex-shrink-0 flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-violet-500/30">
-                K
-              </div>
-              <span className="font-extrabold text-2xl tracking-tight text-gray-900">
-                belajarkorea<span className="text-violet-600">.id</span>
-              </span>
-            </div>
-            <div className="hidden md:flex space-x-8 items-center font-medium text-gray-600">
-              <Link href="/courses" className="hover:text-violet-600 transition-colors">Program Belajar</Link>
-              <Link href="/products" className="hover:text-violet-600 transition-colors">Produk Digital</Link>
-              <Link href="/pricing" className="hover:text-violet-600 transition-colors">Harga</Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              {user ? (
-                <Link 
-                  href="/dashboard" 
-                  className="bg-gray-900 text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-gray-800 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                >
-                  Dashboard Saya
-                </Link>
-              ) : (
-                <>
-                  <Link href="/login" className="text-gray-600 font-bold hover:text-gray-900 px-4 py-2">Masuk</Link>
-                  <Link 
-                    href="/register" 
-                    className="bg-violet-600 text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-violet-700 transition-all shadow-md shadow-violet-200 hover:shadow-lg hover:shadow-violet-300 transform hover:-translate-y-0.5"
-                  >
-                    Mulai Belajar
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <div className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 lg:pb-32 overflow-hidden">
