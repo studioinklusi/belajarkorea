@@ -9,9 +9,10 @@ interface MobileMenuProps {
   isAdmin: boolean
   activePage?: string
   signoutAction?: () => void
+  isLandingPage?: boolean
 }
 
-export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAction }: MobileMenuProps) {
+export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAction, isLandingPage }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const linkClass = (page: string) => 
@@ -51,9 +52,11 @@ export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAct
           <Link href="/products" onClick={() => setIsOpen(false)} className={linkClass('products')}>
             Produk Digital
           </Link>
-          <Link href="/pricing" onClick={() => setIsOpen(false)} className={linkClass('pricing')}>
-            Harga
-          </Link>
+          {isLandingPage && (
+            <Link href="/pricing" onClick={() => setIsOpen(false)} className={linkClass('pricing')}>
+              Harga
+            </Link>
+          )}
           {isAdmin && (
             <Link href="/admin" onClick={() => setIsOpen(false)} className="block text-gray-600 hover:text-violet-600 hover:bg-violet-50 px-4 py-3 rounded-xl text-base font-bold transition-colors mt-2 border-t border-gray-100 pt-4">
               Panel Admin

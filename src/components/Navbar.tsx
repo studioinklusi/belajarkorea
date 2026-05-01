@@ -58,7 +58,6 @@ export default async function Navbar({ activePage, isLandingPage }: { activePage
                   )}
                   <Link href="/courses" className={linkClass('courses')}>Program Belajar</Link>
                   <Link href="/products" className={linkClass('products')}>Produk Digital</Link>
-                  <Link href="/pricing" className={linkClass('pricing')}>Harga</Link>
                   {isAdmin && (
                     <Link href="/admin" className="text-gray-500 hover:text-rose-600 px-4 py-2.5 rounded-full text-sm font-bold transition-colors">Panel Admin</Link>
                   )}
@@ -102,7 +101,7 @@ export default async function Navbar({ activePage, isLandingPage }: { activePage
                 </Link>
               </div>
             )}
-            <MobileMenu isLoggedIn={!!user} isAdmin={isAdmin} activePage={activePage} signoutAction={signout} />
+            <MobileMenu isLoggedIn={!!user} isAdmin={isAdmin} activePage={activePage} signoutAction={signout} isLandingPage={isLandingPage} />
           </div>
         </div>
       </div>
