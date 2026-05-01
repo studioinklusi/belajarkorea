@@ -69,12 +69,17 @@ export default async function ProductsPage() {
                   
                   <div className="mt-auto">
                     {isPurchased ? (
-                      <button 
-                        disabled
-                        className="w-full py-2 px-4 border border-transparent rounded-md text-sm font-medium text-green-700 bg-green-100 cursor-not-allowed"
+                      <a 
+                        href={`/api/products/download?id=${product.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md text-sm font-bold text-white bg-green-600 hover:bg-green-700 transition-colors shadow-sm gap-2"
                       >
-                        Sudah Dibeli
-                      </button>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                        Akses File
+                      </a>
                     ) : (
                       <BuyProductButton productId={product.id} price={product.price} />
                     )}
