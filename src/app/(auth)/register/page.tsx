@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { signup } from '../auth/actions'
 import { SubmitButton } from '@/components/SubmitButton'
+import { PasswordInput } from '@/components/PasswordInput'
 
 export default async function RegisterPage(props: {
   searchParams: Promise<{ error?: string }>
@@ -78,15 +79,26 @@ export default async function RegisterPage(props: {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                 Password
               </label>
-              <input
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
                 autoComplete="new-password"
                 required
                 minLength={8}
-                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all"
                 placeholder="Min. 8 karakter"
+              />
+            </div>
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                Ulangi Password
+              </label>
+              <PasswordInput
+                id="confirmPassword"
+                name="confirmPassword"
+                autoComplete="new-password"
+                required
+                minLength={8}
+                placeholder="Ketik ulang password"
               />
             </div>
           </div>

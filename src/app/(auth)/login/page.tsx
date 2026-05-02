@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { login } from '../auth/actions'
 import { SubmitButton } from '@/components/SubmitButton'
+import { PasswordInput } from '@/components/PasswordInput'
 
 export default async function LoginPage(props: {
   searchParams: Promise<{ error?: string; message?: string; redirectTo?: string }>
@@ -82,13 +83,11 @@ export default async function LoginPage(props: {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                 Password
               </label>
-              <input
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all"
                 placeholder="••••••••"
               />
             </div>
