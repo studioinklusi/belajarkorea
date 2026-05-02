@@ -141,6 +141,22 @@ export default async function AdminDashboardPage() {
     }
   }
 
+  // Combine and sort activities
+  const combinedActivities = [
+    ...(recentUsers || []).map((u: any) => ({
+      type: 'user',
+      id: `user-${u.id}`,
+      date: new Date(u.created_at).getTime(),
+      data: u
+    })),
+    ...(recentTransactions || []).map((tx: any) => ({
+      type: 'transaction',
+      id: `tx-${tx.id}`,
+      date: new Date(tx.created_at).getTime(),
+      data: tx
+    }))
+  ].sort((a, b) => b.date - a.date).slice(0, 10);
+
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto">
       {/* Header */}
@@ -306,50 +322,53 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
           <div className="divide-y divide-gray-50 max-h-[400px] overflow-y-auto">
-            {/* Recent user registrations */}
-            {(recentUsers || []).map((u: any) => (
-              <div key={`user-${u.id}`} className="p-4 flex items-center gap-3 hover:bg-gray-50/50 transition-colors">
-                <div className="w-9 h-9 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0">
-                  <FaUserPlus className="text-xs" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-gray-800 truncate">
-                    {u.full_name || 'User Baru'}
-                  </p>
-                  <p className="text-[11px] text-gray-400 font-medium">Mendaftar</p>
-                </div>
-                <span className="text-[11px] text-gray-400 font-medium shrink-0">{timeAgo(u.created_at)}</span>
-              </div>
-            ))}
-
-            {/* Recent transactions */}
-            {(recentTransactions || []).map((tx: any) => {
-              const config = getTxStatusConfig(tx.status)
-              const StatusIcon = config.icon
-              return (
-                <div key={`tx-${tx.id}`} className="p-4 flex items-center gap-3 hover:bg-gray-50/50 transition-colors">
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${config.color}`}>
-                    <FaCartShopping className="text-xs" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-gray-800 truncate">
-                      {userNameMap.get(tx.user_id) || 'User'} — {(tx.packages as any)?.name || (tx.products as any)?.title || 'Produk'}
-                    </p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded-md ${config.color}`}>
-                        <StatusIcon className="w-2.5 h-2.5" />
-                        {config.label}
-                      </span>
-                      <span className="text-[11px] text-gray-500 font-bold">{formatRupiah(tx.amount)}</span>
+            {/* Combined Recent Activities */}
+            {combinedActivities.map((activity) => {
+              if (activity.type === 'user') {
+                const u = activity.data;
+                return (
+                  <div key={activity.id} className="p-4 flex items-center gap-3 hover:bg-gray-50/50 transition-colors">
+                    <div className="w-9 h-9 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0">
+                      <FaUserPlus className="text-xs" />
                     </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-gray-800 truncate">
+                        {u.full_name || 'User Baru'}
+                      </p>
+                      <p className="text-[11px] text-gray-400 font-medium">Mendaftar</p>
+                    </div>
+                    <span className="text-[11px] text-gray-400 font-medium shrink-0">{timeAgo(u.created_at)}</span>
                   </div>
-                  <span className="text-[11px] text-gray-400 font-medium shrink-0">{timeAgo(tx.created_at)}</span>
-                </div>
-              )
+                );
+              } else {
+                const tx = activity.data;
+                const config = getTxStatusConfig(tx.status);
+                const StatusIcon = config.icon;
+                return (
+                  <div key={activity.id} className="p-4 flex items-center gap-3 hover:bg-gray-50/50 transition-colors">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${config.color}`}>
+                      <FaCartShopping className="text-xs" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-gray-800 truncate">
+                        {userNameMap.get(tx.user_id) || 'User'} — {(tx.packages as any)?.name || (tx.products as any)?.title || 'Produk'}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded-md ${config.color}`}>
+                          <StatusIcon className="w-2.5 h-2.5" />
+                          {config.label}
+                        </span>
+                        <span className="text-[11px] text-gray-500 font-bold">{formatRupiah(tx.amount)}</span>
+                      </div>
+                    </div>
+                    <span className="text-[11px] text-gray-400 font-medium shrink-0">{timeAgo(tx.created_at)}</span>
+                  </div>
+                );
+              }
             })}
 
             {/* Empty state */}
-            {(recentUsers || []).length === 0 && (recentTransactions || []).length === 0 && (
+            {(combinedActivities.length === 0) && (
               <div className="p-8 text-center">
                 <p className="text-sm font-bold text-gray-400">Belum ada aktivitas</p>
               </div>
