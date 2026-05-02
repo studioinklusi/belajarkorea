@@ -45,8 +45,10 @@ export async function POST(request: Request) {
       }
     } else if (transactionStatus == 'settlement') {
       newStatus = 'success'
-    } else if (transactionStatus == 'cancel' || transactionStatus == 'deny' || transactionStatus == 'expire') {
+    } else if (transactionStatus == 'cancel' || transactionStatus == 'deny') {
       newStatus = 'failed'
+    } else if (transactionStatus == 'expire') {
+      newStatus = 'expired'
     } else if (transactionStatus == 'pending') {
       newStatus = 'pending'
     }

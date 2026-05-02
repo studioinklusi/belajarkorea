@@ -45,6 +45,12 @@ export default function BuyProductButton({
           setIsLoading(false)
         },
         onClose: function () {
+          // User menutup popup tanpa bayar — tandai transaksi sebagai expired
+          fetch('/api/payment/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId: data.orderId })
+          }).catch(console.error)
           setIsLoading(false)
         }
       })

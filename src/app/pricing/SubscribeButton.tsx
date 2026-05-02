@@ -58,7 +58,12 @@ export default function SubscribeButton({
           setIsLoading(false)
         },
         onClose: function () {
-          console.log('Customer closed the popup without finishing the payment')
+          // User menutup popup tanpa bayar — tandai transaksi sebagai expired
+          fetch('/api/payment/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId: data.orderId })
+          }).catch(console.error)
           setIsLoading(false)
         }
       })
