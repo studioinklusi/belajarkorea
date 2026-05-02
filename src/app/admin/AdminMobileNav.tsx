@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { FaBars, FaXmark, FaBox, FaBook, FaUsers, FaChartLine, FaArrowLeft, FaRightFromBracket, FaGauge } from 'react-icons/fa6'
+import { FaBars, FaXmark, FaBox, FaBook, FaUsers, FaChartLine, FaArrowLeft, FaRightFromBracket, FaGauge, FaCrown } from 'react-icons/fa6'
 
 export default function AdminMobileNav({ signoutAction }: { signoutAction: () => void }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -44,6 +44,10 @@ export default function AdminMobileNav({ signoutAction }: { signoutAction: () =>
             <Link href="/admin/users" onClick={() => setIsOpen(false)} className="text-gray-600 hover:bg-violet-50 hover:text-violet-700 group flex items-center px-4 py-3 rounded-xl text-base font-bold transition-colors">
               <FaUsers className="w-5 h-5 mr-3 text-gray-400 group-hover:text-violet-500" />
               Kelola Pengguna
+            </Link>
+            <Link href="/admin/packages" onClick={() => setIsOpen(false)} className="text-gray-600 hover:bg-violet-50 hover:text-violet-700 group flex items-center px-4 py-3 rounded-xl text-base font-bold transition-colors">
+              <FaCrown className="w-5 h-5 mr-3 text-gray-400 group-hover:text-violet-500" />
+              Kelola Paket
             </Link>
             <Link href="/admin/transactions" onClick={() => setIsOpen(false)} className="text-gray-600 hover:bg-violet-50 hover:text-violet-700 group flex items-center px-4 py-3 rounded-xl text-base font-bold transition-colors">
               <FaChartLine className="w-5 h-5 mr-3 text-gray-400 group-hover:text-violet-500" />
