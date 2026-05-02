@@ -45,6 +45,10 @@ export default function AdminMobileNav({ signoutAction }: { signoutAction: () =>
               <FaUsers className="w-5 h-5 mr-3 text-gray-400 group-hover:text-violet-500" />
               Kelola Pengguna
             </Link>
+            <Link href="/admin/transactions" onClick={() => setIsOpen(false)} className="text-gray-600 hover:bg-violet-50 hover:text-violet-700 group flex items-center px-4 py-3 rounded-xl text-base font-bold transition-colors">
+              <FaChartLine className="w-5 h-5 mr-3 text-gray-400 group-hover:text-violet-500" />
+              Transaksi
+            </Link>
           </nav>
           <div className="p-4 border-t border-gray-100 space-y-2 bg-gray-50/50">
             <Link href="/dashboard" onClick={() => setIsOpen(false)} className="text-base font-bold text-gray-600 hover:text-violet-600 flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white transition-colors">

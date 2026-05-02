@@ -60,9 +60,9 @@ export default async function AdminLayout({
             <FaUsers className="w-5 h-5 mr-3 text-gray-400 group-hover:text-violet-500" />
             Kelola Pengguna
           </Link>
-          <Link href="#" className="text-gray-400 cursor-not-allowed group flex items-center px-3 py-3 rounded-xl text-sm font-bold transition-colors">
-            <FaChartLine className="w-5 h-5 mr-3 text-gray-300" />
-            Transaksi (Segera)
+          <Link href="/admin/transactions" className="text-gray-600 hover:bg-violet-50 hover:text-violet-700 group flex items-center px-3 py-3 rounded-xl text-sm font-bold transition-colors">
+            <FaChartLine className="w-5 h-5 mr-3 text-gray-400 group-hover:text-violet-500" />
+            Transaksi
           </Link>
         </nav>
         
