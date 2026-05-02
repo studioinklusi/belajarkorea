@@ -45,39 +45,26 @@ export default async function AdminDashboardPage() {
     redirect('/dashboard')
   }
 
-  // Ensure keys exist
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return (
-      <div className="p-8 max-w-6xl mx-auto text-center">
-        <div className="bg-red-50 text-red-600 p-6 rounded-xl inline-block text-left">
-          <h2 className="font-bold text-lg mb-2">Konfigurasi Server Hilang</h2>
-          <p>Variabel <code>SUPABASE_SERVICE_ROLE_KEY</code> tidak ditemukan di environment Vercel.</p>
-        </div>
-      </div>
-    )
-  }
+  // Use admin client for unrestricted queries
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
 
-  try {
-    // Use admin client for unrestricted queries
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    )
-
-    // === PARALLEL QUERIES ===
-    const [
-      usersRes,
-      subsRes,
-      coursesRes,
-      productsRes,
-      successTxRes,
-      pendingTxRes,
-      successTxCountRes,
-      failedTxRes,
-      expiringSubsRes,
-      recentUsersRes,
-      recentTxRes,
-    ] = await Promise.all([
+  // === PARALLEL QUERIES ===
+  const [
+    { count: usersCount },
+    { count: subsCount },
+    { count: coursesCount },
+    { count: productsCount },
+    { data: successTransactions },
+    { count: pendingTxCount },
+    { count: successTxCount },
+    { count: failedTxCount },
+    { data: expiringSubscriptions },
+    { data: recentUsers },
+    { data: recentTransactions },
+  ] = await Promise.all([
     // 1. Total users
     supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true }),
     // 2. Active subscriptions
@@ -117,55 +104,42 @@ export default async function AdminDashboardPage() {
       .limit(5),
   ])
 
-    // Extract variables
-    const usersCount = usersRes.count
-    const subsCount = subsRes.count
-    const coursesCount = coursesRes.count
-    const productsCount = productsRes.count
-    const successTransactions = successTxRes.data
-    const pendingTxCount = pendingTxRes.count
-    const successTxCount = successTxCountRes.count
-    const failedTxCount = failedTxRes.count
-    const expiringSubscriptions = expiringSubsRes.data
-    const recentUsers = recentUsersRes.data
-    const recentTransactions = recentTxRes.data
+  // Calculate total revenue
+  const totalRevenue = (successTransactions || []).reduce((sum: number, tx: { amount: number }) => sum + tx.amount, 0)
 
-    // Calculate total revenue
-    const totalRevenue = (successTransactions || []).reduce((sum: number, tx: { amount: number }) => sum + tx.amount, 0)
+  // Get user names for expiring subs and recent transactions
+  const allUserIds = [
+    ...(expiringSubscriptions || []).map((s: any) => s.user_id),
+    ...(recentTransactions || []).map((t: any) => t.user_id),
+  ].filter(Boolean)
+  const uniqueUserIds = [...new Set(allUserIds)]
 
-    // Get user names for expiring subs and recent transactions
-    const allUserIds = [
-      ...(expiringSubscriptions || []).map((s: any) => s.user_id),
-      ...(recentTransactions || []).map((t: any) => t.user_id),
-    ].filter(Boolean)
-    const uniqueUserIds = [...new Set(allUserIds)]
-
-    let userNameMap = new Map<string, string>()
-    if (uniqueUserIds.length > 0) {
-      const { data: userProfiles } = await supabaseAdmin
-        .from('profiles')
-        .select('id, full_name')
-        .in('id', uniqueUserIds)
-      if (userProfiles) {
-        userProfiles.forEach((p: any) => userNameMap.set(p.id, p.full_name || 'Tanpa Nama'))
-      }
+  let userNameMap = new Map<string, string>()
+  if (uniqueUserIds.length > 0) {
+    const { data: userProfiles } = await supabaseAdmin
+      .from('profiles')
+      .select('id, full_name')
+      .in('id', uniqueUserIds)
+    if (userProfiles) {
+      userProfiles.forEach((p: any) => userNameMap.set(p.id, p.full_name || 'Tanpa Nama'))
     }
+  }
 
-    // Days remaining helper
-    function daysRemaining(expiresAt: string): number {
-      return Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-    }
+  // Days remaining helper
+  function daysRemaining(expiresAt: string): number {
+    return Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+  }
 
-    // Transaction status config
-    function getTxStatusConfig(status: string) {
-      switch (status) {
-        case 'success': return { label: 'Berhasil', color: 'text-emerald-600 bg-emerald-50', icon: FaCircleCheck }
-        case 'pending': return { label: 'Menunggu', color: 'text-amber-600 bg-amber-50', icon: FaHourglass }
-        case 'failed': return { label: 'Gagal', color: 'text-red-600 bg-red-50', icon: FaCircleXmark }
-        case 'expired': return { label: 'Kedaluwarsa', color: 'text-gray-500 bg-gray-50', icon: FaClockRotateLeft }
-        default: return { label: status, color: 'text-gray-500 bg-gray-50', icon: FaHourglass }
-      }
+  // Transaction status config
+  function getTxStatusConfig(status: string) {
+    switch (status) {
+      case 'success': return { label: 'Berhasil', color: 'text-emerald-600 bg-emerald-50', icon: FaCircleCheck }
+      case 'pending': return { label: 'Menunggu', color: 'text-amber-600 bg-amber-50', icon: FaHourglass }
+      case 'failed': return { label: 'Gagal', color: 'text-red-600 bg-red-50', icon: FaCircleXmark }
+      case 'expired': return { label: 'Kedaluwarsa', color: 'text-gray-500 bg-gray-50', icon: FaClockRotateLeft }
+      default: return { label: status, color: 'text-gray-500 bg-gray-50', icon: FaHourglass }
     }
+  }
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto">
@@ -385,18 +359,4 @@ export default async function AdminDashboardPage() {
       </div>
     </div>
   )
-  } catch (error: any) {
-    console.error("Dashboard error:", error)
-    return (
-      <div className="p-8 max-w-6xl mx-auto text-center">
-        <div className="bg-red-50 text-red-600 p-6 rounded-xl inline-block text-left">
-          <h2 className="font-bold text-lg mb-2">Terjadi Kesalahan Server</h2>
-          <p>Gagal memuat data dashboard. Silakan periksa log Vercel untuk detailnya.</p>
-          <pre className="mt-4 text-xs bg-red-100 p-3 rounded text-red-800 overflow-x-auto">
-            {error.message || 'Unknown error'}
-          </pre>
-        </div>
-      </div>
-    )
-  }
 }
