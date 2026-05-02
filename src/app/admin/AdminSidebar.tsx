@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { FaBox, FaBook, FaUsers, FaChartLine, FaArrowLeft, FaRightFromBracket, FaGauge, FaCrown } from 'react-icons/fa6'
+import { FaBox, FaBook, FaUsers, FaChartLine, FaArrowLeft, FaRightFromBracket, FaGauge, FaCrown, FaBullhorn } from 'react-icons/fa6'
 
 export default function AdminSidebar({ signoutAction }: { signoutAction: () => void }) {
   const pathname = usePathname()
@@ -63,6 +63,10 @@ export default function AdminSidebar({ signoutAction }: { signoutAction: () => v
         <Link href="/admin/packages" className={getLinkClasses('/admin/packages')}>
           <FaCrown className={getIconClasses('/admin/packages')} />
           Kelola Paket
+        </Link>
+        <Link href="/admin/promos" className={getLinkClasses('/admin/promos')}>
+          <FaBullhorn className={getIconClasses('/admin/promos')} />
+          Kelola Promo
         </Link>
         <Link href="/admin/transactions" className={getLinkClasses('/admin/transactions')}>
           <FaChartLine className={getIconClasses('/admin/transactions')} />

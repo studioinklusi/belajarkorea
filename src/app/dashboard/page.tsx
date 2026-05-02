@@ -80,6 +80,15 @@ export default async function DashboardPage() {
 
   const hasPassedQuizToday = todayQuiz && todayQuiz.length > 0
 
+  // 5. Fetch Active Promo
+  const { data: activePromo } = await supabase
+    .from('promos')
+    .select('*')
+    .eq('is_active', true)
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .single()
+
   const isSubscribed = !!subscription
   const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin'
 
@@ -92,6 +101,28 @@ export default async function DashboardPage() {
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Dashboard Saya</h1>
           <p className="mt-2 text-gray-500 font-medium">Lanjutkan perjalanan belajar bahasa Korea-mu hari ini! 🚀</p>
         </div>
+
+        {activePromo && (
+          <div className="mb-8 rounded-3xl overflow-hidden relative shadow-lg group">
+            <div className={`absolute inset-0 z-0 ${activePromo.image_url ? 'bg-gray-900' : 'bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600'}`}>
+              {activePromo.image_url && (
+                <img src={activePromo.image_url} alt="Promo" className="w-full h-full object-cover opacity-40 mix-blend-overlay group-hover:scale-105 transition-transform duration-700" />
+              )}
+            </div>
+            <div className="relative z-10 p-6 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="text-white text-center sm:text-left">
+                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-black uppercase tracking-widest mb-3 shadow-sm border border-white/10">✨ Info Spesial</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold mb-2">{activePromo.title}</h2>
+                {activePromo.description && <p className="text-white/90 text-sm sm:text-base max-w-2xl">{activePromo.description}</p>}
+              </div>
+              {activePromo.link_url && (
+                <Link href={activePromo.link_url} className="shrink-0 w-full sm:w-auto px-8 py-3.5 bg-white text-violet-700 font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-center">
+                  Lihat Promo
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Kolom Kiri: Status Langganan & Info */}

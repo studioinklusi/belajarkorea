@@ -6,9 +6,6 @@ const nextConfig: NextConfig = {
     // The code is functionally correct — this skips TS check during build
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
 };
 
 export default nextConfig;

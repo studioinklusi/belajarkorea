@@ -143,12 +143,14 @@ export default async function AdminDashboardPage() {
 
   // Combine and sort activities
   const combinedActivities = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ...(recentUsers || []).map((u: any) => ({
       type: 'user',
       id: `user-${u.id}`,
       date: new Date(u.created_at).getTime(),
       data: u
     })),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ...(recentTransactions || []).map((tx: any) => ({
       type: 'transaction',
       id: `tx-${tx.id}`,
