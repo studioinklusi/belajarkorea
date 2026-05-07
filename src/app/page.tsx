@@ -10,7 +10,7 @@ export default async function LandingPage() {
       <Navbar isLandingPage={true} />
 
       {/* Hero Section */}
-      <div className="relative pt-32 pb-20 sm:pt-40 sm:pb-24 lg:pb-32 overflow-hidden">
+      <div className="relative pt-12 pb-16 sm:pt-40 sm:pb-24 lg:pb-32 overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none">
           <div className="absolute top-20 left-10 w-72 h-72 bg-fuchsia-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
           <div className="absolute top-20 right-10 w-72 h-72 bg-violet-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
