@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { FaPaperPlane, FaArrowsRotate, FaMicrophone, FaMicrophoneSlash, FaVolumeHigh, FaRobot, FaChevronDown, FaSliders } from 'react-icons/fa6'
+import { useTranslation } from '@/lib/i18n'
 
 // === Types ===
 type KoreanLevel = 'beginner' | 'intermediate' | 'advanced'
@@ -57,10 +58,36 @@ export default function AiBuddyClient() {
   const [selectedPersona, setSelectedPersona] = useState<Persona>('teman')
   const [showPersonaDropdown, setShowPersonaDropdown] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { t, locale } = useTranslation()
   const recognitionRef = useRef<any>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Translations for dynamic arrays
+  const translateLevel = (id: string) => {
+    if (locale === 'en') {
+      if (id === 'beginner') return 'Beginner'
+      if (id === 'intermediate') return 'Intermediate'
+      if (id === 'advanced') return 'Advanced'
+    }
+    if (id === 'beginner') return 'Pemula'
+    if (id === 'intermediate') return 'Menengah'
+    if (id === 'advanced') return 'Mahir'
+    return id
+  }
+
+  const translatePersonaDesc = (id: string, origDesc: string) => {
+    if (locale !== 'en') return origDesc
+    const map: Record<string, string> = {
+      teman: 'Casual & friendly',
+      pacar: 'Sweet & romantic',
+      profesional: 'Formal & business',
+      sunbae: 'Senior & mentor',
+      idol: 'Fanmeeting style',
+      penjual: 'Shopping simulation'
+    }
+    return map[id] || origDesc
+  }
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -197,14 +224,14 @@ export default function AiBuddyClient() {
                 }`}
               >
                 <FaSliders className="w-3.5 h-3.5" />
-                <span>Pengaturan AI</span>
+                <span>{locale === 'en' ? 'AI Settings' : 'Pengaturan AI'}</span>
                 <FaChevronDown className={`w-3 h-3 transition-transform ${showSettings ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Active Status Badge (only when collapsed) */}
               {!showSettings && (
                 <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold bg-gray-50 border border-gray-100 text-gray-500">
-                  <span>{LEVELS.find(l => l.id === selectedLevel)?.emoji} {LEVELS.find(l => l.id === selectedLevel)?.label}</span>
+                  <span>{LEVELS.find(l => l.id === selectedLevel)?.emoji} {translateLevel(selectedLevel)}</span>
                   {selectedLevel === 'advanced' && (
                     <>
                       <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
@@ -243,7 +270,7 @@ export default function AiBuddyClient() {
                           : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                       }`}
                     >
-                      {level.emoji} <span className="hidden min-[375px]:inline">{level.label}</span><span className="min-[375px]:hidden">{level.id === 'advanced' ? 'Mahir' : level.id === 'intermediate' ? 'Menengah' : 'Pemula'}</span>
+                      {level.emoji} <span className="hidden min-[375px]:inline">{translateLevel(level.id)}</span><span className="min-[375px]:hidden">{translateLevel(level.id)}</span>
                     </button>
                   ))}
                 </div>
@@ -265,7 +292,7 @@ export default function AiBuddyClient() {
                             ? 'bg-white text-violet-700 shadow-sm'
                             : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                         }`}
-                        title={persona.desc}
+                        title={translatePersonaDesc(persona.id, persona.desc)}
                       >
                         {persona.emoji} {persona.name}
                       </button>
@@ -296,7 +323,7 @@ export default function AiBuddyClient() {
                             <span>{persona.emoji}</span>
                             <div>
                               <div>{persona.name}</div>
-                              <div className="text-[10px] font-medium text-gray-400">{persona.desc}</div>
+                              <div className="text-[10px] font-medium text-gray-400">{translatePersonaDesc(persona.id, persona.desc)}</div>
                             </div>
                           </button>
                         ))}
@@ -353,7 +380,7 @@ export default function AiBuddyClient() {
                   <span className="w-2 h-2 bg-fuchsia-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
                   <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                 </div>
-                <span className="text-sm font-bold text-violet-500">Sedang mengetik...</span>
+                <span className="text-sm font-bold text-violet-500">{locale === 'en' ? 'Typing...' : 'Sedang mengetik...'}</span>
               </div>
             </div>
           )}
@@ -385,7 +412,7 @@ export default function AiBuddyClient() {
               ref={textareaRef}
               className="w-full bg-white border border-gray-200 text-gray-800 rounded-2xl pl-4 pr-12 py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent resize-none overflow-hidden min-h-[48px] max-h-[150px] shadow-sm transition-shadow focus:shadow-violet-100"
               rows={1}
-              placeholder={isListening ? 'Mendengarkan...' : 'Ketik pesan dalam bahasa Korea...'}
+              placeholder={isListening ? (locale === 'en' ? 'Listening...' : 'Mendengarkan...') : t('aiBuddy.placeholder')}
               value={input}
               onChange={(e) => {
                 setInput(e.target.value)
@@ -405,7 +432,7 @@ export default function AiBuddyClient() {
           </div>
         </div>
         <p className="text-center text-[11px] text-gray-300 mt-2.5 font-medium">
-          Tekan Enter untuk mengirim · Jangan takut salah, dari situlah kita belajar! ✨
+          {locale === 'en' ? 'Press Enter to send · Don\'t be afraid to make mistakes, that\'s how we learn! ✨' : 'Tekan Enter untuk mengirim · Jangan takut salah, dari situlah kita belajar! ✨'}
         </p>
       </footer>
     </div>

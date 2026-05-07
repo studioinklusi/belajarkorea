@@ -1,5 +1,5 @@
 {
-  "name": "nextinit",
+  "name": "belajarkorea",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@google/genai": "^1.51.0",
     "@heroicons/react": "^2.2.0",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.105.1",

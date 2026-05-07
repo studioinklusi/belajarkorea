@@ -1,9 +1,21 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { snap } from '@/lib/midtrans'
+import { rateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
   try {
+    // 1. Rate Limiting (5 checkout attempts per minute per IP)
+    const ip = request.headers.get('x-forwarded-for') || '127.0.0.1'
+    const limit = rateLimit(`checkout-${ip}`, 5, 60 * 1000)
+    
+    if (!limit.success) {
+      return NextResponse.json(
+        { error: "Terlalu banyak permintaan checkout. Harap tunggu sebentar." },
+        { status: 429 }
+      )
+    }
+
     const supabase = await createClient()
 
     // 1. Verifikasi Session User

@@ -43,14 +43,37 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Admin routes — redirect non-admin users
-  if (request.nextUrl.pathname.startsWith('/admin') && user) {
-    const { data: profile } = await supabase
+  // Fetch profile ONCE for all checks below (avoids duplicate queries)
+  let profile: { role: string; full_name: string | null } | null = null
+  if (user) {
+    const { data } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, full_name')
       .eq('id', user.id)
       .single()
+    profile = data
 
+    // Cache profile in a lightweight cookie so Navbar can read it
+    // without making additional DB queries on every page render
+    if (profile) {
+      supabaseResponse.cookies.set('x-user-profile', JSON.stringify({
+        role: profile.role,
+        full_name: profile.full_name,
+      }), {
+        path: '/',
+        httpOnly: false, // Needs to be readable by server components via cookies()
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 30, // 30 minutes — will be refreshed on next middleware call
+      })
+    }
+  } else {
+    // Clear profile cookie when user is logged out
+    supabaseResponse.cookies.delete('x-user-profile')
+  }
+
+  // Admin routes — redirect non-admin users
+  if (request.nextUrl.pathname.startsWith('/admin') && user) {
     if (!profile || !['content_admin', 'super_admin'].includes(profile.role)) {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
@@ -65,13 +88,7 @@ export async function updateSession(request: NextRequest) {
   )
 
   if (isAuthRoute && user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    const isAdmin = profile && ['admin', 'super_admin', 'content_admin'].includes(profile.role)
+    const isAdmin = profile && ['content_admin', 'super_admin'].includes(profile.role)
 
     const url = request.nextUrl.clone()
     url.pathname = isAdmin ? '/admin' : '/dashboard'
@@ -80,3 +97,4 @@ export async function updateSession(request: NextRequest) {
 
   return supabaseResponse
 }
+

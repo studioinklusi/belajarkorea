@@ -1,11 +1,11 @@
-import { GoogleGenAI } from "@google/genai";
+import { rateLimit } from '@/lib/rate-limit';
 
 // === Type Definitions ===
 type KoreanLevel = 'beginner' | 'intermediate' | 'advanced';
 type Persona = 'teman' | 'pacar' | 'profesional' | 'sunbae' | 'idol' | 'penjual';
 
 interface ChatMessage {
-  role: "user" | "model";
+  role: "user" | "model" | "assistant";
   text: string;
 }
 
@@ -145,6 +145,18 @@ Critical Rules for Advanced Level:
 
 export async function POST(request: Request) {
   try {
+    // 1. Rate Limiting (20 requests per minute per IP)
+    // Gunakan x-forwarded-for untuk mendapatkan IP asli jika di belakang proxy (Vercel)
+    const ip = request.headers.get('x-forwarded-for') || '127.0.0.1'
+    const limit = rateLimit(`ai-buddy-${ip}`, 20, 60 * 1000)
+    
+    if (!limit.success) {
+      return Response.json(
+        { error: "Terlalu banyak pesan. Harap tunggu sebentar sebelum mengirim pesan lagi." },
+        { status: 429 }
+      )
+    }
+
     const body = await request.json();
     const { history, message, level, persona } = body as {
       history: ChatMessage[];
@@ -157,30 +169,48 @@ export async function POST(request: Request) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.ALIBABA_API_KEY;
     if (!apiKey) {
-      return Response.json({ error: "AI service not configured" }, { status: 500 });
+      return Response.json({ error: "AI service not configured (ALIBABA_API_KEY is missing)" }, { status: 500 });
     }
 
-    const ai = new GoogleGenAI({ apiKey });
-
-    const contents = [
+    // Convert history format
+    const messages = [
+      { 
+        role: "system", 
+        content: getSystemInstruction(level, persona || 'teman') 
+      },
       ...(history || []).map((msg: ChatMessage) => ({
-        role: msg.role,
-        parts: [{ text: msg.text }]
+        role: msg.role === 'model' ? 'assistant' : 'user',
+        content: msg.text
       })),
-      { role: "user", parts: [{ text: message }] }
+      { role: "user", content: message }
     ];
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: contents as Parameters<typeof ai.models.generateContent>[0]["contents"],
-      config: {
-        systemInstruction: getSystemInstruction(level, persona || 'teman'),
-      }
+    // Call Alibaba DashScope API (OpenAI compatible endpoint)
+    const res = await fetch('https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'qwen-plus', // You can also use qwen-turbo or qwen-max
+        messages: messages,
+      }),
     });
 
-    const responseText = response.text || "Maaf, saya tidak bisa merespon saat ini.";
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("Alibaba API error:", errorText);
+      return Response.json(
+        { error: "Gagal menghubungi AI. Silakan coba lagi." },
+        { status: 500 }
+      );
+    }
+
+    const data = await res.json();
+    const responseText = data.choices?.[0]?.message?.content || "Maaf, saya tidak bisa merespon saat ini.";
 
     return Response.json({ response: responseText });
   } catch (error) {

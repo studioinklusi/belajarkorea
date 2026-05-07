@@ -49,6 +49,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'lesson_id dan answers diperlukan' }, { status: 400 })
     }
 
+    // Cek cooldown (1 jam)
+    const { data: lastAttempt } = await supabase
+      .from('quiz_attempts')
+      .select('completed_at')
+      .eq('user_id', user.id)
+      .eq('lesson_id', lesson_id)
+      .order('completed_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (lastAttempt && lastAttempt.completed_at) {
+      const lastTime = new Date(lastAttempt.completed_at).getTime()
+      const now = new Date().getTime()
+      const hoursDiff = (now - lastTime) / (1000 * 60 * 60)
+      
+      if (hoursDiff < 1) {
+        const remainingMinutes = Math.ceil(60 - (hoursDiff * 60))
+        return NextResponse.json(
+          { error: `Harap tunggu ${remainingMinutes} menit lagi sebelum mengulang kuis.` },
+          { status: 429 }
+        )
+      }
+    }
+
     // Fetch correct answers to calculate score
     const { data: questions, error: qError } = await supabase
       .from('quiz_questions')

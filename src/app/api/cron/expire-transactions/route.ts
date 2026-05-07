@@ -1,13 +1,8 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 
 // Cron job: auto-expire transaksi pending yang sudah lebih dari 24 jam
 // Dipanggil oleh Vercel Cron setiap 1 jam
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 export async function GET(request: Request) {
   // Verifikasi cron secret (keamanan agar tidak bisa dipanggil sembarang orang)

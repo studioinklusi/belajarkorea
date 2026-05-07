@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import Script from "next/script";
+import { I18nProvider } from "@/lib/i18n";
 import "./globals.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -20,11 +21,14 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="id"
       className={`${plusJakarta.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col font-sans">        {children}
+      <body className="min-h-full flex flex-col font-sans pb-20 md:pb-0">
+        <I18nProvider>
+          {children}
+        </I18nProvider>
         {/* Midtrans Snap Script */}
         <Script
           src={process.env.NEXT_PUBLIC_MIDTRANS_SNAP_URL || "https://app.sandbox.midtrans.com/snap/snap.js"}

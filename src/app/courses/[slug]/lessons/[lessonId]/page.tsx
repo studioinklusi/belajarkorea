@@ -5,6 +5,7 @@ import { FaChevronLeft, FaPlay, FaLock, FaCircleCheck, FaRegCircle, FaTrophy, Fa
 import { markLessonComplete } from '../../../actions'
 import { SubmitButton } from '@/components/SubmitButton'
 import LessonClient from './LessonClient'
+import YouTubePlayer from './YouTubePlayer'
 
 export default async function LessonPage(props: {
   params: Promise<{ slug: string; lessonId: string }>
@@ -121,17 +122,13 @@ export default async function LessonPage(props: {
             </div>
           ) : (
             <div className="w-full">
-              {/* Video Player */}
-              <div className="relative w-full bg-black aspect-video shadow-2xl">
-                <iframe
-                  className="absolute top-0 left-0 w-full h-full"
-                  src={`https://www.youtube.com/embed/${currentLesson.youtube_video_id}?rel=0&modestbranding=1&autoplay=1`}
-                  title={currentLesson.title}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-              </div>
+              {/* Video Player with Watch Tracking */}
+              <YouTubePlayer
+                videoId={currentLesson.youtube_video_id}
+                lessonId={params.lessonId}
+                title={currentLesson.title}
+                durationSeconds={currentLesson.duration_seconds}
+              />
               
               {/* Lesson Details & Actions */}
               <div className="p-6 md:p-10 max-w-5xl mx-auto">

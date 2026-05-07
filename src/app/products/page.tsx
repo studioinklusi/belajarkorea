@@ -1,4 +1,10 @@
+import { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
+
+export const metadata: Metadata = {
+  title: 'Produk Digital Bahasa Korea | BelajarKorea.id',
+  description: 'Dapatkan berbagai produk digital seperti e-book, panduan, dan materi pembelajaran eksklusif untuk membantu Anda menguasai bahasa Korea.',
+}
 import BuyProductButton from './BuyProductButton'
 import Link from 'next/link'
 import { ArrowLeftIcon } from '@heroicons/react/24/solid'

@@ -39,7 +39,7 @@ export default async function LandingPage() {
               href="/register" 
               className="w-full sm:w-auto px-8 py-4 bg-gray-900 text-white rounded-full font-bold text-lg hover:bg-gray-800 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 flex items-center justify-center gap-2"
             >
-              Mulai Gratis Sekarang <ArrowRightIcon className="w-5 h-5" />
+              Mulai Belajar Sekarang <ArrowRightIcon className="w-5 h-5" />
             </Link>
             <Link 
               href="/courses" 
@@ -50,9 +50,9 @@ export default async function LandingPage() {
           </div>
 
           <div className="mt-12 flex justify-center items-center gap-8 text-gray-500 text-sm font-semibold animate-fade-in-up animation-delay-400">
-            <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-green-500" /> Akses Selamanya</div>
-            <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-green-500" /> Update Materi Gratis</div>
-            <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-green-500" /> E-Sertifikat</div>
+            <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-green-500" /> Kurikulum Terstruktur</div>
+            <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-green-500" /> Video Microlearning</div>
+            <div className="flex items-center gap-2"><CheckCircleIcon className="w-5 h-5 text-green-500" /> Kuis Interaktif</div>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import PackagesClient from './PackagesClient'
@@ -20,10 +20,6 @@ export default async function AdminPackagesPage() {
   }
 
   // Use admin client for unrestricted queries
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
 
   const { data: packages } = await supabaseAdmin
     .from('packages')

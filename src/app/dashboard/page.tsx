@@ -90,7 +90,7 @@ export default async function DashboardPage() {
     .single()
 
   const isSubscribed = !!subscription
-  const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin'
+  const isAdmin = profile?.role === 'content_admin' || profile?.role === 'super_admin'
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900 pb-12">

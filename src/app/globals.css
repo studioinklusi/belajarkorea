@@ -15,12 +15,7 @@
   --animate-fade-in-up: fadeInUp 0.8s ease-out forwards;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+
 
 body {
   background: var(--background);

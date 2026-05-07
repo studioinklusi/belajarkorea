@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import UsersClient from './UsersClient'
@@ -20,10 +20,6 @@ export default async function AdminUsersPage() {
   }
 
   // Use admin client to fetch all data
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
 
   // Fetch profiles
   const { data: profiles } = await supabaseAdmin

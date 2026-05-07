@@ -1,4 +1,10 @@
+import { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
+
+export const metadata: Metadata = {
+  title: 'Harga Berlangganan | BelajarKorea.id',
+  description: 'Akses semua materi pembelajaran bahasa Korea dengan berlangganan. Tidak ada trial, langsung mulai belajar hari ini!',
+}
 import SubscribeButton from './SubscribeButton'
 
 export default async function PricingPage() {

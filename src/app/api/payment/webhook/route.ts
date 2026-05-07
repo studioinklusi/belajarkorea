@@ -1,16 +1,12 @@
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { coreApi } from '@/lib/midtrans'
 
-// Menggunakan Service Role Key untuk bypass RLS (karena ini webhook dari server eksternal)
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
 export async function POST(request: Request) {
+  let rawBody = ''
   try {
-    const payload = await request.json()
+    rawBody = await request.text()
+    const payload = JSON.parse(rawBody)
 
     // 1. Verifikasi payload menggunakan Midtrans Core API
     // Midtrans SDK otomatis memverifikasi signature key di balik layar
@@ -143,7 +139,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Webhook processed successfully' })
 
   } catch (error: any) {
-    console.error('Webhook error:', error)
+    // Audit logging untuk kegagalan webhook (misal: invalid signature dari attacker)
+    console.error('CRITICAL Webhook Error:', {
+      message: error.message,
+      stack: error.stack,
+      rawBody: rawBody.substring(0, 500) // Log 500 karakter pertama dari payload
+    })
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })
   }
 }

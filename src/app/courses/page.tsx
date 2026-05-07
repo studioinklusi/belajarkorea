@@ -1,4 +1,10 @@
+import { Metadata } from 'next'
 import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'Program Kursus Bahasa Korea | BelajarKorea.id',
+  description: 'Jelajahi berbagai program kursus bahasa Korea dari tingkat pemula hingga mahir. Kurikulum terstruktur, video pembelajaran, dan latihan interaktif.',
+}
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeftIcon } from '@heroicons/react/24/solid'
 import Navbar from '@/components/Navbar'

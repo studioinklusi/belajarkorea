@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -8,6 +8,39 @@ import {
   FaCircleCheck, FaCircleXmark, FaHourglass, FaArrowRight,
   FaUserPlus, FaCartShopping, FaBolt
 } from 'react-icons/fa6'
+
+// === Type Definitions ===
+interface ExpiringSub {
+  id: string
+  user_id: string
+  expires_at: string
+  status: string
+  packages: { name: string } | null
+}
+
+interface RecentUser {
+  id: string
+  full_name: string | null
+  avatar_url: string | null
+  created_at: string
+}
+
+interface RecentTransaction {
+  id: string
+  order_id: string
+  amount: number
+  status: string
+  payment_type: string | null
+  created_at: string
+  user_id: string
+  packages: { name: string } | null
+  products: { title: string } | null
+}
+
+interface UserProfile {
+  id: string
+  full_name: string | null
+}
 
 // Helper: format Rupiah
 function formatRupiah(amount: number): string {
@@ -46,10 +79,6 @@ export default async function AdminDashboardPage() {
   }
 
   // Use admin client for unrestricted queries
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
 
   // === PARALLEL QUERIES ===
   const [
@@ -109,8 +138,8 @@ export default async function AdminDashboardPage() {
 
   // Get user names for expiring subs and recent transactions
   const allUserIds = [
-    ...(expiringSubscriptions || []).map((s: any) => s.user_id),
-    ...(recentTransactions || []).map((t: any) => t.user_id),
+    ...(expiringSubscriptions || []).map((s: ExpiringSub) => s.user_id),
+    ...(recentTransactions || []).map((t: RecentTransaction) => t.user_id),
   ].filter(Boolean)
   const uniqueUserIds = [...new Set(allUserIds)]
 
@@ -121,7 +150,7 @@ export default async function AdminDashboardPage() {
       .select('id, full_name')
       .in('id', uniqueUserIds)
     if (userProfiles) {
-      userProfiles.forEach((p: any) => userNameMap.set(p.id, p.full_name || 'Tanpa Nama'))
+      userProfiles.forEach((p: UserProfile) => userNameMap.set(p.id, p.full_name || 'Tanpa Nama'))
     }
   }
 
@@ -144,15 +173,15 @@ export default async function AdminDashboardPage() {
   // Combine and sort activities
   const combinedActivities = [
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ...(recentUsers || []).map((u: any) => ({
-      type: 'user',
+    ...(recentUsers || []).map((u: RecentUser) => ({
+      type: 'user' as const,
       id: `user-${u.id}`,
       date: new Date(u.created_at).getTime(),
       data: u
     })),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ...(recentTransactions || []).map((tx: any) => ({
-      type: 'transaction',
+    ...(recentTransactions || []).map((tx: RecentTransaction) => ({
+      type: 'transaction' as const,
       id: `tx-${tx.id}`,
       date: new Date(tx.created_at).getTime(),
       data: tx
@@ -281,7 +310,7 @@ export default async function AdminDashboardPage() {
                 <p className="text-xs text-gray-300 mt-1">Tidak ada yang akan habis dalam 7 hari</p>
               </div>
             ) : (
-              expiringSubscriptions.map((sub: any) => {
+              expiringSubscriptions.map((sub: ExpiringSub) => {
                 const days = daysRemaining(sub.expires_at)
                 const isUrgent = days <= 2
                 return (
@@ -292,7 +321,7 @@ export default async function AdminDashboardPage() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-gray-800 truncate">{userNameMap.get(sub.user_id) || 'User'}</p>
-                        <p className="text-[11px] text-gray-400 font-medium">{(sub.packages as any)?.name || '-'}</p>
+                        <p className="text-[11px] text-gray-400 font-medium">{sub.packages?.name || '-'}</p>
                       </div>
                     </div>
                     <div className="text-right shrink-0">
@@ -353,7 +382,7 @@ export default async function AdminDashboardPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-bold text-gray-800 truncate">
-                        {userNameMap.get(tx.user_id) || 'User'} — {(tx.packages as any)?.name || (tx.products as any)?.title || 'Produk'}
+                        {userNameMap.get(tx.user_id) || 'User'} — {tx.packages?.name || tx.products?.title || 'Produk'}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded-md ${config.color}`}>

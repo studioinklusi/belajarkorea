@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import TransactionsClient from './TransactionsClient'
@@ -20,10 +20,6 @@ export default async function AdminTransactionsPage() {
   }
 
   // Use admin client for unrestricted queries
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
 
   // Fetch all transactions with related data
   const { data: transactions } = await supabaseAdmin

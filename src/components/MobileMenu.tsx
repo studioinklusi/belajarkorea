@@ -31,7 +31,7 @@ export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAct
       </button>
 
       {isOpen && (
-        <div className="absolute top-20 left-0 w-full bg-white border-b border-gray-100 shadow-2xl py-4 px-4 flex flex-col gap-2 z-50 animate-fade-in-up">
+        <div className="fixed bottom-16 left-0 w-full bg-white border-t border-gray-100 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] py-4 px-4 flex flex-col gap-2 z-50 animate-fade-in-up pb-6 rounded-t-3xl">
           {isLoggedIn && (
             <Link href="/dashboard" onClick={() => setIsOpen(false)} className={linkClass('dashboard')}>
               Dashboard
