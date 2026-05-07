@@ -202,9 +202,9 @@ export async function POST(request: Request) {
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.error("Alibaba API error:", errorText);
+      console.error("Alibaba API error:", res.status, errorText);
       return Response.json(
-        { error: "Gagal menghubungi AI. Silakan coba lagi." },
+        { error: `Gagal menghubungi AI (${res.status}). Silakan coba lagi.` },
         { status: 500 }
       );
     }

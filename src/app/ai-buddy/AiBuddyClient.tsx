@@ -206,7 +206,7 @@ export default function AiBuddyClient() {
   const activePersona = PERSONAS.find(p => p.id === selectedPersona)!
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900">
+    <div className="flex flex-col h-[calc(100vh-160px)] md:h-[calc(100vh-80px)] bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900">
 
       {/* ===== HEADER & CONTROLS ===== */}
       {/* ===== HEADER & CONTROLS ===== */}
