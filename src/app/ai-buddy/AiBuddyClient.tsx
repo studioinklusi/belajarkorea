@@ -425,9 +425,9 @@ export default function AiBuddyClient() {
             <button
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className="absolute right-1.5 bottom-1.5 w-8 h-8 flex items-center justify-center bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-full hover:from-violet-700 hover:to-fuchsia-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md shadow-violet-200/50 hover:shadow-lg active:scale-95"
+              className="absolute right-1.5 bottom-1.5 w-9 h-9 grid place-items-center bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-full hover:from-violet-700 hover:to-fuchsia-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md shadow-violet-200/50 hover:shadow-lg active:scale-95"
             >
-              <FaPaperPlane className="w-3.5 h-3.5 -ml-0.5" />
+              <FaPaperPlane className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
