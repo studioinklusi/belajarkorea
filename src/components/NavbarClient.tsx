@@ -62,6 +62,7 @@ export default function NavbarClient({ user, profile, isAdmin, activePage, isLan
                   )}
                   <Link href="/courses" className={linkClass('courses')}>{t('common.courses')}</Link>
                   <Link href="/products" className={linkClass('products')}>{t('common.products')}</Link>
+                  <Link href="/pricing" className={linkClass('pricing')}>{t('common.pricing')}</Link>
                   {isAdmin && (
                     <Link href="/admin" className="text-gray-500 hover:text-rose-600 px-4 py-2.5 rounded-full text-sm font-bold transition-colors">{t('common.adminPanel')}</Link>
                   )}

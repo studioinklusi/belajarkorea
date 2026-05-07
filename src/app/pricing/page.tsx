@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   description: 'Akses semua materi pembelajaran bahasa Korea dengan berlangganan. Tidak ada trial, langsung mulai belajar hari ini!',
 }
 import SubscribeButton from './SubscribeButton'
+import Navbar from '@/components/Navbar'
 
 export default async function PricingPage() {
   const supabase = await createClient()
@@ -38,8 +39,10 @@ export default async function PricingPage() {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen py-12 sm:py-24 lg:py-32">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="bg-gray-50 min-h-screen">
+      <Navbar activePage="pricing" />
+      <div className="py-12 sm:py-24 lg:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="sm:text-center">
           <h2 className="text-base font-semibold text-indigo-600 tracking-wide uppercase">Harga Berlangganan</h2>
           <p className="mt-2 text-3xl font-extrabold text-gray-900 sm:text-4xl lg:text-5xl">
