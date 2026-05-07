@@ -206,7 +206,7 @@ export default function AiBuddyClient() {
   const activePersona = PERSONAS.find(p => p.id === selectedPersona)!
 
   return (
-    <div className="flex flex-col h-[calc(100vh-160px)] md:h-[calc(100vh-80px)] bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900">
+    <div className="flex flex-col h-[calc(100vh-204px)] md:h-[calc(100vh-80px)] bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900">
 
       {/* ===== HEADER & CONTROLS ===== */}
       {/* ===== HEADER & CONTROLS ===== */}
@@ -389,7 +389,7 @@ export default function AiBuddyClient() {
       </main>
 
       {/* ===== INPUT AREA ===== */}
-      <footer className="bg-white/80 backdrop-blur-xl border-t border-gray-100 p-3 sm:p-4 shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+      <footer className="md:relative fixed bottom-16 md:bottom-auto left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 p-2.5 sm:p-4 shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] z-40">
         <div className="max-w-3xl mx-auto flex items-end gap-2">
           {/* Speech Button */}
           {hasSpeechSupport && (
@@ -410,14 +410,14 @@ export default function AiBuddyClient() {
           <div className="relative flex-1">
             <textarea
               ref={textareaRef}
-              className="w-full bg-white border border-gray-200 text-gray-800 rounded-2xl pl-4 pr-12 py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent resize-none overflow-hidden min-h-[48px] max-h-[150px] shadow-sm transition-shadow focus:shadow-violet-100"
+              className="w-full bg-white border border-gray-200 text-gray-800 rounded-2xl pl-4 pr-12 py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent resize-none overflow-hidden min-h-[44px] max-h-[120px] shadow-sm transition-shadow focus:shadow-violet-100"
               rows={1}
               placeholder={isListening ? (locale === 'en' ? 'Listening...' : 'Mendengarkan...') : t('aiBuddy.placeholder')}
               value={input}
               onChange={(e) => {
                 setInput(e.target.value)
                 e.target.style.height = 'auto'
-                e.target.style.height = `${Math.min(e.target.scrollHeight, 150)}px`
+                e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`
               }}
               onKeyDown={handleKeyDown}
               disabled={isLoading}
@@ -425,15 +425,12 @@ export default function AiBuddyClient() {
             <button
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className="absolute right-2 bottom-2 p-2.5 bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-xl hover:from-violet-700 hover:to-fuchsia-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md shadow-violet-200/50 hover:shadow-lg active:scale-95"
+              className="absolute right-2 bottom-1.5 p-2.5 bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-xl hover:from-violet-700 hover:to-fuchsia-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md shadow-violet-200/50 hover:shadow-lg active:scale-95"
             >
               <FaPaperPlane className="w-4 h-4" />
             </button>
           </div>
         </div>
-        <p className="text-center text-[11px] text-gray-300 mt-2.5 font-medium">
-          {locale === 'en' ? 'Press Enter to send · Don\'t be afraid to make mistakes, that\'s how we learn! ✨' : 'Tekan Enter untuk mengirim · Jangan takut salah, dari situlah kita belajar! ✨'}
-        </p>
       </footer>
     </div>
   )
