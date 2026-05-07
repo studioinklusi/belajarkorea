@@ -13,6 +13,7 @@
   /* Animasi Custom untuk Landing Page */
   --animate-blob: blob 7s infinite;
   --animate-fade-in-up: fadeInUp 0.8s ease-out forwards;
+  --animate-slide-up: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 
@@ -33,6 +34,16 @@ body {
 @keyframes fadeInUp {
   0% { opacity: 0; transform: translateY(20px); }
   100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  0% { opacity: 0; transform: translateY(100%); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Safe area for devices with home indicator */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .animation-delay-2000 { animation-delay: 2s; }

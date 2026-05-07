@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import Script from "next/script";
 import { I18nProvider } from "@/lib/i18n";
+import InstallPrompt from "@/components/InstallPrompt";
 import "./globals.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -55,6 +56,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans pb-20 md:pb-0">
         <I18nProvider>
           {children}
+          <InstallPrompt />
         </I18nProvider>
         {/* Midtrans Snap Script */}
         <Script
