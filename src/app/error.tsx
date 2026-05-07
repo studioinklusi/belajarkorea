@@ -30,7 +30,7 @@ export default function GlobalError({
         <div className="flex flex-col space-y-3">
           <button
             onClick={() => reset()}
-            className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors"
+            className="w-full py-3 px-4 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium transition-colors"
           >
             Coba Lagi
           </button>

@@ -10,7 +10,7 @@ interface NavbarClientProps {
   user: any
   profile: any
   isAdmin: boolean
-  activePage?: 'dashboard' | 'courses' | 'products' | 'pricing'
+  activePage?: 'dashboard' | 'courses' | 'products' | 'pricing' | 'ai-buddy'
   isLandingPage?: boolean
   signoutAction: () => void
 }
@@ -142,14 +142,14 @@ export default function NavbarClient({ user, profile, isAdmin, activePage, isLan
             <Link 
               href="/ai-buddy" 
               className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
-                activePage === undefined && !isLandingPage /* assuming AI buddy has no activePage prop */ ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
+                activePage === 'ai-buddy' ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
               <div className="relative">
-                <FaRobot className={`w-5 h-5 transition-transform ${activePage === undefined && !isLandingPage ? 'scale-110 text-violet-600' : ''}`} />
+                <FaRobot className={`w-5 h-5 transition-transform ${activePage === 'ai-buddy' ? 'scale-110 text-violet-600' : ''}`} />
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-fuchsia-500 rounded-full animate-pulse"></span>
               </div>
-              <span className="text-[10px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-500">AI Buddy</span>
+              <span className={`text-[10px] font-bold ${activePage === 'ai-buddy' ? 'text-violet-600' : 'text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-500'}`}>AI Buddy</span>
             </Link>
           ) : (
             <Link 

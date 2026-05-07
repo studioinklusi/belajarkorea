@@ -9,7 +9,7 @@ export const metadata = {
 export default function AIBuddyPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <Navbar />
+      <Navbar activePage="ai-buddy" />
       <AiBuddyClient />
     </div>
   )
