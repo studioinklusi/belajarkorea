@@ -167,8 +167,14 @@ export default function AiBuddyClient() {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
     const userMessage = input.trim()
+    
+    // Force clear input and reset height
     setInput('')
-    if (textareaRef.current) textareaRef.current.style.height = 'auto'
+    if (textareaRef.current) {
+      textareaRef.current.value = ''
+      textareaRef.current.style.height = 'auto'
+    }
+    
     const newMessages: ChatMessage[] = [...messages, { role: 'user', text: userMessage }]
     setMessages(newMessages)
     setIsLoading(true)
@@ -197,6 +203,7 @@ export default function AiBuddyClient() {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
+      if (e.nativeEvent.isComposing) return // Prevent sending when typing Korean characters with IME
       handleSend()
     }
   }
