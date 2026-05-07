@@ -104,9 +104,6 @@ export default function NavbarClient({ user, profile, isAdmin, activePage, isLan
                 </Link>
               </div>
             )}
-            <div className="hidden md:block">
-              <MobileMenu isLoggedIn={!!user} isAdmin={isAdmin} activePage={activePage} signoutAction={signoutAction} isLandingPage={isLandingPage} />
-            </div>
           </div>
         </div>
       </div>

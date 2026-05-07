@@ -245,11 +245,11 @@ export default function AiBuddyClient() {
             {/* Reset Button */}
             <button
               onClick={handleReset}
-              className="px-3 py-1.5 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-full transition-all flex items-center gap-1.5 text-xs font-bold border border-transparent hover:border-violet-100"
+              className="px-3 py-1.5 text-gray-500 hover:text-violet-600 hover:bg-violet-50 rounded-full transition-all flex items-center gap-1.5 text-[11px] sm:text-xs font-bold border border-gray-100 shadow-sm"
               title="Reset Percakapan"
             >
               <FaArrowsRotate className="w-3 h-3" />
-              <span className="hidden sm:inline">Reset</span>
+              <span>Reset</span>
             </button>
           </div>
 
@@ -257,20 +257,20 @@ export default function AiBuddyClient() {
           {showSettings && (
             <div className="pt-3 pb-2 border-t border-gray-100/50 flex flex-col gap-3.5 animate-fade-in-up">
               {/* Level Selector */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 w-full">
-                <span className="sm:w-[72px] text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest shrink-0 ml-1 sm:ml-0">Level</span>
-                <div className="flex bg-gray-100/80 p-1 rounded-xl w-full sm:w-max">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full">
+                <span className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest shrink-0">Level</span>
+                <div className="flex bg-gray-100/80 p-1 rounded-xl w-full overflow-x-auto hide-scrollbar snap-x">
                   {LEVELS.map((level) => (
                     <button
                       key={level.id}
                       onClick={() => handleLevelChange(level.id)}
-                      className={`flex-1 sm:flex-none px-2 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-sm font-bold transition-all whitespace-nowrap text-center ${
+                      className={`flex-none snap-start px-4 py-2 rounded-lg text-[11px] sm:text-sm font-bold transition-all whitespace-nowrap text-center ${
                         selectedLevel === level.id
                           ? level.activeClass
                           : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                       }`}
                     >
-                      {level.emoji} <span className="hidden min-[375px]:inline">{translateLevel(level.id)}</span><span className="min-[375px]:hidden">{translateLevel(level.id)}</span>
+                      {level.emoji} <span>{translateLevel(level.id)}</span>
                     </button>
                   ))}
                 </div>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { FaBars, FaXmark, FaRobot, FaRightFromBracket } from 'react-icons/fa6'
+import { FaEllipsis, FaXmark, FaRightFromBracket, FaGear, FaTag, FaShieldHalved } from 'react-icons/fa6'
 
 interface MobileMenuProps {
   isLoggedIn: boolean
@@ -15,75 +15,108 @@ interface MobileMenuProps {
 export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAction, isLandingPage }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const linkClass = (page: string) => 
-    activePage === page 
-      ? "block bg-violet-50 text-violet-700 px-4 py-3 rounded-xl text-base font-bold" 
-      : "block text-gray-600 hover:bg-gray-50 px-4 py-3 rounded-xl text-base font-bold transition-colors"
-
   return (
-    <div className="md:hidden flex items-center">
+    <>
+      {/* Trigger Button - shown as "More" icon in bottom nav */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-gray-500 hover:text-violet-600 hover:bg-violet-50 active:bg-violet-100 active:scale-95 rounded-xl transition-all"
-        aria-label="Toggle Menu"
+        className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
+          isOpen ? 'text-violet-600' : 'text-gray-400'
+        }`}
+        aria-label="Menu Lainnya"
       >
-        {isOpen ? <FaXmark className="w-6 h-6" /> : <FaBars className="w-6 h-6" />}
+        {isOpen ? <FaXmark className="w-5 h-5" /> : <FaEllipsis className="w-5 h-5" />}
+        <span className="text-[10px] font-bold">Lainnya</span>
       </button>
 
+      {/* Bottom Sheet Menu */}
       {isOpen && (
-        <div className="fixed bottom-16 left-0 w-full bg-white border-t border-gray-100 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] py-4 px-4 flex flex-col gap-2 z-50 animate-fade-in-up pb-6 rounded-t-3xl">
-          {isLoggedIn && (
-            <Link href="/dashboard" onClick={() => setIsOpen(false)} className={linkClass('dashboard')}>
-              Dashboard
-            </Link>
-          )}
-          {isLoggedIn && (
-            <Link 
-              href="/ai-buddy" 
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white px-4 py-3 rounded-xl text-base font-bold shadow-md"
-            >
-              <FaRobot className="w-5 h-5" /> AI Korean Buddy
-            </Link>
-          )}
-          <Link href="/courses" onClick={() => setIsOpen(false)} className={linkClass('courses')}>
-            Program Belajar
-          </Link>
-          <Link href="/products" onClick={() => setIsOpen(false)} className={linkClass('products')}>
-            Produk Digital
-          </Link>
-          {isLandingPage && (
-            <Link href="/pricing" onClick={() => setIsOpen(false)} className={linkClass('pricing')}>
-              Harga
-            </Link>
-          )}
-          {isAdmin && (
-            <Link href="/admin" onClick={() => setIsOpen(false)} className="block text-gray-600 hover:text-violet-600 hover:bg-violet-50 px-4 py-3 rounded-xl text-base font-bold transition-colors mt-2 border-t border-gray-100 pt-4">
-              Panel Admin
-            </Link>
-          )}
-          {isLoggedIn && signoutAction && (
-            <div className={isAdmin ? "" : "mt-2 border-t border-gray-100 pt-4"}>
-              <form action={signoutAction}>
-                <button type="submit" onClick={() => setIsOpen(false)} className="w-full text-left text-base font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-3 px-4 py-3 rounded-xl transition-colors">
-                  <FaRightFromBracket className="w-5 h-5 text-rose-500" />
-                  Keluar
-                </button>
-              </form>
-            </div>
-          )}
-          {!isLoggedIn && (
-            <div className="mt-2 border-t border-gray-100 pt-4 flex flex-col gap-2">
-              <Link href="/login" onClick={() => setIsOpen(false)} className="block text-center text-gray-600 hover:bg-gray-50 px-4 py-3 rounded-xl text-base font-bold transition-colors">
-                Masuk
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[55]" 
+            onClick={() => setIsOpen(false)} 
+          />
+          
+          {/* Menu Panel */}
+          <div className="fixed bottom-16 left-0 right-0 bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.12)] py-5 px-4 z-[56] animate-slide-up">
+            {/* Handle bar */}
+            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
+            
+            <div className="flex flex-col gap-1">
+              {/* Pricing - only on landing */}
+              {isLandingPage && (
+                <Link 
+                  href="/pricing" 
+                  onClick={() => setIsOpen(false)} 
+                  className="flex items-center gap-3 text-gray-700 hover:bg-violet-50 px-4 py-3 rounded-xl text-sm font-bold transition-colors"
+                >
+                  <FaTag className="w-4 h-4 text-violet-500" />
+                  Harga & Paket
+                </Link>
+              )}
+
+              {/* Products */}
+              <Link 
+                href="/products" 
+                onClick={() => setIsOpen(false)} 
+                className="flex items-center gap-3 text-gray-700 hover:bg-violet-50 px-4 py-3 rounded-xl text-sm font-bold transition-colors"
+              >
+                <FaGear className="w-4 h-4 text-gray-400" />
+                Produk Digital
               </Link>
-              <Link href="/register" onClick={() => setIsOpen(false)} className="block text-center bg-violet-600 text-white px-4 py-3 rounded-xl text-base font-bold shadow-md hover:bg-violet-700 transition-colors">
-                Mulai Belajar
-              </Link>
+
+              {/* Admin Panel */}
+              {isAdmin && (
+                <Link 
+                  href="/admin" 
+                  onClick={() => setIsOpen(false)} 
+                  className="flex items-center gap-3 text-gray-700 hover:bg-violet-50 px-4 py-3 rounded-xl text-sm font-bold transition-colors"
+                >
+                  <FaShieldHalved className="w-4 h-4 text-rose-500" />
+                  Panel Admin
+                </Link>
+              )}
+
+              {/* Logout */}
+              {isLoggedIn && signoutAction && (
+                <div className="mt-1 pt-2 border-t border-gray-100">
+                  <form action={signoutAction}>
+                    <button 
+                      type="submit" 
+                      onClick={() => setIsOpen(false)} 
+                      className="w-full flex items-center gap-3 text-rose-600 hover:bg-rose-50 px-4 py-3 rounded-xl text-sm font-bold transition-colors"
+                    >
+                      <FaRightFromBracket className="w-4 h-4" />
+                      Keluar
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/* Login/Register for guests */}
+              {!isLoggedIn && (
+                <div className="mt-1 pt-2 border-t border-gray-100 flex flex-col gap-2">
+                  <Link 
+                    href="/login" 
+                    onClick={() => setIsOpen(false)} 
+                    className="block text-center text-gray-600 hover:bg-gray-50 px-4 py-3 rounded-xl text-sm font-bold transition-colors"
+                  >
+                    Masuk
+                  </Link>
+                  <Link 
+                    href="/register" 
+                    onClick={() => setIsOpen(false)} 
+                    className="block text-center bg-violet-600 text-white px-4 py-3 rounded-xl text-sm font-bold shadow-md hover:bg-violet-700 transition-colors"
+                  >
+                    Mulai Belajar
+                  </Link>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        </>
       )}
-    </div>
+    </>
   )
 }
