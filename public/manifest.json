@@ -1,0 +1,28 @@
+{
+  "name": "belajarkorea.id - Belajar Bahasa Korea",
+  "short_name": "belajarkorea",
+  "description": "Platform belajar bahasa Korea paling interaktif dan asik. Mulai dari nol sampai jago ngobrol!",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#8B5CF6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "lifestyle"],
+  "lang": "id",
+  "dir": "ltr"
+}
