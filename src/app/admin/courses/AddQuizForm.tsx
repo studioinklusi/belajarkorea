@@ -70,8 +70,8 @@ export default function AddQuizForm({ lessonId, lessonName, onClose }: { lessonI
         router.refresh()
         onClose()
       }, 1500)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError((err as Error).message)
     } finally {
       setLoading(false)
     }

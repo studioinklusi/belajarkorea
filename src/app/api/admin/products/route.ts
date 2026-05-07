@@ -98,9 +98,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ product }, { status: 201 })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Create product error:', error)
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json({ error: (error as Error).message || 'Internal Server Error' }, { status: 500 })
   }
 }
 
@@ -216,9 +216,9 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ product })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Update product error:', error)
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json({ error: (error as Error).message || 'Internal Server Error' }, { status: 500 })
   }
 }
 
@@ -265,13 +265,13 @@ export async function DELETE(request: Request) {
       .eq('id', product_id)
 
     if (error) {
-      return NextResponse.json({ error: `Gagal menghapus: ${error.message}` }, { status: 500 })
+      return NextResponse.json({ error: `Gagal menghapus: ${(error as Error).message}` }, { status: 500 })
     }
 
     return NextResponse.json({ message: 'Produk berhasil dihapus' })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Delete product error:', error)
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json({ error: (error as Error).message || 'Internal Server Error' }, { status: 500 })
   }
 }

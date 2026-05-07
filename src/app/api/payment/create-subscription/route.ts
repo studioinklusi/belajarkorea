@@ -106,8 +106,8 @@ export async function POST(request: Request) {
     // Return token ke client
     return NextResponse.json({ token: snapToken, orderId })
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Create subscription error:', error)
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json({ error: (error as Error).message || 'Internal Server Error' }, { status: 500 })
   }
 }

@@ -138,13 +138,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: 'Webhook processed successfully' })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Audit logging untuk kegagalan webhook (misal: invalid signature dari attacker)
     console.error('CRITICAL Webhook Error:', {
-      message: error.message,
+      message: (error as Error).message,
       stack: error.stack,
       rawBody: rawBody.substring(0, 500) // Log 500 karakter pertama dari payload
     })
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json({ error: (error as Error).message || 'Internal Server Error' }, { status: 500 })
   }
 }

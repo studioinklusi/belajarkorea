@@ -30,7 +30,7 @@ type Package = {
   price: number
 }
 
-const roleLabels: Record<string, { label: string; color: string; icon: any }> = {
+const roleLabels: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   student: { label: 'Siswa', color: 'bg-blue-100 text-blue-700', icon: FaUserGraduate },
   content_admin: { label: 'Admin Konten', color: 'bg-amber-100 text-amber-700', icon: FaUserShield },
   super_admin: { label: 'Super Admin', color: 'bg-rose-100 text-rose-700', icon: FaCrown },

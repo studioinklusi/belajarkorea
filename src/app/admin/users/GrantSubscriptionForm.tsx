@@ -67,8 +67,8 @@ export default function GrantSubscriptionForm({
         router.refresh()
         onClose()
       }, 2500)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError((err as Error).message)
     } finally {
       setLoading(false)
     }

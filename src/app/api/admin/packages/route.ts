@@ -44,8 +44,8 @@ export async function PATCH(request: Request) {
     }
 
     return NextResponse.json({ package: pkg })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Update package error:', error)
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json({ error: (error as Error).message || 'Internal Server Error' }, { status: 500 })
   }
 }

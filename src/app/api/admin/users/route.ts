@@ -49,7 +49,7 @@ export async function GET() {
     const emailMap = new Map<string, string>()
     const banMap = new Map<string, string | null>()
     if (authUsers?.users) {
-      authUsers.users.forEach((u: any) => {
+      authUsers.users.forEach((u: { id: string; email?: string }) => {
         emailMap.set(u.id, u.email || '')
         banMap.set(u.id, u.banned_until || null)
       })
@@ -63,7 +63,7 @@ export async function GET() {
 
     const subMap = new Map<string, any>()
     if (subscriptions) {
-      subscriptions.forEach((s: any) => {
+      subscriptions.forEach((s: { user_id: string }) => {
         subMap.set(s.user_id, {
           status: s.status,
           expires_at: s.expires_at,
@@ -72,7 +72,7 @@ export async function GET() {
       })
     }
 
-    const users = (profiles || []).map((p: any) => {
+    const users = (profiles || []).map((p: { id: string; full_name?: string }) => {
       const bannedUntil = banMap.get(p.id)
       const isBanned = bannedUntil ? new Date(bannedUntil) > new Date() : false
       return {
@@ -84,9 +84,9 @@ export async function GET() {
     })
 
     return NextResponse.json({ users })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('List users error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
   }
 }
 
@@ -120,13 +120,13 @@ export async function PATCH(request: Request) {
       .eq('id', user_id)
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ error: (error as Error).message }, { status: 500 })
     }
 
     return NextResponse.json({ message: 'Role berhasil diperbarui' })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Update role error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
   }
 }
 
@@ -233,9 +233,9 @@ export async function POST(request: Request) {
       expires_at: expiresAt.toISOString(),
       extended: !!existingSub,
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Grant subscription error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
   }
 }
 
@@ -265,7 +265,7 @@ export async function PUT(request: Request) {
       })
 
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        return NextResponse.json({ error: (error as Error).message }, { status: 500 })
       }
 
       return NextResponse.json({ message: 'Pengguna berhasil diblokir' })
@@ -276,13 +276,13 @@ export async function PUT(request: Request) {
       })
 
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        return NextResponse.json({ error: (error as Error).message }, { status: 500 })
       }
 
       return NextResponse.json({ message: 'Pengguna berhasil diaktifkan kembali' })
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Ban/unban error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
   }
 }

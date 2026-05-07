@@ -33,7 +33,7 @@ export default async function AdminUsersPage() {
   const emailMap = new Map<string, string>()
   const banMap = new Map<string, string | null>()
   if (authUsers?.users) {
-    authUsers.users.forEach((u: any) => {
+    authUsers.users.forEach((u: { id: string; email?: string }) => {
       emailMap.set(u.id, u.email || '')
       banMap.set(u.id, u.banned_until || null)
     })
@@ -47,7 +47,7 @@ export default async function AdminUsersPage() {
 
   const subMap = new Map<string, any>()
   if (subscriptions) {
-    subscriptions.forEach((s: any) => {
+    subscriptions.forEach((s: { user_id: string }) => {
       subMap.set(s.user_id, {
         status: s.status,
         expires_at: s.expires_at,
@@ -57,7 +57,7 @@ export default async function AdminUsersPage() {
   }
 
   // Merge users
-  const users = (profiles || []).map((p: any) => {
+  const users = (profiles || []).map((p: { id: string; full_name?: string }) => {
     const bannedUntil = banMap.get(p.id)
     const isBanned = bannedUntil ? new Date(bannedUntil) > new Date() : false
     return {

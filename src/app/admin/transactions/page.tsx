@@ -28,7 +28,7 @@ export default async function AdminTransactionsPage() {
     .order('created_at', { ascending: false })
 
   // Fetch user profiles for name mapping
-  const userIds = [...new Set((transactions || []).map((t: any) => t.user_id))]
+  const userIds = [...new Set((transactions || []).map((t: { user_id: string }) => t.user_id))]
   let userMap = new Map<string, { full_name: string; email: string }>()
 
   if (userIds.length > 0) {
@@ -41,11 +41,11 @@ export default async function AdminTransactionsPage() {
     const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 })
     const emailMap = new Map<string, string>()
     if (authUsers?.users) {
-      authUsers.users.forEach((u: any) => emailMap.set(u.id, u.email || ''))
+      authUsers.users.forEach((u: { id: string; email?: string }) => emailMap.set(u.id, u.email || ''))
     }
 
     if (profiles) {
-      profiles.forEach((p: any) => {
+      profiles.forEach((p: { id: string; full_name?: string }) => {
         userMap.set(p.id, {
           full_name: p.full_name || 'Tanpa Nama',
           email: emailMap.get(p.id) || '-',
@@ -66,11 +66,11 @@ export default async function AdminTransactionsPage() {
   // Compute stats
   const stats = {
     total: enrichedTransactions.length,
-    success: enrichedTransactions.filter((t: any) => t.status === 'success').length,
-    pending: enrichedTransactions.filter((t: any) => t.status === 'pending').length,
-    failed: enrichedTransactions.filter((t: any) => ['failed', 'expired'].includes(t.status)).length,
+    success: enrichedTransactions.filter((t: { user_id: string }) => t.status === 'success').length,
+    pending: enrichedTransactions.filter((t: { user_id: string }) => t.status === 'pending').length,
+    failed: enrichedTransactions.filter((t: { user_id: string }) => ['failed', 'expired'].includes(t.status)).length,
     totalRevenue: enrichedTransactions
-      .filter((t: any) => t.status === 'success')
+      .filter((t: { user_id: string }) => t.status === 'success')
       .reduce((sum: number, t: any) => sum + t.amount, 0),
   }
 

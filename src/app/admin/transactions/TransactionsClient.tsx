@@ -51,7 +51,7 @@ function formatDateTime(dateStr: string): string {
   })
 }
 
-const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: any }> = {
+const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: React.ElementType }> = {
   success: { label: 'Berhasil', color: 'text-emerald-700', bgColor: 'bg-emerald-50 border-emerald-100', icon: FaCircleCheck },
   pending: { label: 'Menunggu', color: 'text-amber-700', bgColor: 'bg-amber-50 border-amber-100', icon: FaHourglass },
   failed: { label: 'Gagal', color: 'text-red-700', bgColor: 'bg-red-50 border-red-100', icon: FaCircleXmark },

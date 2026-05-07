@@ -117,7 +117,7 @@ export default function AiBuddyClient() {
         recognition.lang = 'ko-KR'
         recognition.onstart = () => setIsListening(true)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        recognition.onresult = (event: any) => {
+        recognition.onresult = (event: unknown) => {
           let transcript = ''
           for (let i = 0; i < event.results.length; ++i) {
             transcript += event.results[i][0].transcript

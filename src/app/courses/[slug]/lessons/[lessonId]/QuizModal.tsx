@@ -26,8 +26,8 @@ export default function QuizModal({ lessonId, lessonName, onClose }: { lessonId:
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Gagal mengambil kuis')
         setQuestions(data.questions)
-      } catch (err: any) {
-        setError(err.message)
+      } catch (err: unknown) {
+        setError((err as Error).message)
       } finally {
         setLoading(false)
       }
@@ -46,8 +46,8 @@ export default function QuizModal({ lessonId, lessonName, onClose }: { lessonId:
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Gagal mengirim kuis')
       setResult(data)
-    } catch (err: any) {
-      alert(err.message)
+    } catch (err: unknown) {
+      alert((err as Error).message)
     } finally {
       setSubmitting(false)
     }

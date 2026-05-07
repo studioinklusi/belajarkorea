@@ -44,15 +44,15 @@ export default function SubscribeButton({
 
       // 2. Tampilkan popup Midtrans Snap
       window.snap.pay(data.token, {
-        onSuccess: function (result: any) {
+        onSuccess: function (result: Record<string, unknown>) {
           console.log('Payment success!', result)
           router.push('/dashboard?payment=success')
         },
-        onPending: function (result: any) {
+        onPending: function (result: Record<string, unknown>) {
           console.log('Payment pending!', result)
           router.push('/dashboard?payment=pending')
         },
-        onError: function (result: any) {
+        onError: function (result: Record<string, unknown>) {
           console.error('Payment error!', result)
           alert('Pembayaran gagal. Silakan coba lagi.')
           setIsLoading(false)
@@ -68,9 +68,9 @@ export default function SubscribeButton({
         }
       })
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
-      alert(error.message)
+      alert((error as Error).message)
       setIsLoading(false)
     }
   }

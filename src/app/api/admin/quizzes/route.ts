@@ -37,12 +37,12 @@ export async function GET(request: Request) {
       .order('sort_order', { ascending: true })
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ error: (error as Error).message }, { status: 500 })
     }
 
     return NextResponse.json({ questions })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
   }
 }
 
@@ -79,12 +79,12 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      return NextResponse.json({ error: `Gagal menambahkan soal: ${error.message}` }, { status: 500 })
+      return NextResponse.json({ error: `Gagal menambahkan soal: ${(error as Error).message}` }, { status: 500 })
     }
 
     return NextResponse.json({ question }, { status: 201 })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
   }
 }
 
@@ -105,11 +105,11 @@ export async function DELETE(request: Request) {
       .eq('id', question_id)
 
     if (error) {
-      return NextResponse.json({ error: `Gagal menghapus: ${error.message}` }, { status: 500 })
+      return NextResponse.json({ error: `Gagal menghapus: ${(error as Error).message}` }, { status: 500 })
     }
 
     return NextResponse.json({ message: 'Soal berhasil dihapus' })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
   }
 }

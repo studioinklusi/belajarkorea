@@ -48,12 +48,12 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      return NextResponse.json({ error: `Gagal menambahkan materi: ${error.message}` }, { status: 500 })
+      return NextResponse.json({ error: `Gagal menambahkan materi: ${(error as Error).message}` }, { status: 500 })
     }
 
     return NextResponse.json({ lesson }, { status: 201 })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
   }
 }
 
@@ -74,12 +74,12 @@ export async function DELETE(request: Request) {
       .eq('id', lesson_id)
 
     if (error) {
-      return NextResponse.json({ error: `Gagal menghapus: ${error.message}` }, { status: 500 })
+      return NextResponse.json({ error: `Gagal menghapus: ${(error as Error).message}` }, { status: 500 })
     }
 
     return NextResponse.json({ message: 'Materi berhasil dihapus' })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
   }
 }
 
@@ -117,11 +117,11 @@ export async function PATCH(request: Request) {
       .single()
 
     if (error) {
-      return NextResponse.json({ error: `Gagal mengupdate materi: ${error.message}` }, { status: 500 })
+      return NextResponse.json({ error: `Gagal mengupdate materi: ${(error as Error).message}` }, { status: 500 })
     }
 
     return NextResponse.json({ lesson }, { status: 200 })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
   }
 }

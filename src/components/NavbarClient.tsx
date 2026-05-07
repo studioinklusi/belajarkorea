@@ -6,9 +6,11 @@ import MobileMenu from './MobileMenu'
 import LanguageSwitcher from './LanguageSwitcher'
 import { useTranslation } from '@/lib/i18n'
 
+import { type User } from '@supabase/supabase-js'
+
 interface NavbarClientProps {
-  user: any
-  profile: any
+  user: User | null
+  profile: { role: string; full_name: string | null } | null
   isAdmin: boolean
   activePage?: 'dashboard' | 'courses' | 'products' | 'pricing' | 'ai-buddy'
   isLandingPage?: boolean

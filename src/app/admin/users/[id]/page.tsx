@@ -8,7 +8,7 @@ import {
   FaCircleCheck, FaClock, FaCircleXmark, FaGift, FaChartLine, FaBan
 } from 'react-icons/fa6'
 
-const roleLabels: Record<string, { label: string; color: string; icon: any }> = {
+const roleLabels: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   student: { label: 'Siswa', color: 'bg-blue-100 text-blue-700', icon: FaUserGraduate },
   content_admin: { label: 'Admin Konten', color: 'bg-amber-100 text-amber-700', icon: FaUserShield },
   super_admin: { label: 'Super Admin', color: 'bg-rose-100 text-rose-700', icon: FaCrown },
@@ -94,7 +94,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
 
   const roleInfo = roleLabels[profile.role] || roleLabels.student
   const RoleIcon = roleInfo.icon
-  const activeSub = (subscriptions || []).find((s: any) => s.status === 'active' || s.status === 'grace_period')
+  const activeSub = (subscriptions || []).find((s: { user_id: string }) => s.status === 'active' || s.status === 'grace_period')
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto">
@@ -220,7 +220,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
 
           {purchases && purchases.length > 0 ? (
             <div className="space-y-3">
-              {purchases.map((p: any) => (
+              {purchases.map((p: { id: string; full_name?: string }) => (
                 <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
                   <div className="w-9 h-9 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                     <FaBox className="text-xs" />
@@ -252,7 +252,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
 
           {subscriptions && subscriptions.length > 0 ? (
             <div className="space-y-3">
-              {subscriptions.map((s: any) => {
+              {subscriptions.map((s: { user_id: string }) => {
                 const isActive = s.status === 'active' || s.status === 'grace_period'
                 const isExpired = new Date(s.expires_at) < new Date()
                 return (
@@ -291,7 +291,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
 
           {transactions && transactions.length > 0 ? (
             <div className="space-y-3">
-              {transactions.map((t: any) => {
+              {transactions.map((t: { user_id: string }) => {
                 const isManual = t.payment_type === 'manual_grant'
                 const itemName = t.packages?.name || t.digital_products?.title || '-'
                 return (

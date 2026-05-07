@@ -100,8 +100,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ token: snapToken, orderId })
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Create purchase error:', error)
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json({ error: (error as Error).message || 'Internal Server Error' }, { status: 500 })
   }
 }

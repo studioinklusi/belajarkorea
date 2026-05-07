@@ -77,12 +77,12 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      return NextResponse.json({ error: `Gagal membuat kursus: ${error.message}` }, { status: 500 })
+      return NextResponse.json({ error: `Gagal membuat kursus: ${(error as Error).message}` }, { status: 500 })
     }
 
     return NextResponse.json({ course }, { status: 201 })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
   }
 }
 
@@ -104,12 +104,12 @@ export async function DELETE(request: Request) {
       .eq('id', course_id)
 
     if (error) {
-      return NextResponse.json({ error: `Gagal menghapus: ${error.message}` }, { status: 500 })
+      return NextResponse.json({ error: `Gagal menghapus: ${(error as Error).message}` }, { status: 500 })
     }
 
     return NextResponse.json({ message: 'Kursus berhasil dihapus' })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
   }
 }
 
@@ -167,11 +167,11 @@ export async function PATCH(request: Request) {
       .single()
 
     if (error) {
-      return NextResponse.json({ error: `Gagal mengupdate kursus: ${error.message}` }, { status: 500 })
+      return NextResponse.json({ error: `Gagal mengupdate kursus: ${(error as Error).message}` }, { status: 500 })
     }
 
     return NextResponse.json({ course }, { status: 200 })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
   }
 }

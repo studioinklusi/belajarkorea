@@ -66,8 +66,8 @@ export default function EditLessonForm({ lesson, onClose }: { lesson: any; onClo
         router.refresh()
         onClose()
       }, 1500)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError((err as Error).message)
     } finally {
       setLoading(false)
     }

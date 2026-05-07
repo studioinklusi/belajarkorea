@@ -34,13 +34,13 @@ export default function BuyProductButton({
       }
 
       window.snap.pay(data.token, {
-        onSuccess: function (result: any) {
+        onSuccess: function (result: Record<string, unknown>) {
           router.push('/dashboard?payment=success')
         },
-        onPending: function (result: any) {
+        onPending: function (result: Record<string, unknown>) {
           router.push('/dashboard?payment=pending')
         },
-        onError: function (result: any) {
+        onError: function (result: Record<string, unknown>) {
           alert('Pembayaran gagal.')
           setIsLoading(false)
         },
@@ -55,8 +55,8 @@ export default function BuyProductButton({
         }
       })
 
-    } catch (error: any) {
-      alert(error.message)
+    } catch (error: unknown) {
+      alert((error as Error).message)
       setIsLoading(false)
     }
   }

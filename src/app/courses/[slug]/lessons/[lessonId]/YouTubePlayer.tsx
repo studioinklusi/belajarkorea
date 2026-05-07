@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 // Extend Window interface for YouTube IFrame API
 declare global {
   interface Window {
-    YT: any
+    YT: unknown
     onYouTubeIframeAPIReady: (() => void) | undefined
   }
 }
@@ -93,7 +93,7 @@ export default function YouTubePlayer({ videoId, lessonId, title, durationSecond
           autoplay: 1,
         },
         events: {
-          onStateChange: (event: any) => {
+          onStateChange: (event: unknown) => {
             // YT.PlayerState.PLAYING === 1
             if (event.data === 1) {
               // Start tracking when video is playing

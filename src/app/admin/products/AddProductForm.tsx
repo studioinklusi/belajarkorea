@@ -36,8 +36,8 @@ export default function AddProductForm({ onClose }: { onClose: () => void }) {
         router.refresh()
         onClose()
       }, 1500)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError((err as Error).message)
     } finally {
       setLoading(false)
     }
