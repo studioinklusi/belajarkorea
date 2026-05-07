@@ -7,8 +7,6 @@ export const metadata: Metadata = {
 }
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeftIcon } from '@heroicons/react/24/solid'
-import Navbar from '@/components/Navbar'
-
 export default async function CoursesPage() {
   const supabase = await createClient()
 
@@ -27,8 +25,7 @@ export default async function CoursesPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans pb-12">
-      <Navbar activePage="courses" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
         <div className="text-center">
           <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">Program Belajar</h2>
           <p className="mt-3 max-w-2xl mx-auto text-lg text-gray-500 sm:mt-4">

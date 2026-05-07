@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { signout } from '@/app/(auth)/auth/actions'
 import NavbarClient from './NavbarClient'
 
-export default async function Navbar({ activePage, isLandingPage }: { activePage?: 'dashboard' | 'courses' | 'products' | 'pricing' | 'ai-buddy', isLandingPage?: boolean }) {
+export default async function Navbar({ isLandingPage }: { isLandingPage?: boolean }) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -35,7 +35,6 @@ export default async function Navbar({ activePage, isLandingPage }: { activePage
       user={user}
       profile={profile}
       isAdmin={isAdmin}
-      activePage={activePage}
       isLandingPage={isLandingPage}
       signoutAction={signout}
     />

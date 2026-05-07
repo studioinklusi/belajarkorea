@@ -8,7 +8,6 @@ export const metadata: Metadata = {
 import BuyProductButton from './BuyProductButton'
 import Link from 'next/link'
 import { ArrowLeftIcon } from '@heroicons/react/24/solid'
-import Navbar from '@/components/Navbar'
 import ProductDescription from './ProductDescription'
 
 export default async function ProductsPage() {
@@ -41,8 +40,7 @@ export default async function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans pb-12">
-      <Navbar activePage="products" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">Produk Digital</h2>
           <p className="mt-3 max-w-2xl mx-auto text-lg text-gray-500 sm:mt-4">

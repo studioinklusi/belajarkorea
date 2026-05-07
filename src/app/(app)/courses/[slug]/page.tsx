@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import Navbar from '@/components/Navbar'
 import { FaChevronLeft } from 'react-icons/fa6'
 
 export default async function CourseDetailPage(props: {
@@ -50,8 +49,7 @@ export default async function CourseDetailPage(props: {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-12 font-sans">
-      <Navbar activePage="courses" />
-      
+            
       {/* Course Header */}
       <div className="bg-indigo-700 text-white py-12 sm:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

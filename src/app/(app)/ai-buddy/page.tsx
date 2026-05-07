@@ -1,4 +1,3 @@
-import Navbar from '@/components/Navbar'
 import AiBuddyClient from './AiBuddyClient'
 
 export const metadata = {
@@ -9,8 +8,7 @@ export const metadata = {
 export default function AIBuddyPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <Navbar activePage="ai-buddy" />
-      <AiBuddyClient />
+            <AiBuddyClient />
     </div>
   )
 }

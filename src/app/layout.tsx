@@ -53,7 +53,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className="min-h-full flex flex-col font-sans pb-20 md:pb-0">
+      <body className="min-h-full flex flex-col font-sans">
         <I18nProvider>
           {children}
           <InstallPrompt />

@@ -6,19 +6,29 @@ import MobileMenu from './MobileMenu'
 import LanguageSwitcher from './LanguageSwitcher'
 import { useTranslation } from '@/lib/i18n'
 
+import { usePathname } from 'next/navigation'
 import { type User } from '@supabase/supabase-js'
 
 interface NavbarClientProps {
   user: User | null
   profile: { role: string; full_name: string | null } | null
   isAdmin: boolean
-  activePage?: 'dashboard' | 'courses' | 'products' | 'pricing' | 'ai-buddy'
   isLandingPage?: boolean
   signoutAction: () => void
 }
 
-export default function NavbarClient({ user, profile, isAdmin, activePage, isLandingPage, signoutAction }: NavbarClientProps) {
+export default function NavbarClient({ user, profile, isAdmin, isLandingPage, signoutAction }: NavbarClientProps) {
   const { t, locale } = useTranslation()
+  const pathname = usePathname()
+  
+  let activePage = ''
+  if (pathname) {
+    if (pathname.startsWith('/dashboard')) activePage = 'dashboard'
+    else if (pathname.startsWith('/courses')) activePage = 'courses'
+    else if (pathname.startsWith('/products')) activePage = 'products'
+    else if (pathname.startsWith('/pricing')) activePage = 'pricing'
+    else if (pathname.startsWith('/ai-buddy')) activePage = 'ai-buddy'
+  }
 
   const linkClass = (page: string) => 
     activePage === page 

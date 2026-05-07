@@ -1,15 +1,11 @@
 import Link from 'next/link'
 import { ArrowRightIcon, SparklesIcon, CheckCircleIcon, PlayCircleIcon } from '@heroicons/react/24/solid'
-import Navbar from '@/components/Navbar'
-
 export default async function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900 overflow-x-hidden">
       {/* Navigation */}
-      <Navbar isLandingPage={true} />
-
-      {/* Hero Section */}
+            {/* Hero Section */}
       <div className="relative pt-8 pb-16 sm:pt-20 sm:pb-24 lg:pb-32 overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none">
           <div className="absolute top-20 left-10 w-72 h-72 bg-fuchsia-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>

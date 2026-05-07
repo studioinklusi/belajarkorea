@@ -4,8 +4,6 @@ import Link from 'next/link'
 import { signout } from '../(auth)/auth/actions'
 import { PlayCircleIcon } from '@heroicons/react/24/solid'
 import { FaTicket, FaLock, FaBullseye, FaBookOpen, FaCircleQuestion, FaHandSparkles, FaRobot } from 'react-icons/fa6'
-import Navbar from '@/components/Navbar'
-
 export default async function DashboardPage() {
   const supabase = await createClient()
 
@@ -94,9 +92,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900 pb-12">
-      <Navbar activePage="dashboard" />
-
-      <main className="max-w-7xl mx-auto pt-10 px-4 sm:px-6 lg:px-8">
+            <main className="max-w-7xl mx-auto pt-10 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Dashboard Saya</h1>
           <p className="mt-2 text-gray-500 font-medium">Lanjutkan perjalanan belajar bahasa Korea-mu hari ini! 🚀</p>
