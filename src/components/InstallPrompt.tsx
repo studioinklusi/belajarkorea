@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FaDownload, FaXmark, FaApple, FaAndroid } from 'react-icons/fa6'
+import { FaDownload, FaXmark, FaApple } from 'react-icons/fa6'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
@@ -26,48 +26,52 @@ export default function InstallPrompt() {
     const dismissed = localStorage.getItem('pwa-install-dismissed')
     if (dismissed) {
       const dismissedAt = parseInt(dismissed)
-      // Show again after 7 days
-      if (Date.now() - dismissedAt < 7 * 24 * 60 * 60 * 1000) return
+      // Show again after 3 days
+      if (Date.now() - dismissedAt < 3 * 24 * 60 * 60 * 1000) return
     }
 
     // Detect iOS
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
     setIsIOS(isIOSDevice)
 
-    if (isIOSDevice) {
-      // iOS doesn't support beforeinstallprompt, show custom banner
-      setTimeout(() => setShowBanner(true), 3000)
-      return
-    }
-
-    // Android/Chrome: listen for install prompt
+    // Listen for native install prompt (Android/Chrome)
     const handler = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
+    }
+    window.addEventListener('beforeinstallprompt', handler)
+
+    // Always show banner on mobile after 2 seconds
+    const isMobile = window.innerWidth < 768
+    if (isMobile) {
       setTimeout(() => setShowBanner(true), 2000)
     }
-
-    window.addEventListener('beforeinstallprompt', handler)
 
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
 
   const handleInstall = async () => {
+    // If native prompt is available (Android/Chrome), use it
+    if (deferredPrompt) {
+      deferredPrompt.prompt()
+      const { outcome } = await deferredPrompt.userChoice
+      if (outcome === 'accepted') {
+        setShowBanner(false)
+        setIsInstalled(true)
+      }
+      setDeferredPrompt(null)
+      return
+    }
+
+    // iOS: show step-by-step guide
     if (isIOS) {
       setShowIOSGuide(true)
       return
     }
 
-    if (!deferredPrompt) return
-
-    deferredPrompt.prompt()
-    const { outcome } = await deferredPrompt.userChoice
-
-    if (outcome === 'accepted') {
-      setShowBanner(false)
-      setIsInstalled(true)
-    }
-    setDeferredPrompt(null)
+    // Fallback: for Android browsers that don't trigger beforeinstallprompt
+    // Show generic instructions
+    setShowIOSGuide(true) // reuse modal with Android text
   }
 
   const handleDismiss = () => {
@@ -80,7 +84,7 @@ export default function InstallPrompt() {
 
   return (
     <>
-      {/* Install Banner */}
+      {/* Install Banner - visible on mobile only */}
       <div className="md:hidden fixed bottom-20 left-3 right-3 z-[60] animate-slide-up">
         <div className="bg-gradient-to-r from-violet-600 to-fuchsia-500 rounded-2xl p-3.5 shadow-xl shadow-violet-500/25 flex items-center gap-3">
           {/* Icon */}
@@ -114,7 +118,7 @@ export default function InstallPrompt() {
         </div>
       </div>
 
-      {/* iOS Guide Modal */}
+      {/* Install Guide Modal */}
       {showIOSGuide && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/50 backdrop-blur-sm" onClick={handleDismiss}>
           <div 
@@ -123,7 +127,8 @@ export default function InstallPrompt() {
           >
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <FaApple className="w-5 h-5" /> Install di iPhone
+                {isIOS ? <FaApple className="w-5 h-5" /> : <FaDownload className="w-5 h-5 text-violet-600" />}
+                {isIOS ? 'Install di iPhone' : 'Install App'}
               </h3>
               <button onClick={handleDismiss} className="text-gray-400 hover:text-gray-600 p-1">
                 <FaXmark className="w-5 h-5" />
@@ -131,24 +136,49 @@ export default function InstallPrompt() {
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center shrink-0 font-bold text-sm">1</div>
-                <p className="text-gray-600 text-sm pt-0.5">
-                  Tap ikon <span className="inline-block bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">⬆️ Share</span> di toolbar Safari (bawah layar)
-                </p>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center shrink-0 font-bold text-sm">2</div>
-                <p className="text-gray-600 text-sm pt-0.5">
-                  Scroll ke bawah dan pilih <strong>&quot;Add to Home Screen&quot;</strong>
-                </p>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center shrink-0 font-bold text-sm">3</div>
-                <p className="text-gray-600 text-sm pt-0.5">
-                  Ketuk <strong>&quot;Add&quot;</strong> — selesai! App akan muncul di Home Screen 🎉
-                </p>
-              </div>
+              {isIOS ? (
+                <>
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center shrink-0 font-bold text-sm">1</div>
+                    <p className="text-gray-600 text-sm pt-0.5">
+                      Tap ikon <span className="inline-block bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">⬆️ Share</span> di toolbar Safari (bawah layar)
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center shrink-0 font-bold text-sm">2</div>
+                    <p className="text-gray-600 text-sm pt-0.5">
+                      Scroll ke bawah dan pilih <strong>&quot;Add to Home Screen&quot;</strong>
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center shrink-0 font-bold text-sm">3</div>
+                    <p className="text-gray-600 text-sm pt-0.5">
+                      Ketuk <strong>&quot;Add&quot;</strong> — selesai! App akan muncul di Home Screen 🎉
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center shrink-0 font-bold text-sm">1</div>
+                    <p className="text-gray-600 text-sm pt-0.5">
+                      Tap menu <span className="inline-block bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">⋮</span> di pojok kanan atas Chrome
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center shrink-0 font-bold text-sm">2</div>
+                    <p className="text-gray-600 text-sm pt-0.5">
+                      Pilih <strong>&quot;Install app&quot;</strong> atau <strong>&quot;Add to Home Screen&quot;</strong>
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center shrink-0 font-bold text-sm">3</div>
+                    <p className="text-gray-600 text-sm pt-0.5">
+                      Ketuk <strong>&quot;Install&quot;</strong> — selesai! App akan muncul di Home Screen 🎉
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
             <button
