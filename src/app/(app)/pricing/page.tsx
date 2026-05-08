@@ -29,7 +29,7 @@ export default async function PricingPage() {
     const { data: sub } = await supabase
       .from('v_active_subscriptions')
       .select('package_slug, computed_status, days_remaining')
-      .eq('user_id', user.id).neq('computed_status', 'expired')
+      .eq('user_id', user.id).eq('computed_status', 'active')
       .single()
     
     // Only consider it "active" (blocking repurchase) if it's truly active

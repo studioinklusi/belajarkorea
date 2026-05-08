@@ -25,7 +25,7 @@ export default async function AIBuddyPage() {
     const { data: activeSubs } = await supabase
       .from('v_active_subscriptions')
       .select('id')
-      .eq('user_id', user.id).neq('computed_status', 'expired')
+      .eq('user_id', user.id).eq('computed_status', 'active')
       .limit(1)
       
     hasActiveSub = activeSubs && activeSubs.length > 0

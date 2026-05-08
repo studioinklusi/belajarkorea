@@ -168,7 +168,7 @@ export default async function DashboardPage() {
               
               {isSubscribed ? (
                 <div className="relative z-10">
-                  <div className="bg-gradient-to-r from-green-500 to-emerald-400 rounded-2xl p-5 text-white shadow-lg shadow-green-500/20">
+                  <div className={`rounded-2xl p-5 text-white shadow-lg ${subscription.computed_status === \'active\' ? \'bg-gradient-to-r from-green-500 to-emerald-400 shadow-green-500/20\' : \'bg-gradient-to-r from-rose-500 to-red-500 shadow-red-500/20\'}`}>
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-black bg-white/20 text-white uppercase tracking-wider shrink-0">
                         {subscription.computed_status === 'active' ? 'AKTIF' : 'GRACE PERIOD'}
@@ -177,13 +177,26 @@ export default async function DashboardPage() {
                         {subscription.package_name}
                       </span>
                     </div>
-                    <p className="text-sm text-green-50 mt-4 font-medium">Sisa Waktu Akses</p>
-                    <p className="text-4xl font-black mt-1 mb-2">
-                      {subscription.days_remaining} <span className="text-lg font-bold opacity-80">Hari</span>
-                    </p>
-                    <p className="text-xs text-green-100 font-medium opacity-90">
-                      Berlaku s/d {new Date(subscription.expires_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </p>
+                    <p className="text-sm text-white/90 mt-4 font-medium">{subscription.computed_status === \'active\' ? \'Sisa Waktu Akses\' : \'Akses Ditangguhkan\'}</p>
+                    {subscription.computed_status === 'active' ? (
+                      <>
+                        <p className="text-4xl font-black mt-1 mb-2">
+                          {subscription.days_remaining} <span className="text-lg font-bold opacity-80">Hari</span>
+                        </p>
+                        <p className="text-xs text-white/90 font-medium opacity-90">
+                          Berlaku s/d {new Date(subscription.expires_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-2xl sm:text-3xl font-black mt-1 mb-2">
+                          KADALUARSA
+                        </p>
+                        <p className="text-xs text-white/90 font-medium opacity-90">
+                          Harap perpanjang paket untuk lanjut belajar.
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
               ) : (
