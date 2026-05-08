@@ -176,16 +176,46 @@ export async function POST(request: Request) {
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
     const isAdmin = profile?.role === 'super_admin' || profile?.role === 'content_admin';
 
+    let isProOrPremium = false;
+    let isBasic = false;
+
     if (!isAdmin) {
       const { data: activeSubs } = await supabase
         .from('v_active_subscriptions')
-        .select('id')
-        .eq('user_id', user.id).eq('computed_status', 'active')
-        .limit(1);
+        .select('package_slug')
+        .eq('user_id', user.id).eq('computed_status', 'active');
 
-      if (!activeSubs || activeSubs.length === 0) {
+      const activeBaseSlugs = activeSubs?.map(s => s.package_slug.split('-')[0]) || [];
+      isProOrPremium = activeBaseSlugs.includes('pro') || activeBaseSlugs.includes('premium');
+      isBasic = activeBaseSlugs.includes('basic');
+    }
+
+    // Tentukan batas pesan harian
+    let dailyLimit = 14; // Gratis
+    if (isBasic) dailyLimit = 30; // Paket Basic
+
+    // Cek kuota jika bukan admin atau pro/premium
+    if (!isAdmin && !isProOrPremium) {
+      const today = new Date().toISOString().split('T')[0]; // Mendapatkan YYYY-MM-DD (UTC)
+      
+      const { data: usageData } = await supabase
+        .from('ai_usage')
+        .select('message_count')
+        .eq('user_id', user.id)
+        .eq('date_stamp', today)
+        .single();
+        
+      const messageCount = usageData ? usageData.message_count : 0;
+      
+      if (messageCount >= dailyLimit) {
         return Response.json(
-          { error: "Fitur eksklusif ini memerlukan paket berlangganan aktif. Silakan langganan terlebih dahulu." },
+          { 
+            error: "LIMIT_REACHED", 
+            message: isBasic 
+              ? `Anda telah mencapai batas ${dailyLimit} pesan/hari untuk paket Basic. Upgrade ke Pro untuk fitur tanpa batas!`
+              : `Anda telah mencapai batas ${dailyLimit} pesan gratis hari ini. Upgrade ke paket Pro untuk ngobrol tanpa batas!`,
+            limit: dailyLimit 
+          },
           { status: 403 }
         );
       }
@@ -241,6 +271,24 @@ export async function POST(request: Request) {
         { error: `Gagal menghubungi AI (${res.status}). Silakan coba lagi.` },
         { status: 500 }
       );
+    }
+
+    // 2. Increment Kuota jika berhasil (untuk selain admin dan pro/premium)
+    if (!isAdmin && !isProOrPremium) {
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { data: usageData } = await supabase
+        .from('ai_usage')
+        .select('id, message_count')
+        .eq('user_id', user.id)
+        .eq('date_stamp', today)
+        .single();
+        
+      if (usageData) {
+        await supabase.from('ai_usage').update({ message_count: usageData.message_count + 1 }).eq('id', usageData.id);
+      } else {
+        await supabase.from('ai_usage').insert({ user_id: user.id, date_stamp: today, message_count: 1 });
+      }
     }
 
     const data = await res.json();

@@ -191,7 +191,13 @@ export default function AiBuddyClient() {
         }),
       })
       const data = await res.json()
-      if (data.error) throw new Error(data.error)
+      if (data.error) {
+        if (data.error === "LIMIT_REACHED") {
+          setMessages([...newMessages, { role: 'model', text: `🔒 **KUOTA HABIS**\n\n${data.message}\n\n[➡️ Klik di sini untuk Upgrade Paket](/pricing)` }])
+          return
+        }
+        throw new Error(data.error)
+      }
       setMessages([...newMessages, { role: 'model', text: data.response }])
     } catch {
       setMessages([...newMessages, { role: 'model', text: '❌ Maaf, terjadi kesalahan. Ayo coba lagi!' }])
