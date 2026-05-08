@@ -188,7 +188,7 @@ Setelah file HTML selesai dibuat, admin tinggal:
 - [x] Buat halaman viewer embed di dalam aplikasi
 - [x] Update UI produk dengan badge & tombol khusus
 - [ ] Buat Chapter 1: Vokal Dasar (HTML interaktif pertama)
-- [ ] Jalankan migration SQL di Supabase Dashboard
+- [x] Jalankan migration SQL di Supabase Dashboard
 
 ### 🚶 Phase 2 — Konten Inti (Minggu 3-6)
 - [ ] Chapter 2: Konsonan Dasar
