@@ -79,7 +79,7 @@ export default function PricingClient({
         </div>
       )}
 
-      <div className="mt-12 space-y-12 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-x-8">
+      <div className={`mt-12 grid gap-8 ${filteredPackages.length === 1 ? 'max-w-md mx-auto' : filteredPackages.length === 2 ? 'max-w-4xl mx-auto lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
         {filteredPackages.map((pkg) => {
           const features = pkg.features as string[] || []
           
@@ -115,14 +115,23 @@ export default function PricingClient({
                 <p className="mt-2 text-sm text-gray-500">{pkg.description}</p>
                 
                 <ul role="list" className="mt-6 space-y-4">
-                  {features.map((feature, idx) => (
-                    <li key={idx} className="flex">
-                      <svg className="flex-shrink-0 w-6 h-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span className="ml-3 text-gray-500 text-sm">{feature}</span>
-                    </li>
-                  ))}
+                  {features.map((feature, idx) => {
+                    const isNegative = feature.toUpperCase().includes('TIDAK ADA') || feature.toUpperCase().includes('TANPA');
+                    return (
+                      <li key={idx} className={`flex ${isNegative ? 'opacity-60' : ''}`}>
+                        {isNegative ? (
+                          <svg className="flex-shrink-0 w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        ) : (
+                          <svg className="flex-shrink-0 w-6 h-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                        <span className="ml-3 text-gray-500 text-sm">{feature}</span>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
 
