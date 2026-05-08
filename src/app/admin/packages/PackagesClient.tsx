@@ -108,7 +108,6 @@ export default function PackagesClient({ packages }: { packages: Package[] }) {
     } catch (error) {
       alert('Gagal mengubah status paket.')
     } finally {
-    } finally {
       setSavingId(null)
     }
   }
