@@ -145,6 +145,7 @@ export default function EditProductForm({ product, onClose }: { product: Product
               >
                 <option value="pdf">PDF / E-Book</option>
                 <option value="template">Template</option>
+                <option value="interactive">Interaktif (HTML)</option>
                 <option value="other">Lainnya</option>
               </select>
             </div>

@@ -128,6 +128,7 @@ export default function AddProductForm({ onClose }: { onClose: () => void }) {
               >
                 <option value="pdf">PDF / E-Book</option>
                 <option value="template">Template</option>
+                <option value="interactive">Interaktif (HTML)</option>
                 <option value="other">Lainnya</option>
               </select>
             </div>

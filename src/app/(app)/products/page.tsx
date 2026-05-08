@@ -51,20 +51,29 @@ export default async function ProductsPage() {
         <div className="grid gap-8 md:grid-cols-3 lg:grid-cols-4">
           {products?.map((product) => {
             const isPurchased = purchasedProductIds.has(product.id)
+            const isInteractive = product.product_type === 'interactive'
+
+            const typeBadge: Record<string, { label: string; color: string }> = {
+              pdf: { label: '📄 PDF', color: 'bg-blue-50 text-blue-700' },
+              template: { label: '📋 Template', color: 'bg-amber-50 text-amber-700' },
+              interactive: { label: '🎮 Interaktif', color: 'bg-violet-50 text-violet-700' },
+              other: { label: '📦 Lainnya', color: 'bg-gray-50 text-gray-700' },
+            }
+            const badge = typeBadge[product.product_type] || typeBadge.other
 
             return (
-              <div key={product.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+              <div key={product.id} className={`bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col ${isInteractive ? 'border-violet-200 ring-1 ring-violet-100' : 'border-gray-200'}`}>
                 <div className="h-48 bg-gray-200 relative">
                   {product.thumbnail_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={product.thumbnail_url} alt={product.title} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-indigo-500 text-white font-bold text-xl">
-                      {product.product_type.toUpperCase()}
+                    <div className={`w-full h-full flex items-center justify-center text-white font-bold text-xl ${isInteractive ? 'bg-gradient-to-br from-violet-500 to-fuchsia-500' : 'bg-gradient-to-br from-blue-400 to-indigo-500'}`}>
+                      {isInteractive ? '🎮' : product.product_type.toUpperCase()}
                     </div>
                   )}
-                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold text-gray-800 uppercase">
-                    {product.product_type}
+                  <div className={`absolute top-2 right-2 backdrop-blur px-2.5 py-1 rounded-full text-xs font-bold ${badge.color}`}>
+                    {badge.label}
                   </div>
                 </div>
                 
@@ -74,17 +83,26 @@ export default async function ProductsPage() {
                   
                   <div className="mt-auto">
                     {isPurchased ? (
-                      <a 
-                        href={`/api/products/download?id=${product.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md text-sm font-bold text-white bg-green-600 hover:bg-green-700 transition-colors shadow-sm gap-2"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                        </svg>
-                        Akses File
-                      </a>
+                      isInteractive ? (
+                        <Link
+                          href={`/products/${product.id}/view`}
+                          className="w-full flex items-center justify-center py-2.5 px-4 border border-transparent rounded-lg text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 transition-all shadow-md shadow-violet-200 gap-2"
+                        >
+                          🎮 Buka Materi
+                        </Link>
+                      ) : (
+                        <a 
+                          href={`/api/products/download?id=${product.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md text-sm font-bold text-white bg-green-600 hover:bg-green-700 transition-colors shadow-sm gap-2"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                          </svg>
+                          Akses File
+                        </a>
+                      )
                     ) : (
                       <BuyProductButton productId={product.id} price={product.price} />
                     )}
