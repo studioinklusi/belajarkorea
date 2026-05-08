@@ -12,10 +12,14 @@ declare global {
 
 export default function SubscribeButton({ 
   packageId, 
-  price 
+  price,
+  label,
+  variant = 'default'
 }: { 
   packageId: string, 
-  price: number 
+  price: number,
+  label?: string,
+  variant?: 'default' | 'renew'
 }) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -79,17 +83,27 @@ export default function SubscribeButton({
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(p)
   }
 
+  const defaultLabel = label || `Berlangganan ${formatPrice(price)}/bulan`
+
+  const styles = variant === 'renew'
+    ? `w-full py-3 px-6 border-2 border-indigo-500 rounded-md text-center font-medium ${
+        isLoading 
+          ? 'bg-indigo-50 text-indigo-300 cursor-not-allowed' 
+          : 'bg-white text-indigo-600 hover:bg-indigo-50'
+      } transition-colors duration-200`
+    : `mt-8 block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium ${
+        isLoading 
+          ? 'bg-indigo-400 cursor-not-allowed' 
+          : 'bg-indigo-600 hover:bg-indigo-700'
+      } text-white transition-colors duration-200`
+
   return (
     <button
       onClick={handleSubscribe}
       disabled={isLoading}
-      className={`mt-8 block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium ${
-        isLoading 
-          ? 'bg-indigo-400 cursor-not-allowed' 
-          : 'bg-indigo-600 hover:bg-indigo-700'
-      } text-white transition-colors duration-200`}
+      className={styles}
     >
-      {isLoading ? 'Memproses...' : `Berlangganan ${formatPrice(price)}/bulan`}
+      {isLoading ? 'Memproses...' : defaultLabel}
     </button>
   )
 }

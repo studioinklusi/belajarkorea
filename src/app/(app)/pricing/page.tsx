@@ -94,8 +94,12 @@ export default async function PricingPage() {
                 </div>
 
                 {isActive ? (
-                  <div className="mt-8 block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium bg-green-100 text-green-800 cursor-default">
-                    Paket Anda Saat Ini
+                  <div className="mt-8 space-y-3">
+                    <div className="w-full py-2.5 px-4 rounded-lg text-center text-sm font-bold bg-green-50 text-green-700 border border-green-200 flex items-center justify-center gap-2">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                      Paket Aktif Anda
+                    </div>
+                    <SubscribeButton packageId={pkg.id} price={pkg.price} label={`Perpanjang +${pkg.duration_days} Hari`} variant="renew" />
                   </div>
                 ) : (
                   <SubscribeButton packageId={pkg.id} price={pkg.price} />
