@@ -20,12 +20,10 @@ export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAct
       {/* Trigger Button - shown as "More" icon in bottom nav */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
-          isOpen ? 'text-violet-600' : 'text-gray-400'
-        }`}
+        className="flex flex-col items-center justify-center w-full h-full space-y-1 text-gray-400 hover:text-gray-600"
         aria-label="Menu Lainnya"
       >
-        {isOpen ? <FaXmark className="w-5 h-5" /> : <FaEllipsis className="w-5 h-5" />}
+        <FaEllipsis className="w-5 h-5" />
         <span className="text-[10px] font-bold">Lainnya</span>
       </button>
 
@@ -34,16 +32,22 @@ export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAct
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[55]" 
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] transition-opacity" 
             onClick={() => setIsOpen(false)} 
           />
           
           {/* Menu Panel */}
-          <div className="fixed bottom-16 left-0 right-0 bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.12)] py-5 px-4 z-[56] animate-slide-up">
-            {/* Handle bar */}
-            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
+          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.12)] pt-4 pb-safe z-[61] animate-slide-up flex flex-col">
+            {/* Header / Handle */}
+            <div className="flex justify-between items-center px-6 pb-2">
+              <div className="w-6 h-6"></div> {/* Spacer for centering handle */}
+              <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
+              <button onClick={() => setIsOpen(false)} className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full">
+                <FaXmark className="w-3.5 h-3.5" />
+              </button>
+            </div>
             
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 px-4 pb-4 mt-2">
               {/* Pricing */}
               <Link 
                 href="/pricing" 
