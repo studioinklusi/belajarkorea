@@ -59,7 +59,7 @@ export async function signup(formData: FormData) {
 
   // Origin is needed to construct the confirmation link
   const headersList = await headers()
-  const host = headersList.get('host') || 'belajarkorea.vercel.app'
+  const host = headersList.get('host') || 'tsuha.vercel.app'
   const protocol = host.includes('localhost') ? 'http' : 'https'
   const origin = `${protocol}://${host}`
 
@@ -94,7 +94,7 @@ export async function forgotPassword(formData: FormData) {
   const supabase = await createClient()
   
   const headersList = await headers()
-  const host = headersList.get('host') || 'belajarkorea.vercel.app'
+  const host = headersList.get('host') || 'tsuha.vercel.app'
   const protocol = host.includes('localhost') ? 'http' : 'https'
   const origin = `${protocol}://${host}`
 

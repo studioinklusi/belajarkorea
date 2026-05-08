@@ -11,13 +11,13 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "belajarkorea.id - Belajar Bahasa Korea Jadi Super Seru",
+  title: "Tsuha.id - Belajar Bahasa Korea Jadi Super Seru",
   description: "Platform belajar bahasa Korea paling interaktif dan asik. Mulai dari nol sampai jago ngobrol tanpa subtitle!",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "belajarkorea.id",
+    title: "Tsuha.id",
   },
   formatDetection: {
     telephone: false,

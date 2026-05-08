@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import AiBuddyClient from './AiBuddyClient'
 
 export const metadata = {
-  title: 'AI Buddy - belajarkorea.id',
+  title: 'AI Buddy - Tsuha.id',
   description: 'Latihan ngobrol bahasa Korea dengan AI Tutor',
 }
 

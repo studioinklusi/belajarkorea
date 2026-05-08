@@ -1,4 +1,4 @@
-# 🇰🇷 Kurikulum Mnemonik Interaktif — BelajarKorea.id
+# 🇰🇷 Kurikulum Mnemonik Interaktif — Tsuha.id
 
 > Kurikulum ini 100% terpisah dari materi video (Kursus).  
 > Setiap materi adalah file HTML mandiri yang dijual sebagai **Produk Digital (tipe: Interactive)** dan diakses langsung di dalam aplikasi.

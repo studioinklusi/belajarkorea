@@ -16,7 +16,7 @@ export default function GlobalLoading() {
         
         {/* Loading Text */}
         <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600 tracking-tight mb-3">
-          belajarkorea.id
+          Tsuha.id
         </h2>
         <div className="flex items-center gap-2 text-gray-500 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
           <FaSpinner className="animate-spin text-violet-500 w-4 h-4" />

@@ -7,7 +7,7 @@ import CertificateQR from './CertificateQR'
 import crypto from 'crypto'
 
 export const metadata = {
-  title: 'Sertifikat Kelulusan | BelajarKorea.id',
+  title: 'Sertifikat Kelulusan | Tsuha.id',
   description: 'Sertifikat penyelesaian kursus bahasa Korea.',
 }
 
@@ -100,7 +100,7 @@ export default async function CertificatePage(props: {
   // Generate Deterministic Unique ID based on User + Course
   const hash = crypto.createHash('sha256').update(`${user.id}-${course.id}`).digest('hex')
   const certId = `BK-${hash.substring(0, 10).toUpperCase()}`
-  const verificationUrl = `https://belajarkorea.id/verify/${certId}`
+  const verificationUrl = `https://Tsuha.id/verify/${certId}`
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col font-sans">
@@ -134,7 +134,7 @@ export default async function CertificatePage(props: {
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-12 sm:px-24">
             <div className="mb-6">
               <span className="text-sm font-black tracking-widest text-violet-600 uppercase border-b-2 border-violet-600 pb-1">
-                BelajarKorea.id
+                Tsuha.id
               </span>
             </div>
             

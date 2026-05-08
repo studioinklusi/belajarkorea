@@ -46,7 +46,7 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
                 K
               </div>
               <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-gray-900">
-                belajarkorea<span className="text-violet-600">.id</span>
+                Tsuha<span className="text-violet-600">.id</span>
               </span>
             </Link>
             

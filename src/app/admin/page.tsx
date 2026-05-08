@@ -193,7 +193,7 @@ export default async function AdminDashboardPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Ringkasan Sistem</h1>
-        <p className="mt-2 text-gray-500 text-base sm:text-lg">Pantau performa dan konten platform belajarkorea.id Anda.</p>
+        <p className="mt-2 text-gray-500 text-base sm:text-lg">Pantau performa dan konten platform Tsuha.id Anda.</p>
       </div>
 
       {/* === STAT CARDS ROW 1 (3 columns) === */}

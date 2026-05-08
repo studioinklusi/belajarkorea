@@ -1,4 +1,4 @@
-# Aturan & Rekomendasi Paket Langganan BelajarKorea.id
+# Aturan & Rekomendasi Paket Langganan Tsuha.id
 
 Dokumen ini berisi standar operasional pembuatan paket berlangganan baru melalui Admin Panel, beserta rekomendasi harga strategis untuk meningkatkan retensi pengguna.
 

@@ -1,4 +1,4 @@
-// Translation dictionary for belajarkorea.id
+// Translation dictionary for Tsuha.id
 // Format: { key: { id: "Indonesian", en: "English" } }
 
 export const translations = {

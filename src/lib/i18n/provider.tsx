@@ -11,7 +11,7 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined)
 
-const LOCALE_STORAGE_KEY = 'belajarkorea-locale'
+const LOCALE_STORAGE_KEY = 'tsuha-locale'
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('id')
