@@ -95,10 +95,8 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Hide marketing pages (Landing Page, Pricing, Products) temporarily
-  const isMarketingRoute = request.nextUrl.pathname === '/' || 
-    request.nextUrl.pathname === '/pricing' || 
-    request.nextUrl.pathname === '/products'
+  // Hide root landing page temporarily
+  const isMarketingRoute = request.nextUrl.pathname === '/'
 
   if (isMarketingRoute) {
     const url = request.nextUrl.clone()
