@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { FaChevronLeft, FaAward } from 'react-icons/fa6'
+import { FaChevronLeft, FaAward, FaCircleInfo } from 'react-icons/fa6'
 import PrintButton from './PrintButton'
+import CertificateQR from './CertificateQR'
+import crypto from 'crypto'
 
 export const metadata = {
   title: 'Sertifikat Kelulusan | BelajarKorea.id',
@@ -94,6 +96,11 @@ export default async function CertificatePage(props: {
 
   const studentName = profile?.full_name || 'Pelajar Hebat'
   const dateStr = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
+  
+  // Generate Deterministic Unique ID based on User + Course
+  const hash = crypto.createHash('sha256').update(`${user.id}-${course.id}`).digest('hex')
+  const certId = `BK-${hash.substring(0, 10).toUpperCase()}`
+  const verificationUrl = `https://belajarkorea.id/verify/${certId}`
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col font-sans">
@@ -102,7 +109,15 @@ export default async function CertificatePage(props: {
         <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 flex items-center gap-2 font-medium">
           <FaChevronLeft className="w-4 h-4" /> Kembali
         </Link>
-        <PrintButton />
+        <div className="flex items-center gap-4">
+          {isAdmin && (
+            <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
+              <FaCircleInfo /> 
+              Admin: Ganti gambar "public/cert-bg.png" untuk custom desain.
+            </div>
+          )}
+          <PrintButton />
+        </div>
       </div>
 
       {/* Konten Sertifikat */}
@@ -140,15 +155,13 @@ export default async function CertificatePage(props: {
               <span className="font-bold text-gray-900 mt-2 block text-2xl">{course.title}</span>
             </p>
             
-            <div className="flex items-end justify-between w-full max-w-3xl mt-auto pb-12 px-8">
-              <div className="text-center">
-                <div className="border-b border-gray-400 w-48 pb-2 mb-2 font-bold text-gray-900">
-                  {dateStr}
-                </div>
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-bold">Tanggal Diberikan</p>
+            <div className="flex items-end justify-between w-full max-w-4xl mt-auto pb-12 px-8">
+              {/* QR Code Section */}
+              <div className="flex flex-col items-center">
+                <CertificateQR url={verificationUrl} certId={certId} />
               </div>
               
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center pb-6">
                 <div className="w-24 h-24 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white shadow-lg border-4 border-white mb-2 relative">
                   <FaAward className="w-10 h-10 drop-shadow-md" />
                   <div className="absolute -bottom-2 -right-2 bg-white text-amber-600 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-200 shadow-sm uppercase tracking-widest">
@@ -157,11 +170,11 @@ export default async function CertificatePage(props: {
                 </div>
               </div>
 
-              <div className="text-center">
-                <div className="border-b border-gray-400 w-48 pb-2 mb-2">
-                  <span className="font-serif italic font-bold text-xl text-gray-800">Master Han</span>
+              <div className="text-center pb-6">
+                <div className="border-b border-gray-400 w-48 pb-2 mb-2 font-bold text-gray-900">
+                  {dateStr}
                 </div>
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-bold">Instruktur Utama</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-bold">Tanggal Diberikan</p>
               </div>
             </div>
           </div>
