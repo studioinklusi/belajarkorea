@@ -50,6 +50,16 @@ export default function InstallPrompt() {
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
 
+  // Separate useEffect to listen for manual install trigger from other components
+  // This ensures handleInstall has access to the latest deferredPrompt state
+  useEffect(() => {
+    const manualTriggerHandler = () => {
+      handleInstall()
+    }
+    window.addEventListener('trigger-pwa-install', manualTriggerHandler)
+    return () => window.removeEventListener('trigger-pwa-install', manualTriggerHandler)
+  }, [deferredPrompt, isIOS]) // re-bind when these state variables change
+
   const handleInstall = async () => {
     // If native prompt is available (Android/Chrome), use it
     if (deferredPrompt) {
@@ -59,6 +69,7 @@ export default function InstallPrompt() {
         setShowBanner(false)
         setIsInstalled(true)
       }
+      // prompt() can only be called once on the deferredPrompt object
       setDeferredPrompt(null)
       return
     }

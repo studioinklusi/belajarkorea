@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { FaHandSparkles, FaRobot, FaHouse, FaBookOpen, FaUser, FaBox } from 'react-icons/fa6'
+import { FaHandSparkles, FaRobot, FaHouse, FaBookOpen, FaUser, FaBox, FaDownload } from 'react-icons/fa6'
 import MobileMenu from './MobileMenu'
 import LanguageSwitcher from './LanguageSwitcher'
 import { useTranslation } from '@/lib/i18n'
@@ -96,6 +96,17 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
                   <span className="text-sm font-bold text-gray-700 hidden sm:flex items-center gap-2">
                     {locale === 'en' ? 'Hello' : '안녕'}, {profile?.full_name?.split(' ')[0] || 'Chingu'}! <FaHandSparkles className="text-yellow-500" />
                   </span>
+                  
+                  {/* Install App Button (Desktop) */}
+                  <button
+                    onClick={() => window.dispatchEvent(new Event('trigger-pwa-install'))}
+                    className="hidden md:flex items-center gap-2 bg-violet-50 text-violet-700 hover:bg-violet-100 px-4 py-2.5 rounded-full text-sm font-bold transition-colors"
+                    title="Install Aplikasi"
+                  >
+                    <FaDownload className="w-4 h-4" />
+                    Install
+                  </button>
+
                   <form action={signoutAction} className="hidden md:block">
                     <button
                       type="submit"

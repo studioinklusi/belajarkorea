@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { FaEllipsis, FaXmark, FaRightFromBracket, FaGear, FaTag, FaShieldHalved } from 'react-icons/fa6'
+import { FaEllipsis, FaXmark, FaRightFromBracket, FaGear, FaTag, FaShieldHalved, FaDownload } from 'react-icons/fa6'
 
 interface MobileMenuProps {
   isLoggedIn: boolean
@@ -63,6 +63,18 @@ export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAct
                 <FaGear className="w-4 h-4 text-gray-400" />
                 Produk Digital
               </Link>
+
+              {/* Install App */}
+              <button 
+                onClick={() => {
+                  setIsOpen(false)
+                  window.dispatchEvent(new Event('trigger-pwa-install'))
+                }} 
+                className="flex items-center gap-3 text-violet-700 bg-violet-50 hover:bg-violet-100 px-4 py-3 rounded-xl text-sm font-bold transition-colors w-full text-left"
+              >
+                <FaDownload className="w-4 h-4 text-violet-600" />
+                Install Aplikasi
+              </button>
 
               {/* Admin Panel */}
               {isAdmin && (
