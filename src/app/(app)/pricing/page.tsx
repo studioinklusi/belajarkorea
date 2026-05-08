@@ -27,11 +27,13 @@ export default async function PricingPage() {
   if (user) {
     const { data: sub } = await supabase
       .from('v_active_subscriptions')
-      .select('package_slug')
+      .select('package_slug, computed_status, days_remaining')
       .eq('user_id', user.id)
       .single()
     
-    if (sub) {
+    // Only consider it "active" (blocking repurchase) if it's truly active
+    // If it's grace_period or expired, allow them to repurchase
+    if (sub && sub.computed_status === 'active') {
       activePackageId = sub.package_slug
     }
   }
