@@ -99,3 +99,47 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: (error as Error).message || 'Internal Server Error' }, { status: 500 })
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const supabase = await createServerClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    // Package management requires super_admin
+    if (!profile || profile.role !== 'super_admin') {
+      return NextResponse.json({ error: 'Forbidden. Hanya Super Admin yang dapat mengelola paket.' }, { status: 403 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const package_id = searchParams.get('id')
+
+    if (!package_id) {
+      return NextResponse.json({ error: 'package_id wajib diisi.' }, { status: 400 })
+    }
+
+    const { error: dbError } = await supabaseAdmin
+      .from('packages')
+      .delete()
+      .eq('id', package_id)
+
+    if (dbError) {
+      // Supabase throws error if foreign key constraint fails (e.g. users are subscribed)
+      if (dbError.code === '23503') {
+        return NextResponse.json({ error: 'Tidak dapat menghapus paket ini karena sudah ada riwayat transaksi atau langganan yang menggunakannya. Silakan ubah statusnya menjadi "Nonaktif" saja.' }, { status: 400 })
+      }
+      return NextResponse.json({ error: `Gagal menghapus paket: ${dbError.message}` }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error: unknown) {
+    console.error('Delete package error:', error)
+    return NextResponse.json({ error: (error as Error).message || 'Internal Server Error' }, { status: 500 })
+  }
+}

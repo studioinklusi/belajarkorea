@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { FaCrown, FaPen, FaCheck, FaXmark, FaSpinner, FaEye, FaEyeSlash, FaUsers, FaPlus } from 'react-icons/fa6'
+import { FaCrown, FaPen, FaCheck, FaXmark, FaSpinner, FaEye, FaEyeSlash, FaUsers, FaPlus, FaTrash } from 'react-icons/fa6'
 
 type Package = {
   id: string
@@ -107,6 +107,29 @@ export default function PackagesClient({ packages }: { packages: Package[] }) {
       router.refresh()
     } catch (error) {
       alert('Gagal mengubah status paket.')
+    } finally {
+      setSavingId(null)
+    }
+  }
+
+  async function handleDelete(pkgId: string) {
+    if (!confirm('Peringatan: Anda yakin ingin MENGHAPUS paket ini secara permanen? Jika paket ini pernah dibeli user, penghapusan akan dibatalkan oleh sistem database.')) return
+    
+    setSavingId(pkgId)
+    try {
+      const res = await fetch(`/api/admin/packages?id=${pkgId}`, {
+        method: 'DELETE',
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error || 'Gagal menghapus paket')
+        return
+      }
+
+      router.refresh()
+    } catch (error) {
+      alert('Terjadi kesalahan saat menghapus paket.')
     } finally {
       setSavingId(null)
     }
@@ -370,6 +393,14 @@ export default function PackagesClient({ packages }: { packages: Package[] }) {
                       title={pkg.is_active ? 'Nonaktifkan Paket' : 'Aktifkan Paket'}
                     >
                       {savingId === pkg.id ? <FaSpinner className="animate-spin" /> : (pkg.is_active ? <FaEyeSlash /> : <FaEye />)}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(pkg.id)}
+                      disabled={savingId !== null}
+                      className="px-4 py-2.5 rounded-xl font-bold text-sm bg-white border border-gray-200 text-gray-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors flex items-center justify-center"
+                      title="Hapus Paket"
+                    >
+                      <FaTrash />
                     </button>
                   </>
                 )}
