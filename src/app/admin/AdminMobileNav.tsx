@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { FaBars, FaXmark, FaBox, FaBook, FaUsers, FaChartLine, FaArrowLeft, FaRightFromBracket, FaGauge, FaCrown, FaBullhorn } from 'react-icons/fa6'
+import { FaBars, FaXmark, FaBox, FaBook, FaUsers, FaChartLine, FaArrowLeft, FaRightFromBracket, FaGauge, FaCrown, FaBullhorn, FaTicket } from 'react-icons/fa6'
 
 export default function AdminMobileNav({ signoutAction }: { signoutAction: () => void }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -77,6 +77,10 @@ export default function AdminMobileNav({ signoutAction }: { signoutAction: () =>
             <Link href="/admin/promos" onClick={() => setIsOpen(false)} className={getLinkClasses('/admin/promos')}>
               <FaBullhorn className={getIconClasses('/admin/promos')} />
               Kelola Promo
+            </Link>
+            <Link href="/admin/vouchers" onClick={() => setIsOpen(false)} className={getLinkClasses('/admin/vouchers')}>
+              <FaTicket className={getIconClasses('/admin/vouchers')} />
+              Kode Voucher
             </Link>
             <Link href="/admin/transactions" onClick={() => setIsOpen(false)} className={getLinkClasses('/admin/transactions')}>
               <FaChartLine className={getIconClasses('/admin/transactions')} />

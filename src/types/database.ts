@@ -125,6 +125,8 @@ export interface Database {
           webhook_received_at: string | null
           idempotency_key: string | null
           metadata: Json | null
+          voucher_id: string | null
+          discount_amount: number
           created_at: string
           updated_at: string
         }
@@ -142,6 +144,8 @@ export interface Database {
           webhook_received_at?: string | null
           idempotency_key?: string | null
           metadata?: Json | null
+          voucher_id?: string | null
+          discount_amount?: number
           created_at?: string
           updated_at?: string
         }
@@ -151,6 +155,53 @@ export interface Database {
           snap_token?: string | null
           webhook_received_at?: string | null
           metadata?: Json | null
+          voucher_id?: string | null
+          discount_amount?: number
+          updated_at?: string
+        }
+      }
+      vouchers: {
+        Row: {
+          id: string
+          code: string
+          discount_type: 'percentage' | 'fixed'
+          discount_value: number
+          max_discount: number | null
+          max_uses: number | null
+          current_uses: number
+          valid_from: string | null
+          valid_until: string | null
+          applicable_package_ids: string[] | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          discount_type: 'percentage' | 'fixed'
+          discount_value: number
+          max_discount?: number | null
+          max_uses?: number | null
+          current_uses?: number
+          valid_from?: string | null
+          valid_until?: string | null
+          applicable_package_ids?: string[] | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          discount_type?: 'percentage' | 'fixed'
+          discount_value?: number
+          max_discount?: number | null
+          max_uses?: number | null
+          current_uses?: number
+          valid_from?: string | null
+          valid_until?: string | null
+          applicable_package_ids?: string[] | null
+          is_active?: boolean
           updated_at?: string
         }
       }
