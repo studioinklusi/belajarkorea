@@ -68,7 +68,7 @@ export default async function LessonPage(props: {
         const { data: activeSubs } = await supabase
           .from('v_active_subscriptions')
           .select('package_slug')
-          .eq('user_id', user.id)
+          .eq('user_id', user.id).neq('computed_status', 'expired')
           
         const activeBaseSlugs = activeSubs?.map(s => s.package_slug.split('-')[0]) || []
         const hasValidPackage = course.required_package.some((rp: string) => activeBaseSlugs.includes(rp))

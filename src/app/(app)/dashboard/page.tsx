@@ -26,7 +26,7 @@ export default async function DashboardPage() {
   const { data: subscription } = await supabase
     .from('v_active_subscriptions')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('user_id', user.id).neq('computed_status', 'expired')
     .single()
 
   // 3. Ambil Progress Belajar (Dihitung manual agar lebih akurat dibanding View)
