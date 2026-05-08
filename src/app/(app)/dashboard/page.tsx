@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { signout } from '../(auth)/auth/actions'
 import { PlayCircleIcon } from '@heroicons/react/24/solid'
-import { FaTicket, FaLock, FaBullseye, FaBookOpen, FaCircleQuestion, FaHandSparkles, FaRobot } from 'react-icons/fa6'
+import { FaTicket, FaLock, FaBullseye, FaBookOpen, FaCircleQuestion, FaHandSparkles, FaRobot, FaAward } from 'react-icons/fa6'
 export default async function DashboardPage() {
   const supabase = await createClient()
 
@@ -233,12 +233,22 @@ export default async function DashboardPage() {
                           </span>
                           <h4 className="text-lg font-extrabold text-gray-900 group-hover:text-violet-700 transition-colors">{prog.course_title}</h4>
                         </div>
-                        <Link 
-                          href={`/courses/${courseSlugs[prog.course_id] || prog.course_id}`} 
-                          className="w-full sm:w-auto px-5 py-2.5 bg-gray-900 text-white rounded-full text-sm font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
-                        >
-                          Lanjut <PlayCircleIcon className="w-5 h-5" />
-                        </Link>
+                        <div className="flex gap-2 w-full sm:w-auto">
+                          {prog.completion_percentage >= 100 && (
+                            <Link 
+                              href={`/certificates/${courseSlugs[prog.course_id] || prog.course_id}`} 
+                              className="px-4 py-2.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-full text-sm font-bold hover:bg-amber-100 transition-colors flex items-center justify-center gap-2 flex-1 sm:flex-none whitespace-nowrap"
+                            >
+                              <FaAward className="w-4 h-4" /> Sertifikat
+                            </Link>
+                          )}
+                          <Link 
+                            href={`/courses/${courseSlugs[prog.course_id] || prog.course_id}`} 
+                            className="w-full sm:w-auto px-5 py-2.5 bg-gray-900 text-white rounded-full text-sm font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 flex-1 sm:flex-none"
+                          >
+                            Lanjut <PlayCircleIcon className="w-5 h-5" />
+                          </Link>
+                        </div>
                       </div>
                       
                       <div className="mt-5 bg-gray-50 rounded-xl p-4">

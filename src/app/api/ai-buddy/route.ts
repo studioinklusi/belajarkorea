@@ -1,4 +1,5 @@
 import { rateLimit } from '@/lib/rate-limit';
+import { createClient } from '@/lib/supabase/server';
 
 // === Type Definitions ===
 type KoreanLevel = 'beginner' | 'intermediate' | 'advanced';
@@ -162,6 +163,32 @@ export async function POST(request: Request) {
         { error: "Terlalu banyak pesan. Harap tunggu sebentar sebelum mengirim pesan lagi." },
         { status: 429 }
       )
+    }
+
+
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return Response.json({ error: "Anda harus login untuk menggunakan fitur ini." }, { status: 401 });
+    }
+
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    const isAdmin = profile?.role === 'super_admin' || profile?.role === 'content_admin';
+
+    if (!isAdmin) {
+      const { data: activeSubs } = await supabase
+        .from('v_active_subscriptions')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1);
+
+      if (!activeSubs || activeSubs.length === 0) {
+        return Response.json(
+          { error: "Fitur eksklusif ini memerlukan paket berlangganan aktif. Silakan langganan terlebih dahulu." },
+          { status: 403 }
+        );
+      }
     }
 
     const body = await request.json();

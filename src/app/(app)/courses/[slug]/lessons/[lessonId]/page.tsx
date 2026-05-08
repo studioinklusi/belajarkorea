@@ -18,7 +18,7 @@ export default async function LessonPage(props: {
   // 1. Ambil course
   const { data: course } = await supabase
     .from('courses')
-    .select('id, title, slug')
+    .select('id, title, slug, required_package')
     .eq('slug', params.slug)
     .single()
 
@@ -56,7 +56,30 @@ export default async function LessonPage(props: {
     .eq('course_id', course.id)
     .single()
 
-  const isLocked = error || !currentLesson
+  let isLocked = error || !currentLesson
+  
+  // 5. Validasi Paket Spesifik
+  if (!isLocked && currentLesson && !currentLesson.is_preview && user) {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const isAdmin = profile?.role === 'super_admin' || profile?.role === 'content_admin'
+    
+    if (!isAdmin) {
+      if (course.required_package && course.required_package.length > 0) {
+        const { data: activeSubs } = await supabase
+          .from('v_active_subscriptions')
+          .select('package_slug')
+          .eq('user_id', user.id)
+          
+        const activeBaseSlugs = activeSubs?.map(s => s.package_slug.split('-')[0]) || []
+        const hasValidPackage = course.required_package.some((rp: string) => activeBaseSlugs.includes(rp))
+        
+        if (!hasValidPackage) {
+          isLocked = true
+        }
+      }
+    }
+  }
+
   const isCompleted = progressMap[params.lessonId] === 'completed'
 
   // Hitung progress keseluruhan
