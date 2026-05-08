@@ -29,27 +29,61 @@ export default async function DashboardPage() {
     .eq('user_id', user.id)
     .single()
 
-  // 3. Ambil Progress Belajar
-  const { data: progresses } = await supabase
-    .from('v_course_progress')
-    .select('*')
+  // 3. Ambil Progress Belajar (Dihitung manual agar lebih akurat dibanding View)
+  const { data: courses } = await supabase
+    .from('courses')
+    .select('id, title, level, slug')
+    .eq('is_published', true)
+
+  const { data: lessons } = await supabase
+    .from('lessons')
+    .select('id, course_id')
+    .eq('is_published', true)
+
+  const { data: userProgresses } = await supabase
+    .from('user_progress')
+    .select('lesson_id, status')
     .eq('user_id', user.id)
 
-  // Ambil slug untuk setiap course di progress
+  let accurateProgresses: any[] = []
   let courseSlugs: Record<string, string> = {}
-  if (progresses && progresses.length > 0) {
-    const courseIds = progresses.map(p => p.course_id)
-    const { data: courses } = await supabase
-      .from('courses')
-      .select('id, slug')
-      .in('id', courseIds)
-    
-    if (courses) {
-      courses.forEach(c => {
-        courseSlugs[c.id] = c.slug
-      })
-    }
+
+  if (courses && lessons) {
+    const progressMap = new Map(userProgresses?.map(up => [up.lesson_id, up.status]) || [])
+
+    courses.forEach(course => {
+      courseSlugs[course.id] = course.slug
+      const courseLessons = lessons.filter(l => l.course_id === course.id)
+      const total_lessons = courseLessons.length
+      
+      if (total_lessons > 0) {
+        let hasStarted = false
+        let completed_lessons = 0
+        
+        courseLessons.forEach(l => {
+          if (progressMap.has(l.id)) {
+            hasStarted = true
+            if (progressMap.get(l.id) === 'completed') {
+              completed_lessons++
+            }
+          }
+        })
+
+        if (hasStarted) {
+          accurateProgresses.push({
+            course_id: course.id,
+            course_title: course.title,
+            course_level: course.level,
+            total_lessons,
+            completed_lessons,
+            completion_percentage: Math.round((completed_lessons / total_lessons) * 100)
+          })
+        }
+      }
+    })
   }
+
+  const progresses = accurateProgresses
 
   // 4. Hitung Target Harian
   const today = new Date()

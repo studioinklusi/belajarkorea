@@ -54,15 +54,25 @@ export default async function CertificatePage(props: {
 
   if (!course) notFound()
 
-  // Pastikan user sudah lulus 100%
-  const { data: progress } = await supabase
-    .from('v_course_progress')
-    .select('completion_percentage')
-    .eq('user_id', user.id)
+  // Pastikan user sudah lulus 100% (Hitung manual akurat)
+  const { data: courseLessons } = await supabase
+    .from('lessons')
+    .select('id')
     .eq('course_id', course.id)
-    .single()
+    .eq('is_published', true)
 
-  if (!isAdmin && (!progress || progress.completion_percentage < 100)) {
+  const { data: userCompletedLessons } = await supabase
+    .from('user_progress')
+    .select('lesson_id')
+    .eq('user_id', user.id)
+    .eq('status', 'completed')
+
+  const totalLessons = courseLessons?.length || 0
+  const completedLessonIds = new Set(userCompletedLessons?.map(up => up.lesson_id) || [])
+  const completedCount = courseLessons?.filter(l => completedLessonIds.has(l.id)).length || 0
+  const completionPercentage = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0
+
+  if (!isAdmin && completionPercentage < 100) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
