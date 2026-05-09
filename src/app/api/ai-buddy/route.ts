@@ -192,7 +192,7 @@ export async function POST(request: Request) {
 
     // Tentukan batas pesan harian
     let dailyLimit = 14; // Gratis
-    if (isBasic) dailyLimit = 30; // Paket Basic
+    if (isBasic) dailyLimit = 37; // Paket Basic
 
     // Cek kuota jika bukan admin atau pro/premium
     if (!isAdmin && !isProOrPremium) {
