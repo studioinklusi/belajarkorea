@@ -35,6 +35,8 @@ export default function QuizModal({ lessonId, lessonName, onClose }: { lessonId:
     fetchQuestions()
   }, [lessonId])
 
+  const [cooldown, setCooldown] = useState<{ message: string; minutes: number } | null>(null)
+
   async function handleSubmit() {
     setSubmitting(true)
     try {
@@ -44,7 +46,13 @@ export default function QuizModal({ lessonId, lessonName, onClose }: { lessonId:
         body: JSON.stringify({ lesson_id: lessonId, answers }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Gagal mengirim kuis')
+      if (!res.ok) {
+        if (data.cooldown) {
+          setCooldown({ message: data.error, minutes: data.remaining_minutes })
+          return
+        }
+        throw new Error(data.error || 'Gagal mengirim kuis')
+      }
       setResult(data)
     } catch (err: unknown) {
       alert((err as Error).message)
@@ -80,6 +88,46 @@ export default function QuizModal({ lessonId, lessonName, onClose }: { lessonId:
           <button onClick={onClose} className="w-full bg-violet-600 text-white py-4 rounded-2xl font-bold transition-all hover:bg-violet-700 shadow-lg shadow-violet-200">
             Tutup
           </button>
+        </div>
+      </div>
+    )
+  }
+  if (cooldown) {
+    return (
+      <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center z-[100] p-4">
+        <div className="bg-white rounded-[2.5rem] p-10 max-w-md w-full text-center shadow-[0_32px_64px_-15px_rgba(0,0,0,0.3)] relative overflow-hidden animate-fade-in-up">
+          {/* Decorative gradient */}
+          <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full blur-3xl opacity-20 bg-violet-500"></div>
+          <div className="absolute -bottom-20 -left-20 w-56 h-56 rounded-full blur-3xl opacity-10 bg-pink-500"></div>
+          
+          <div className="relative z-10">
+            {/* Timer icon */}
+            <div className="w-24 h-24 bg-gradient-to-br from-violet-400 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-violet-200 transform -rotate-3">
+              <span className="text-5xl">⏰</span>
+            </div>
+
+            <h3 className="text-2xl font-black text-gray-900 mb-3">Istirahat Sebentar ya! 🌸</h3>
+            
+            <p className="text-gray-500 font-medium leading-relaxed mb-8">
+              {cooldown.message}
+            </p>
+
+            {/* Timer badge */}
+            <div className="inline-flex items-center gap-2 bg-violet-50 border border-violet-100 px-5 py-3 rounded-2xl mb-8">
+              <span className="text-2xl">⏱️</span>
+              <span className="text-lg font-black text-violet-700">{cooldown.minutes} menit lagi</span>
+            </div>
+
+            <div className="space-y-3">
+              <button 
+                onClick={onClose}
+                className="w-full bg-violet-600 hover:bg-violet-700 text-white py-4 rounded-2xl font-bold transition-all shadow-lg shadow-violet-200"
+              >
+                Oke, Aku Review Dulu! 📚
+              </button>
+              <p className="text-xs text-gray-400 font-medium">tsuha.id — Belajar Bahasa Korea Jadi Super Seru ✨</p>
+            </div>
+          </div>
         </div>
       </div>
     )

@@ -67,7 +67,11 @@ export async function POST(request: Request) {
       if (hoursDiff < 1) {
         const remainingMinutes = Math.ceil(60 - (hoursDiff * 60))
         return NextResponse.json(
-          { error: `Harap tunggu ${remainingMinutes} menit lagi sebelum mengulang kuis.` },
+          { 
+            error: `Kamu hebat sudah mau mencoba lagi! 💪 Tapi yuk istirahat dulu ${remainingMinutes} menit ya, sambil review materinya lagi biar makin paham. Tsuha.id percaya kamu pasti bisa! 🌟`,
+            cooldown: true,
+            remaining_minutes: remainingMinutes
+          },
           { status: 429 }
         )
       }
