@@ -247,18 +247,40 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'product_id diperlukan' }, { status: 400 })
     }
 
-    // 3. Ambil data produk dulu (untuk hapus file)
+    // 3. Cek apakah ada pembelian yang terkait
+    const { count: purchaseCount } = await supabaseAdmin
+      .from('product_purchases')
+      .select('*', { count: 'exact', head: true })
+      .eq('product_id', product_id)
+
+    if (purchaseCount && purchaseCount > 0) {
+      // Soft delete: nonaktifkan produk karena ada riwayat pembelian
+      const { error: softDeleteError } = await supabaseAdmin
+        .from('digital_products')
+        .update({ is_active: false })
+        .eq('id', product_id)
+
+      if (softDeleteError) {
+        return NextResponse.json({ error: `Gagal menonaktifkan produk: ${(softDeleteError as Error).message}` }, { status: 500 })
+      }
+
+      return NextResponse.json({ 
+        message: 'Produk telah dinonaktifkan karena ada riwayat pembelian. Data pembelian tetap aman.',
+        soft_deleted: true
+      })
+    }
+
+    // 4. Hard delete: produk belum pernah dibeli, aman untuk dihapus
     const { data: product } = await supabaseAdmin
       .from('digital_products')
       .select('file_path')
       .eq('id', product_id)
       .single()
 
-    if (product?.file_path) {
+    if (product?.file_path && !product.file_path.startsWith('http')) {
       await supabaseAdmin.storage.from('digital-products').remove([product.file_path])
     }
 
-    // 4. Hapus dari database
     const { error } = await supabaseAdmin
       .from('digital_products')
       .delete()

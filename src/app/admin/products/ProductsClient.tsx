@@ -36,10 +36,15 @@ export default function ProductsClient({ products }: { products: Product[] | nul
         body: JSON.stringify({ product_id: productId }),
       })
 
+      const data = await res.json()
+
       if (!res.ok) {
-        const data = await res.json()
         alert(data.error || 'Gagal menghapus')
         return
+      }
+
+      if (data.soft_deleted) {
+        alert('ℹ️ Produk ini sudah pernah dibeli, jadi dinonaktifkan saja (bukan dihapus) agar data pembelian tetap aman.')
       }
 
       router.refresh()
