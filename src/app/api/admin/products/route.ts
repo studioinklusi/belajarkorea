@@ -254,7 +254,18 @@ export async function DELETE(request: Request) {
       .eq('id', product_id)
       .single()
 
-    // 4. Hapus data pembelian terkait terlebih dahulu
+    // 4. Hapus referensi di transactions (set product_id = null, karena data transaksi = audit trail)
+    const { error: txnUpdateError } = await supabaseAdmin
+      .from('transactions')
+      .update({ product_id: null })
+      .eq('product_id', product_id)
+
+    if (txnUpdateError) {
+      console.error('Update transactions error:', txnUpdateError)
+      return NextResponse.json({ error: `Gagal memperbarui data transaksi: ${(txnUpdateError as Error).message}` }, { status: 500 })
+    }
+
+    // 5. Hapus data pembelian terkait
     const { error: purchaseDeleteError } = await supabaseAdmin
       .from('product_purchases')
       .delete()
