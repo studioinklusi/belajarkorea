@@ -141,36 +141,45 @@ export async function POST(request: Request) {
         const packageId = transaction.package_id
         const durationDays = transaction.packages.duration_days
         
-        // Cek apakah user sudah punya subscription untuk package ini
+        // Cek apakah user sudah punya subscription APAPUN yang aktif
         const { data: existingSub } = await supabaseAdmin
           .from('subscriptions')
           .select('*')
           .eq('user_id', transaction.user_id)
-          .eq('package_id', packageId)
+          .in('status', ['active', 'grace_period'])
           .single()
 
-        const newExpiresAt = new Date()
-        newExpiresAt.setDate(newExpiresAt.getDate() + durationDays)
+        const now = new Date()
 
         if (existingSub) {
-          // Update/Perpanjang subscription yang ada
-          let baseDate = new Date()
-          if (['active', 'grace_period'].includes(existingSub.status) && new Date(existingSub.expires_at) > new Date()) {
-            baseDate = new Date(existingSub.expires_at)
+          const isSamePackage = existingSub.package_id === packageId
+          const currentExpiry = new Date(existingSub.expires_at)
+          let newExpiry: Date
+
+          if (isSamePackage && currentExpiry > now) {
+            // Paket SAMA & masih aktif → perpanjang dari tanggal expired
+            newExpiry = new Date(currentExpiry.getTime())
+            newExpiry.setDate(newExpiry.getDate() + durationDays)
+          } else {
+            // Paket BEDA (upgrade) → mulai dari sekarang
+            newExpiry = new Date(now.getTime())
+            newExpiry.setDate(newExpiry.getDate() + durationDays)
           }
-          
-          baseDate.setDate(baseDate.getDate() + durationDays)
 
           await supabaseAdmin
             .from('subscriptions')
             .update({
+              package_id: packageId,
               status: 'active',
-              expires_at: baseDate.toISOString(),
-              updated_at: new Date().toISOString()
+              expires_at: newExpiry.toISOString(),
+              updated_at: now.toISOString()
             })
             .eq('id', existingSub.id)
         } else {
           // Buat subscription baru
+          const newExpiresAt = new Date()
+          newExpiresAt.setDate(newExpiresAt.getDate() + durationDays)
+
           await supabaseAdmin
             .from('subscriptions')
             .insert({

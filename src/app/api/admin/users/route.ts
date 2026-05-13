@@ -147,7 +147,7 @@ export async function POST(request: Request) {
     // Get package info
     const { data: pkg, error: pkgErr } = await supabaseAdmin
       .from('packages')
-      .select('id, name, duration_days')
+      .select('id, name, duration_days, price')
       .eq('id', package_id)
       .single()
 
@@ -160,22 +160,42 @@ export async function POST(request: Request) {
     // Check if user already has an active subscription
     const { data: existingSub } = await supabaseAdmin
       .from('subscriptions')
-      .select('id, expires_at')
+      .select('id, expires_at, package_id')
       .eq('user_id', user_id)
       .in('status', ['active', 'grace_period'])
       .single()
 
     const now = new Date()
-    let startDate = now
     let expiresAt: Date
 
     if (existingSub) {
-      // Extend existing subscription
-      const currentExpiry = new Date(existingSub.expires_at)
-      if (currentExpiry > now) {
-        startDate = currentExpiry // start from current expiry
+      // ── Proteksi Downgrade ──────────────────────────────────
+      // Jika paket baru berbeda, cek apakah ini downgrade
+      if (existingSub.package_id !== package_id) {
+        const { data: currentPkg } = await supabaseAdmin
+          .from('packages')
+          .select('id, name, price')
+          .eq('id', existingSub.package_id)
+          .single()
+
+        if (currentPkg && pkg.price < currentPkg.price) {
+          return NextResponse.json({
+            error: `Tidak bisa downgrade! User saat ini memiliki paket "${currentPkg.name}" (Rp ${currentPkg.price.toLocaleString('id-ID')}). Paket "${pkg.name}" (Rp ${pkg.price.toLocaleString('id-ID')}) lebih rendah. Tunggu paket saat ini expired, atau berikan paket yang setara/lebih tinggi.`
+          }, { status: 400 })
+        }
       }
-      expiresAt = new Date(startDate.getTime() + actualDuration * 24 * 60 * 60 * 1000)
+
+      // ── Logika Perpanjangan ─────────────────────────────────
+      const currentExpiry = new Date(existingSub.expires_at)
+      const isSamePackage = existingSub.package_id === package_id
+
+      if (isSamePackage && currentExpiry > now) {
+        // Paket SAMA → tambahkan durasi di atas sisa waktu
+        expiresAt = new Date(currentExpiry.getTime() + actualDuration * 24 * 60 * 60 * 1000)
+      } else {
+        // Paket BEDA (upgrade) → mulai dari sekarang, tidak menumpuk
+        expiresAt = new Date(now.getTime() + actualDuration * 24 * 60 * 60 * 1000)
+      }
 
       const { error: updateErr } = await supabaseAdmin
         .from('subscriptions')
