@@ -1,6 +1,31 @@
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { coreApi } from '@/lib/midtrans'
+import crypto from 'crypto'
+
+// ============================================================
+// Midtrans Webhook Signature Verification
+// Formula: SHA512(order_id + status_code + gross_amount + server_key)
+// Docs: https://docs.midtrans.com/reference/receiving-notifications
+// ============================================================
+
+function verifySignature(payload: {
+  order_id: string
+  status_code: string
+  gross_amount: string
+  signature_key: string
+}): boolean {
+  const serverKey = process.env.MIDTRANS_SERVER_KEY
+  if (!serverKey) {
+    console.error('MIDTRANS_SERVER_KEY not set — cannot verify webhook signature')
+    return false
+  }
+
+  const input = payload.order_id + payload.status_code + payload.gross_amount + serverKey
+  const expectedSignature = crypto.createHash('sha512').update(input).digest('hex')
+
+  return expectedSignature === payload.signature_key
+}
 
 export async function POST(request: Request) {
   let rawBody = ''
@@ -8,15 +33,42 @@ export async function POST(request: Request) {
     rawBody = await request.text()
     const payload = JSON.parse(rawBody)
 
-    // 1. Verifikasi payload menggunakan Midtrans Core API
-    // Midtrans SDK otomatis memverifikasi signature key di balik layar
+    // ─────────────────────────────────────────────────────────
+    // LAYER 1: Verifikasi Signature Key
+    // Pastikan notifikasi benar-benar datang dari Midtrans,
+    // bukan dari pihak luar yang mencoba memanipulasi database.
+    // ─────────────────────────────────────────────────────────
+    if (!payload.signature_key) {
+      console.error('WEBHOOK REJECTED: Missing signature_key in payload', {
+        order_id: payload.order_id,
+        ip: request.headers.get('x-forwarded-for') || 'unknown'
+      })
+      return NextResponse.json({ error: 'Missing signature' }, { status: 403 })
+    }
+
+    if (!verifySignature(payload)) {
+      console.error('WEBHOOK REJECTED: Invalid signature_key — possible tampering!', {
+        order_id: payload.order_id,
+        status_code: payload.status_code,
+        gross_amount: payload.gross_amount,
+        received_signature: payload.signature_key?.substring(0, 20) + '...',
+        ip: request.headers.get('x-forwarded-for') || 'unknown'
+      })
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 403 })
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // LAYER 2: Double-check via Midtrans API
+    // Setelah signature valid, kita tetap query ulang status
+    // ke Midtrans API sebagai sumber kebenaran kedua.
+    // ─────────────────────────────────────────────────────────
     const statusResponse = await coreApi.transaction.notification(payload)
     
     const orderId = statusResponse.order_id
     const transactionStatus = statusResponse.transaction_status
     const fraudStatus = statusResponse.fraud_status
 
-    console.log(`Webhook received for Order ID: ${orderId}, Status: ${transactionStatus}`)
+    console.log(`Webhook verified & received for Order ID: ${orderId}, Status: ${transactionStatus}`)
 
     // 2. Ambil Transaksi dari DB
     const { data: transaction, error: txnError } = await supabaseAdmin
@@ -28,6 +80,22 @@ export async function POST(request: Request) {
     if (txnError || !transaction) {
       console.error(`Transaction not found for Order ID: ${orderId}`)
       return NextResponse.json({ message: 'Transaction not found' }, { status: 404 })
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // LAYER 3: Validasi gross_amount cocok dengan amount di DB
+    // Mencegah attacker yang membuat transaksi Rp1 untuk item
+    // seharga Rp100.000 lalu mengirim webhook yang valid.
+    // ─────────────────────────────────────────────────────────
+    const webhookAmount = parseFloat(statusResponse.gross_amount)
+    if (webhookAmount !== transaction.amount) {
+      console.error('WEBHOOK REJECTED: Amount mismatch!', {
+        order_id: orderId,
+        webhook_amount: webhookAmount,
+        db_amount: transaction.amount,
+        ip: request.headers.get('x-forwarded-for') || 'unknown'
+      })
+      return NextResponse.json({ error: 'Amount mismatch' }, { status: 403 })
     }
 
     // 3. Tentukan status baru
@@ -139,12 +207,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Webhook processed successfully' })
 
   } catch (error: unknown) {
-    // Audit logging untuk kegagalan webhook (misal: invalid signature dari attacker)
+    const err = error as Error
+    // Audit logging untuk kegagalan webhook (misal: invalid JSON, Midtrans API error)
     console.error('CRITICAL Webhook Error:', {
-      message: (error as Error).message,
-      stack: error.stack,
+      message: err.message,
+      stack: err.stack,
       rawBody: rawBody.substring(0, 500) // Log 500 karakter pertama dari payload
     })
-    return NextResponse.json({ error: (error as Error).message || 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 })
   }
 }
+
