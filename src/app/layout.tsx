@@ -102,8 +102,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* PWA Icons */}
-        <link rel="icon" href="/icons/icon-192x192.png" />
+        {/* PWA / Apple Touch Icon */}
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         
         {/* PWA Splash Screen Color */}
