@@ -10,9 +10,54 @@ const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://tsuha.id'
+
 export const metadata: Metadata = {
-  title: "Tsuha.id - Belajar Bahasa Korea Jadi Super Seru",
-  description: "Platform belajar bahasa Korea paling interaktif dan asik. Mulai dari nol sampai jago ngobrol tanpa subtitle!",
+  // ── Basic ──────────────────────────────────────────────────
+  title: {
+    default: "Tsuha.id - Belajar Bahasa Korea Jadi Super Seru",
+    template: "%s | Tsuha.id",
+  },
+  description: "Platform belajar bahasa Korea paling interaktif dan asik. Mulai dari nol sampai jago ngobrol tanpa subtitle! Kuasai Hangul, kosakata, grammar, dan percakapan sehari-hari.",
+  keywords: ["belajar bahasa korea", "kursus bahasa korea", "belajar hangul", "korean learning", "tsuha", "tsuha.id"],
+  authors: [{ name: "Tsuha.id" }],
+  creator: "Tsuha.id",
+  metadataBase: new URL(APP_URL),
+
+  // ── Google Search Console Verification ────────────────────
+  // Dapatkan kode ini dari: Google Search Console → Add Property → HTML tag
+  // Salin nilai content="XXXX..." dan paste di bawah:
+  verification: {
+    google: "GANTI_DENGAN_KODE_VERIFIKASI_GOOGLE",
+  },
+
+  // ── Open Graph (Facebook, WhatsApp, Discord, dll) ─────────
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    url: APP_URL,
+    siteName: "Tsuha.id",
+    title: "Tsuha.id - Belajar Bahasa Korea Jadi Super Seru",
+    description: "Platform belajar bahasa Korea paling interaktif dan asik. Mulai dari nol sampai jago ngobrol tanpa subtitle!",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Tsuha.id - Platform Belajar Bahasa Korea",
+      },
+    ],
+  },
+
+  // ── Twitter / X Card ──────────────────────────────────────
+  twitter: {
+    card: "summary_large_image",
+    title: "Tsuha.id - Belajar Bahasa Korea Jadi Super Seru",
+    description: "Platform belajar bahasa Korea paling interaktif dan asik. Mulai dari nol sampai jago ngobrol tanpa subtitle!",
+    images: ["/og-image.png"],
+  },
+
+  // ── PWA ───────────────────────────────────────────────────
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -21,6 +66,18 @@ export const metadata: Metadata = {
   },
   formatDetection: {
     telephone: false,
+  },
+
+  // ── Robots ────────────────────────────────────────────────
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
