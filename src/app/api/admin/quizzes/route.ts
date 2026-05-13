@@ -88,6 +88,51 @@ export async function POST(request: Request) {
   }
 }
 
+// ========== UPDATE QUIZ QUESTION ==========
+export async function PATCH(request: Request) {
+  try {
+    const admin = await verifyAdmin()
+    if (!admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+    const body = await request.json()
+    const { question_id, question_text, options, correct_answer, explanation } = body
+
+    if (!question_id) {
+      return NextResponse.json({ error: 'question_id diperlukan' }, { status: 400 })
+    }
+
+    // Build update object with only provided fields
+    const updateData: Record<string, unknown> = {}
+    if (question_text !== undefined) updateData.question_text = question_text
+    if (options !== undefined) updateData.options = options
+    if (correct_answer !== undefined) updateData.correct_answer = correct_answer
+    if (explanation !== undefined) updateData.explanation = explanation
+
+    // Validasi: correct_answer harus ada di dalam options jika keduanya diberikan
+    if (options && correct_answer) {
+      const optionKeys = Object.keys(options)
+      if (!optionKeys.includes(correct_answer)) {
+        return NextResponse.json({ error: 'correct_answer harus merupakan salah satu key dari options (A, B, C, D).' }, { status: 400 })
+      }
+    }
+
+    const { data: question, error } = await supabaseAdmin
+      .from('quiz_questions')
+      .update(updateData)
+      .eq('id', question_id)
+      .select()
+      .single()
+
+    if (error) {
+      return NextResponse.json({ error: `Gagal mengupdate soal: ${(error as Error).message}` }, { status: 500 })
+    }
+
+    return NextResponse.json({ question })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 })
+  }
+}
+
 // ========== DELETE QUIZ QUESTION ==========
 export async function DELETE(request: Request) {
   try {
