@@ -10,7 +10,9 @@ const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
 });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://tsuha.id'
+// Pastikan OG image & metadata selalu menggunakan URL production, bukan localhost
+const envUrl = process.env.NEXT_PUBLIC_APP_URL || ''
+const APP_URL = envUrl.includes('localhost') ? 'https://tsuha.id' : (envUrl || 'https://tsuha.id')
 
 export const metadata: Metadata = {
   // ── Basic ──────────────────────────────────────────────────
