@@ -43,10 +43,6 @@ export default function ProductsClient({ products }: { products: Product[] | nul
         return
       }
 
-      if (data.soft_deleted) {
-        alert('ℹ️ Produk ini sudah pernah dibeli, jadi dinonaktifkan saja (bukan dihapus) agar data pembelian tetap aman.')
-      }
-
       router.refresh()
     } catch {
       alert('Terjadi kesalahan saat menghapus')
