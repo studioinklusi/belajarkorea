@@ -2,6 +2,13 @@
 .env.local
 .env.*.local
 .env
+.env.production
+
+# Scratch / test files (may contain secrets)
+scratch_*
+
+# Implementation plans with key fragments
+alibaba_ecs_implementation_plan.md
 
 # Dependencies
 node_modules/
