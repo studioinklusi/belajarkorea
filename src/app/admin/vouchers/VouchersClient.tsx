@@ -126,10 +126,11 @@ export default function VouchersClient({ vouchers, packages }: { vouchers: Vouch
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      router.refresh()
+      
+      // Force full page reload agar data terbaru dari server component tampil
+      window.location.reload()
     } catch (error: any) {
       alert(error.message || 'Gagal menghapus voucher')
-    } finally {
       setLoadingId(null)
     }
   }
