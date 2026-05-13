@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   // Dapatkan kode ini dari: Google Search Console → Add Property → HTML tag
   // Salin nilai content="XXXX..." dan paste di bawah:
   verification: {
-    google: "GANTI_DENGAN_KODE_VERIFIKASI_GOOGLE",
+    google: "iV-7M1rCfNshiYV1NUeT81s7jCJXdI52KtRbBA7fFI8",
   },
 
   // ── Open Graph (Facebook, WhatsApp, Discord, dll) ─────────
