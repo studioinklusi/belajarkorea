@@ -11,40 +11,36 @@ export default function PrintButton() {
     setIsDownloading(true)
     setError('')
     try {
-      const html2canvas = (await import('html2canvas')).default
+      const { toPng } = await import('html-to-image')
       const container = document.getElementById('certificate-container')
       if (!container) {
         setError('Elemen sertifikat tidak ditemukan.')
         return
       }
 
-      const canvas = await html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#ffffff',
-        logging: false,
-        imageTimeout: 15000,
+      // Run toPng twice - first call warms up fonts/images, second produces clean result
+      await toPng(container, { quality: 1, pixelRatio: 1, skipAutoScale: true }).catch(() => {})
+      
+      const dataUrl = await toPng(container, {
+        quality: 1,
+        pixelRatio: 2,
+        cacheBust: true,
+        skipAutoScale: true,
+        fetchRequestInit: {
+          mode: 'cors',
+          credentials: 'same-origin',
+        },
       })
 
-      // Convert to blob and download
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          setError('Gagal membuat gambar. Coba lagi.')
-          return
-        }
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.download = 'Sertifikat-Tsuha.id.png'
-        link.href = url
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        URL.revokeObjectURL(url)
-      }, 'image/png')
+      const link = document.createElement('a')
+      link.download = 'Sertifikat-Tsuha.id.png'
+      link.href = dataUrl
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
     } catch (err) {
       console.error('Download failed:', err)
-      setError('Gagal mengunduh. Silakan coba lagi atau screenshot manual.')
+      setError('Gagal mengunduh. Silakan screenshot manual (Ctrl+Shift+S).')
     } finally {
       setIsDownloading(false)
     }
