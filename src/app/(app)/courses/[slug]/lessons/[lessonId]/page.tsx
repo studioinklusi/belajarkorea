@@ -58,6 +58,23 @@ export default async function LessonPage(props: {
 
   let isLocked = error || !currentLesson
   
+  // 5. Ambil nilai quiz terbaik jika ada
+  let bestAttempt = null
+  if (!isLocked && user) {
+    const { data: attempt } = await supabase
+      .from('quiz_attempts')
+      .select('score, passed')
+      .eq('user_id', user.id)
+      .eq('lesson_id', params.lessonId)
+      .order('score', { ascending: false })
+      .limit(1)
+      .single()
+      
+    if (attempt) {
+      bestAttempt = attempt
+    }
+  }
+  
   // 5. Validasi Paket Spesifik
   if (!isLocked && currentLesson && !currentLesson.is_preview && user) {
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
@@ -213,7 +230,7 @@ export default async function LessonPage(props: {
                 </div>
 
                 {/* Quiz Section */}
-                <LessonClient lessonId={params.lessonId} lessonName={currentLesson.title} />
+                <LessonClient lessonId={params.lessonId} lessonName={currentLesson.title} bestAttempt={bestAttempt} />
               </div>
             </div>
           )}
