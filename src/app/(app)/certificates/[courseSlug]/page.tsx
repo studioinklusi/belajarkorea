@@ -99,7 +99,7 @@ export default async function CertificatePage(props: {
     )
   }
 
-  if (!isAdmin && !isConfirmed) {
+  if (!isConfirmed) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
         <div className="max-w-xl w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
