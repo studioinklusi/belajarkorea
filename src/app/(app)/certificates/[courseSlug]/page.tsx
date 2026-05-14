@@ -225,11 +225,11 @@ export default async function CertificatePage(props: {
               </div>
               
               <div className="flex flex-col items-center pb-4">
-                <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white shadow-lg border-4 border-white mb-2 relative">
+                <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white shadow-lg border-4 border-white mb-2">
                   <FaAward className="w-8 h-8 drop-shadow-md" />
-                  <div className="absolute -bottom-2 -right-2 bg-white text-amber-600 text-[9px] font-black px-2 py-0.5 rounded-full border border-amber-200 shadow-sm uppercase tracking-widest">
-                    {course.level}
-                  </div>
+                </div>
+                <div className="bg-white text-amber-600 text-[9px] font-black px-3 py-1 rounded-full border border-amber-200 shadow-sm uppercase tracking-widest">
+                  {course.level}
                 </div>
               </div>
 
