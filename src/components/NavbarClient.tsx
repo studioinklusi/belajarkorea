@@ -28,6 +28,7 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
     else if (pathname.startsWith('/products')) activePage = 'products'
     else if (pathname.startsWith('/pricing')) activePage = 'pricing'
     else if (pathname.startsWith('/ai-buddy')) activePage = 'ai-buddy'
+    else if (pathname.startsWith('/profile')) activePage = 'profile'
   }
 
   const linkClass = (page: string) => 
@@ -93,9 +94,9 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
                 </Link>
               ) : (
                 <>
-                  <span className="text-sm font-bold text-gray-700 hidden sm:flex items-center gap-2">
+                  <Link href="/profile" className="text-sm font-bold text-gray-700 hidden sm:flex items-center gap-2 hover:text-violet-600 transition-colors cursor-pointer">
                     {locale === 'en' ? 'Hello' : '안녕'}, {profile?.full_name?.split(' ')[0] || 'Chingu'}! <FaHandSparkles className="text-yellow-500" />
-                  </span>
+                  </Link>
                   
                   {/* Install App Button (Desktop) */}
                   <button
@@ -136,14 +137,14 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
       {/* Mobile Bottom Navigation (PWA style) */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
         <div className="flex justify-around items-center h-16 px-2">
-          {/* 1. Beranda */}
+          {/* 1. Beranda / Dashboard */}
           <Link 
-            href="/" 
+            href={user ? "/dashboard" : "/"} 
             className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
-              (!activePage && isLandingPage) ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
+              (user ? activePage === 'dashboard' : (!activePage && isLandingPage)) ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
             }`}
           >
-            <FaHouse className={`w-5 h-5 transition-transform ${(!activePage && isLandingPage) ? 'scale-110' : ''}`} />
+            <FaHouse className={`w-5 h-5 transition-transform ${(user ? activePage === 'dashboard' : (!activePage && isLandingPage)) ? 'scale-110' : ''}`} />
             <span className="text-[10px] font-bold">Beranda</span>
           </Link>
 
@@ -184,15 +185,15 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
             </Link>
           )}
 
-          {/* 4. Dashboard / Login */}
+          {/* 4. Profil / Login */}
           {user ? (
             <Link 
-              href="/dashboard" 
+              href="/profile" 
               className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
-                activePage === 'dashboard' ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
+                activePage === 'profile' ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
-              <FaUser className={`w-5 h-5 transition-transform ${activePage === 'dashboard' ? 'scale-110' : ''}`} />
+              <FaUser className={`w-5 h-5 transition-transform ${activePage === 'profile' ? 'scale-110' : ''}`} />
               <span className="text-[10px] font-bold">Profil</span>
             </Link>
           ) : (
