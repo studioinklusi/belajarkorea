@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { signout } from '../(auth)/auth/actions'
 import { PlayCircleIcon } from '@heroicons/react/24/solid'
-import { FaTicket, FaLock, FaBullseye, FaBookOpen, FaCircleQuestion, FaHandSparkles, FaRobot, FaAward } from 'react-icons/fa6'
+import { FaTicket, FaLock, FaBullseye, FaBookOpen, FaCircleQuestion, FaHandSparkles, FaRobot, FaAward, FaWhatsapp } from 'react-icons/fa6'
 export default async function DashboardPage() {
   const supabase = await createClient()
 
@@ -253,6 +253,23 @@ export default async function DashboardPage() {
                   <FaRobot className="w-4 h-4" /> Mulai Ngobrol
                 </Link>
               </div>
+            </div>
+
+            {/* WhatsApp Admin CTA */}
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-100 to-emerald-100 rounded-bl-full -mr-10 -mt-10 opacity-50"></div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2 relative z-10 flex items-center gap-2">
+                <FaWhatsapp className="text-green-500 text-xl" /> Butuh Bantuan?
+              </h3>
+              <p className="text-sm text-gray-500 mb-5 relative z-10">Admin siap membantu jika ada kendala berlangganan atau pertanyaan lainnya.</p>
+              <a 
+                href="https://wa.me/62881010890925?text=Halo%20Admin%20Tsuha.id,%20saya%20butuh%20bantuan%20..."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative z-10 flex w-full items-center justify-center gap-2 px-5 py-3.5 bg-[#25D366] text-white rounded-full text-sm font-bold hover:bg-[#1DA851] transition-all shadow-md shadow-green-200 hover:-translate-y-0.5"
+              >
+                <FaWhatsapp className="w-5 h-5" /> Chat Admin WA
+              </a>
             </div>
             
           </div>
