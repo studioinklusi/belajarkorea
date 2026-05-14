@@ -58,6 +58,7 @@ export default async function RegisterPage(props: {
                 autoComplete="name"
                 required
                 minLength={3}
+                maxLength={50}
                 pattern="^[a-zA-Z\s'\.-]+$"
                 title="Nama Lengkap minimal 3 karakter dan hanya boleh mengandung huruf, spasi, dan tanda baca dasar ('.-)."
                 className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all"
@@ -74,6 +75,7 @@ export default async function RegisterPage(props: {
                 type="email"
                 autoComplete="email"
                 required
+                maxLength={255}
                 className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all"
                 placeholder="email@contoh.com"
               />
@@ -88,6 +90,7 @@ export default async function RegisterPage(props: {
                 autoComplete="new-password"
                 required
                 minLength={8}
+                maxLength={64}
                 pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}"
                 title="Password harus mengandung minimal 8 karakter, 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter spesial."
                 placeholder="Min. 8 karakter, huruf besar, angka, & simbol"
@@ -106,6 +109,7 @@ export default async function RegisterPage(props: {
                 autoComplete="new-password"
                 required
                 minLength={8}
+                maxLength={64}
                 pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}"
                 title="Password harus mengandung minimal 8 karakter, 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter spesial."
                 placeholder="Ketik ulang password"

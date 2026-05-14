@@ -69,6 +69,7 @@ export default async function ResetPasswordPage(props: {
                 autoComplete="new-password"
                 required
                 minLength={8}
+                maxLength={64}
                 pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}"
                 title="Password harus mengandung minimal 8 karakter, 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter spesial."
                 placeholder="Min. 8 karakter, huruf besar, angka, & simbol"
@@ -87,6 +88,7 @@ export default async function ResetPasswordPage(props: {
                 autoComplete="new-password"
                 required
                 minLength={8}
+                maxLength={64}
                 pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}"
                 title="Password harus mengandung minimal 8 karakter, 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter spesial."
                 placeholder="Ulangi password baru"

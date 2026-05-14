@@ -54,6 +54,9 @@ export async function signup(formData: FormData) {
   if (fullName.length < 3) {
     return redirect(`/register?error=${encodeURIComponent('Nama Lengkap terlalu singkat (minimal 3 karakter).')}`)
   }
+  if (fullName.length > 50) {
+    return redirect(`/register?error=${encodeURIComponent('Nama Lengkap terlalu panjang (maksimal 50 karakter).')}`)
+  }
   if (!/^[a-zA-Z\s'\.-]+$/.test(fullName)) {
     return redirect(`/register?error=${encodeURIComponent('Pastikan Nama Lengkap hanya menggunakan huruf, spasi, atau tanda baca dasar.')}`)
   }
@@ -64,6 +67,9 @@ export async function signup(formData: FormData) {
 
   if (password.length < 8) {
     return redirect(`/register?error=${encodeURIComponent('Password terlalu pendek. Gunakan minimal 8 karakter.')}`)
+  }
+  if (password.length > 64) {
+    return redirect(`/register?error=${encodeURIComponent('Password terlalu panjang. Gunakan maksimal 64 karakter.')}`)
   }
   if (!/[A-Z]/.test(password)) {
     return redirect(`/register?error=${encodeURIComponent('Password harus memiliki setidaknya satu huruf besar (A-Z).')}`)
@@ -142,6 +148,9 @@ export async function resetPassword(formData: FormData) {
 
   if (password.length < 8) {
     return redirect(`/reset-password?error=${encodeURIComponent('Password terlalu pendek. Gunakan minimal 8 karakter.')}`)
+  }
+  if (password.length > 64) {
+    return redirect(`/reset-password?error=${encodeURIComponent('Password terlalu panjang. Gunakan maksimal 64 karakter.')}`)
   }
   if (!/[A-Z]/.test(password)) {
     return redirect(`/reset-password?error=${encodeURIComponent('Password harus memiliki setidaknya satu huruf besar (A-Z).')}`)
