@@ -29,6 +29,13 @@ build/
 *.pem
 Thumbs.db
 
+# Design source files
+*.ai
+*.psd
+public/aset baru/
+Gemini_Generated_Image*
+logo-01.*
+
 # Debug logs
 npm-debug.log*
 yarn-debug.log*
