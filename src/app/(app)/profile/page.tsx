@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { FaUserShield, FaEnvelope, FaIdCard, FaLock } from 'react-icons/fa6'
-import { ProfileForm, PasswordForm } from './ProfileForms'
+import { ProfileForm, ResetPasswordButton } from './ProfileForms'
 
 export const metadata = {
   title: 'Pengaturan Profil | Tsuha.id',
@@ -65,7 +65,7 @@ export default async function ProfilePage() {
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <FaLock className="text-rose-500" /> Keamanan Akun
               </h2>
-              <PasswordForm />
+              <ResetPasswordButton email={user.email || ''} />
             </div>
 
           </div>

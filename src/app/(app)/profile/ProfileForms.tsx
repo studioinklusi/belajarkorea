@@ -1,9 +1,9 @@
 'use client'
 
 import { useActionState } from 'react'
-import { updateProfile, updatePassword } from './actions'
+import { updateProfile, sendPasswordResetEmail } from './actions'
 import { SubmitButton } from '@/components/SubmitButton'
-import { PasswordInput } from '@/components/PasswordInput'
+import { FaEnvelope, FaShieldHalved } from 'react-icons/fa6'
 
 export function ProfileForm({ initialName }: { initialName: string }) {
   const [state, formAction] = useActionState(updateProfile, null)
@@ -44,57 +44,40 @@ export function ProfileForm({ initialName }: { initialName: string }) {
   )
 }
 
-export function PasswordForm() {
-  const [state, formAction] = useActionState(updatePassword, null)
+export function ResetPasswordButton({ email }: { email: string }) {
+  const [state, formAction] = useActionState(sendPasswordResetEmail, null)
 
   return (
-    <form action={formAction} className="space-y-4">
+    <div className="space-y-4">
       {state?.error && (
         <div className="bg-rose-50 text-rose-600 p-3 rounded-xl text-sm font-medium border border-rose-200">
           {state.error}
         </div>
       )}
       {state?.success && (
-        <div className="bg-emerald-50 text-emerald-600 p-3 rounded-xl text-sm font-medium border border-emerald-200">
-          {state.success}
+        <div className="bg-emerald-50 text-emerald-600 p-3 rounded-xl text-sm font-medium border border-emerald-200 flex items-start gap-2">
+          <FaEnvelope className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>{state.success}</span>
         </div>
       )}
 
-      <div>
-        <label htmlFor="password" className="block text-sm font-bold text-gray-700 mb-2">
-          Password Baru
-        </label>
-        <PasswordInput
-          id="password"
-          name="password"
-          required
-          minLength={8}
-          maxLength={64}
-          pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}"
-          title="Password harus mengandung minimal 8 karakter, 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter spesial."
-          placeholder="Min. 8 karakter, kombinasi lengkap"
-        />
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+        <FaShieldHalved className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+        <div>
+          <p className="text-sm font-bold text-amber-800 mb-1">Kenapa harus lewat email?</p>
+          <p className="text-xs text-amber-700 leading-relaxed">
+            Demi keamanan akun Anda, perubahan password hanya bisa dilakukan melalui link yang dikirim ke email terdaftar (<strong>{email}</strong>). Ini mencegah orang lain mengganti password tanpa sepengetahuan Anda.
+          </p>
+        </div>
       </div>
 
-      <div>
-        <label htmlFor="confirmPassword" className="block text-sm font-bold text-gray-700 mb-2">
-          Konfirmasi Password Baru
-        </label>
-        <PasswordInput
-          id="confirmPassword"
-          name="confirmPassword"
-          required
-          minLength={8}
-          maxLength={64}
-          pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}"
-          title="Password harus mengandung minimal 8 karakter, 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter spesial."
-          placeholder="Ulangi password baru"
-        />
-      </div>
-
-      <SubmitButton pendingText="Mengubah..." className="w-full !rounded-xl !py-3 !bg-gray-900 hover:!bg-gray-800">
-        Ubah Password
-      </SubmitButton>
-    </form>
+      <form action={formAction}>
+        <SubmitButton pendingText="Mengirim..." className="w-full !rounded-xl !py-3 !bg-gray-900 hover:!bg-gray-800">
+          <span className="flex items-center justify-center gap-2">
+            <FaEnvelope className="w-4 h-4" /> Kirim Link Ubah Password ke Email
+          </span>
+        </SubmitButton>
+      </form>
+    </div>
   )
 }

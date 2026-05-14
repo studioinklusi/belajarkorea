@@ -35,28 +35,21 @@ export async function updateProfile(prevState: any, formData: FormData) {
   return { success: 'Profil berhasil diperbarui!' }
 }
 
-export async function updatePassword(prevState: any, formData: FormData) {
-  const password = formData.get('password') as string
-  const confirmPassword = formData.get('confirmPassword') as string
-
-  if (password !== confirmPassword) {
-    return { error: 'Password dan Konfirmasi Password tidak cocok.' }
-  }
-
-  if (password.length < 8 || password.length > 64) {
-    return { error: 'Password harus antara 8 dan 64 karakter.' }
-  }
-
-  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^a-zA-Z0-9]/.test(password)) {
-    return { error: 'Password harus mengandung huruf besar, huruf kecil, angka, dan karakter spesial.' }
-  }
-
+export async function sendPasswordResetEmail(prevState: any) {
   const supabase = await createClient()
-  const { error } = await supabase.auth.updateUser({ password })
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user || !user.email) {
+    return { error: 'Tidak dapat menemukan akun Anda. Silakan login kembali.' }
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://tsuha.id'}/auth/callback?next=/reset-password`,
+  })
 
   if (error) {
-    return { error: error.message }
+    return { error: 'Gagal mengirim email. Silakan coba lagi nanti.' }
   }
 
-  return { success: 'Password berhasil diperbarui!' }
+  return { success: `Link ubah password telah dikirim ke ${user.email}. Silakan cek inbox atau folder spam Anda.` }
 }
