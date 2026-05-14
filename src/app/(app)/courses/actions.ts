@@ -26,10 +26,9 @@ export async function markLessonComplete(lessonId: string, courseSlug: string) {
     return { error: error.message }
   }
 
-  // Revalidate the lesson page and course page
-  revalidatePath(`/courses/${courseSlug}`)
-  revalidatePath(`/courses/${courseSlug}/lessons/${lessonId}`)
-  revalidatePath('/dashboard')
+  // Revalidate the entire course layout so sidebar updates in all lesson pages
+  revalidatePath(`/courses/${courseSlug}`, 'layout')
+  revalidatePath('/dashboard', 'layout')
 
   return { success: true }
 }

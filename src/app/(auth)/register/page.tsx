@@ -57,6 +57,9 @@ export default async function RegisterPage(props: {
                 type="text"
                 autoComplete="name"
                 required
+                minLength={3}
+                pattern="^[a-zA-Z\s'\.-]+$"
+                title="Nama Lengkap minimal 3 karakter dan hanya boleh mengandung huruf, spasi, dan tanda baca dasar ('.-)."
                 className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all"
                 placeholder="John Doe"
               />
@@ -85,8 +88,13 @@ export default async function RegisterPage(props: {
                 autoComplete="new-password"
                 required
                 minLength={8}
-                placeholder="Min. 8 karakter"
+                pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}"
+                title="Password harus mengandung minimal 8 karakter, 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter spesial."
+                placeholder="Min. 8 karakter, huruf besar, angka, & simbol"
               />
+              <p className="mt-1.5 text-xs text-gray-500">
+                Gunakan minimal 8 karakter dengan kombinasi huruf besar, huruf kecil, angka, dan simbol khusus (seperti @, !, #).
+              </p>
             </div>
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
@@ -98,6 +106,8 @@ export default async function RegisterPage(props: {
                 autoComplete="new-password"
                 required
                 minLength={8}
+                pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}"
+                title="Password harus mengandung minimal 8 karakter, 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter spesial."
                 placeholder="Ketik ulang password"
               />
             </div>

@@ -51,8 +51,31 @@ export async function signup(formData: FormData) {
   const confirmPassword = formData.get('confirmPassword') as string
   const fullName = formData.get('fullName') as string
 
+  if (fullName.length < 3) {
+    return redirect(`/register?error=${encodeURIComponent('Nama Lengkap terlalu singkat (minimal 3 karakter).')}`)
+  }
+  if (!/^[a-zA-Z\s'\.-]+$/.test(fullName)) {
+    return redirect(`/register?error=${encodeURIComponent('Pastikan Nama Lengkap hanya menggunakan huruf, spasi, atau tanda baca dasar.')}`)
+  }
+
   if (password !== confirmPassword) {
-    return redirect(`/register?error=${encodeURIComponent('Password dan Ulangi Password tidak cocok.')}`)
+    return redirect(`/register?error=${encodeURIComponent('Password dan Ulangi Password tidak cocok. Silakan periksa kembali.')}`)
+  }
+
+  if (password.length < 8) {
+    return redirect(`/register?error=${encodeURIComponent('Password terlalu pendek. Gunakan minimal 8 karakter.')}`)
+  }
+  if (!/[A-Z]/.test(password)) {
+    return redirect(`/register?error=${encodeURIComponent('Password harus memiliki setidaknya satu huruf besar (A-Z).')}`)
+  }
+  if (!/[a-z]/.test(password)) {
+    return redirect(`/register?error=${encodeURIComponent('Password harus memiliki setidaknya satu huruf kecil (a-z).')}`)
+  }
+  if (!/[0-9]/.test(password)) {
+    return redirect(`/register?error=${encodeURIComponent('Password harus memiliki setidaknya satu angka (0-9).')}`)
+  }
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    return redirect(`/register?error=${encodeURIComponent('Password harus memiliki setidaknya satu simbol khusus (seperti @, #, !, dll).')}`)
   }
 
   const supabase = await createClient()
@@ -114,11 +137,23 @@ export async function resetPassword(formData: FormData) {
   const confirmPassword = formData.get('confirmPassword') as string
 
   if (password !== confirmPassword) {
-    return redirect(`/reset-password?error=${encodeURIComponent('Password dan konfirmasi password tidak cocok.')}`)
+    return redirect(`/reset-password?error=${encodeURIComponent('Password dan Konfirmasi Password tidak cocok. Silakan periksa kembali.')}`)
   }
 
-  if (password.length < 6) {
-    return redirect(`/reset-password?error=${encodeURIComponent('Password minimal 6 karakter.')}`)
+  if (password.length < 8) {
+    return redirect(`/reset-password?error=${encodeURIComponent('Password terlalu pendek. Gunakan minimal 8 karakter.')}`)
+  }
+  if (!/[A-Z]/.test(password)) {
+    return redirect(`/reset-password?error=${encodeURIComponent('Password harus memiliki setidaknya satu huruf besar (A-Z).')}`)
+  }
+  if (!/[a-z]/.test(password)) {
+    return redirect(`/reset-password?error=${encodeURIComponent('Password harus memiliki setidaknya satu huruf kecil (a-z).')}`)
+  }
+  if (!/[0-9]/.test(password)) {
+    return redirect(`/reset-password?error=${encodeURIComponent('Password harus memiliki setidaknya satu angka (0-9).')}`)
+  }
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    return redirect(`/reset-password?error=${encodeURIComponent('Password harus memiliki setidaknya satu simbol khusus (seperti @, #, !, dll).')}`)
   }
 
   const supabase = await createClient()
