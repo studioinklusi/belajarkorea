@@ -237,32 +237,6 @@ export default async function CertificatePage(props: {
           </div>
         </div>
       </div>
-
-      <style dangerouslySetInnerHTML={{__html: `
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          #certificate-container, #certificate-container * {
-            visibility: visible;
-          }
-          #certificate-container {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100vh;
-            border: none !important;
-            box-shadow: none !important;
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
-          }
-          @page {
-            size: landscape;
-            margin: 0;
-          }
-        }
-      `}} />
     </div>
   )
 }
