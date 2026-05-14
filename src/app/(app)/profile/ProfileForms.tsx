@@ -3,7 +3,7 @@
 import { useActionState } from 'react'
 import { updateProfile, updatePassword } from './actions'
 import { SubmitButton } from '@/components/SubmitButton'
-import PasswordInput from '@/components/PasswordInput'
+import { PasswordInput } from '@/components/PasswordInput'
 
 export function ProfileForm({ initialName }: { initialName: string }) {
   const [state, formAction] = useActionState(updateProfile, null)
