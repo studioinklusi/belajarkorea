@@ -193,11 +193,9 @@ export default async function CertificatePage(props: {
         {/* Certificate Container: A4 Landscape Aspect Ratio */}
         <div 
           id="certificate-container"
-          className="bg-white relative w-full max-w-[1056px] aspect-[1.414/1] shadow-2xl overflow-hidden bg-[url('/cert-bg.png')] bg-cover bg-center border-[12px] border-double border-amber-200"
+          className="bg-white relative w-full max-w-[1056px] aspect-[1.414/1] shadow-2xl overflow-hidden bg-[url('/cert-bg.png')] bg-cover bg-center"
           style={{ minHeight: '600px' }}
         >
-          {/* Watermark/Background Decoration */}
-          <div className="absolute inset-0 border-[24px] border-violet-900/5 m-4 pointer-events-none"></div>
           
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-12 sm:px-24">
             <div className="mb-6">

@@ -43,9 +43,7 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
         <div className="flex justify-between h-20">
           <div className="flex items-center md:gap-6">
             <Link href="/" className="flex-shrink-0 flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-violet-500/30">
-                K
-              </div>
+              <img src="/logo.png" alt="Tsuha.id" className="w-10 h-10 rounded-xl shadow-lg shadow-violet-500/30 object-cover" />
               <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-gray-900">
                 Tsuha<span className="text-violet-600">.id</span>
               </span>
