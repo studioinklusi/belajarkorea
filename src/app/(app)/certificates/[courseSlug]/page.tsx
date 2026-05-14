@@ -193,10 +193,16 @@ export default async function CertificatePage(props: {
         {/* Certificate Container: A4 Landscape Aspect Ratio */}
         <div 
           id="certificate-container"
-          className="bg-white relative w-full max-w-[1056px] aspect-[1.414/1] shadow-2xl overflow-hidden bg-[url('/cert-bg.png')] bg-cover bg-center"
+          className="bg-white relative w-full max-w-[1056px] aspect-[1.414/1] shadow-2xl overflow-hidden"
           style={{ minHeight: '600px' }}
         >
-          
+          {/* Background image as img tag for html2canvas compatibility */}
+          <img 
+            src="/cert-bg.png" 
+            alt="" 
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            crossOrigin="anonymous"
+          />
           <div className="absolute inset-0 flex flex-col items-center text-center pt-[18%] px-12 sm:px-24">
             
             <p className="text-gray-500 mb-3 uppercase tracking-widest text-xs sm:text-sm font-medium">
