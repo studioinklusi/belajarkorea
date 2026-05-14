@@ -197,50 +197,41 @@ export default async function CertificatePage(props: {
           style={{ minHeight: '600px' }}
         >
           
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-12 sm:px-24">
-            <div className="mb-6">
-              <span className="text-sm font-black tracking-widest text-violet-600 uppercase border-b-2 border-violet-600 pb-1">
-                Tsuha.id
-              </span>
-            </div>
+          <div className="absolute inset-0 flex flex-col items-center text-center pt-[18%] px-12 sm:px-24">
             
-            <h1 className="text-4xl sm:text-6xl font-serif text-gray-900 mb-8" style={{ fontFamily: 'Georgia, serif' }}>
-              Certificate of Completion
-            </h1>
-            
-            <p className="text-gray-500 mb-4 uppercase tracking-widest text-sm font-medium">
+            <p className="text-gray-500 mb-3 uppercase tracking-widest text-xs sm:text-sm font-medium">
               Sertifikat ini diberikan kepada:
             </p>
             
-            <h2 className="text-4xl sm:text-5xl font-bold text-violet-800 mb-8 italic border-b border-gray-300 pb-4 px-12 inline-block">
+            <h2 className="text-3xl sm:text-5xl font-bold text-violet-800 mb-6 italic border-b border-gray-300 pb-3 px-8 inline-block" style={{ fontFamily: 'Georgia, serif' }}>
               {studentName}
             </h2>
             
-            <p className="text-gray-600 max-w-2xl text-lg sm:text-xl leading-relaxed mb-12">
-              Telah berhasil menyelesaikan program kursus bahasa Korea dengan predikat sangat memuaskan pada program: <br/>
-              <span className="font-bold text-gray-900 mt-2 block text-2xl">{course.title}</span>
+            <p className="text-gray-600 max-w-2xl text-sm sm:text-lg leading-relaxed mb-6">
+              Telah berhasil menyelesaikan program kursus bahasa Korea dengan predikat sangat memuaskan pada program:
             </p>
+            <span className="font-bold text-gray-900 text-xl sm:text-2xl mb-8">{course.title}</span>
             
-            <div className="flex items-end justify-between w-full max-w-4xl mt-auto pb-12 px-8">
+            <div className="flex items-end justify-between w-full max-w-3xl mt-auto pb-[6%] px-4">
               {/* QR Code Section */}
               <div className="flex flex-col items-center">
                 <CertificateQR url={verificationUrl} certId={certId} />
               </div>
               
-              <div className="flex flex-col items-center pb-6">
-                <div className="w-24 h-24 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white shadow-lg border-4 border-white mb-2 relative">
-                  <FaAward className="w-10 h-10 drop-shadow-md" />
-                  <div className="absolute -bottom-2 -right-2 bg-white text-amber-600 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-200 shadow-sm uppercase tracking-widest">
+              <div className="flex flex-col items-center pb-4">
+                <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white shadow-lg border-4 border-white mb-2 relative">
+                  <FaAward className="w-8 h-8 drop-shadow-md" />
+                  <div className="absolute -bottom-2 -right-2 bg-white text-amber-600 text-[9px] font-black px-2 py-0.5 rounded-full border border-amber-200 shadow-sm uppercase tracking-widest">
                     {course.level}
                   </div>
                 </div>
               </div>
 
-              <div className="text-center pb-6">
-                <div className="border-b border-gray-400 w-48 pb-2 mb-2 font-bold text-gray-900">
+              <div className="text-center pb-4">
+                <div className="border-b border-gray-400 w-40 pb-2 mb-2 font-bold text-gray-900 text-sm">
                   {dateStr}
                 </div>
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-bold">Tanggal Diberikan</p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Tanggal Diberikan</p>
               </div>
             </div>
           </div>
