@@ -55,7 +55,7 @@ export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAct
                 className="flex items-center gap-3 text-gray-700 hover:bg-violet-50 px-4 py-3 rounded-xl text-sm font-bold transition-colors"
               >
                 <FaTag className="w-4 h-4 text-violet-500" />
-                Harga & Paket
+                Berlangganan
               </Link>
 
               {/* Products */}

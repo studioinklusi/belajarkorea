@@ -25,10 +25,16 @@ export default function AddProductForm({ onClose }: { onClose: () => void }) {
         body: formData,
       })
 
-      const data = await res.json()
+      let data;
+      try {
+        data = await res.json()
+      } catch (e) {
+        const text = await res.text();
+        throw new Error(res.status === 413 ? 'Ukuran file terlalu besar (Maksimal 4.5MB).' : `Error: ${res.statusText}`);
+      }
 
       if (!res.ok) {
-        throw new Error(data.error || 'Gagal menambahkan produk')
+        throw new Error(data?.error || 'Gagal menambahkan produk')
       }
 
       setSuccess(true)

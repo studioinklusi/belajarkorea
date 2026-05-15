@@ -6,8 +6,8 @@ export const translations = {
   'common.home': { id: 'Beranda', en: 'Home' },
   'common.courses': { id: 'Kursus', en: 'Courses' },
   'common.products': { id: 'Produk', en: 'Products' },
-  'common.pricing': { id: 'Harga', en: 'Pricing' },
-  'common.dashboard': { id: 'Dashboard', en: 'Dashboard' },
+  'common.pricing': { id: 'Berlangganan', en: 'Pricing' },
+  'common.dashboard': { id: 'Beranda', en: 'Dashboard' },
   'common.login': { id: 'Masuk', en: 'Login' },
   'common.register': { id: 'Daftar', en: 'Register' },
   'common.logout': { id: 'Keluar', en: 'Logout' },
@@ -85,7 +85,7 @@ export const translations = {
   'dashboard.noSubscription': { id: 'Belum berlangganan', en: 'No active subscription' },
 
   // === Pricing ===
-  'pricing.title': { id: 'Harga Berlangganan', en: 'Subscription Pricing' },
+  'pricing.title': { id: 'Paket Berlangganan', en: 'Subscription Pricing' },
   'pricing.subtitle': { id: 'Pilih Paket Belajar Anda', en: 'Choose Your Learning Plan' },
   'pricing.description': { 
     id: 'Akses semua materi pembelajaran bahasa Korea dengan berlangganan. Tidak ada trial, langsung mulai belajar hari ini!', 

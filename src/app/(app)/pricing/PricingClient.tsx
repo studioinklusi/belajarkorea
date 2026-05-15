@@ -36,7 +36,7 @@ export default function PricingClient({
   return (
     <>
       <div className="sm:text-center">
-        <h2 className="text-base font-semibold text-indigo-600 tracking-wide uppercase">Harga Berlangganan</h2>
+        <h2 className="text-base font-semibold text-indigo-600 tracking-wide uppercase">Paket Berlangganan</h2>
         <p className="mt-2 text-3xl font-extrabold text-gray-900 sm:text-4xl lg:text-5xl">
           Pilih Paket Belajar Anda
         </p>
