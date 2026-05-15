@@ -63,7 +63,9 @@ export default function QuizModal({ lessonId, lessonName, onClose }: { lessonId:
 
   const currentQuestion = questions[currentIndex]
   const isLastQuestion = currentIndex === questions.length - 1
-  const allAnswered = questions.length > 0 && Object.keys(answers).length === questions.length
+  const answeredCount = Object.keys(answers).length
+  const allAnswered = questions.length > 0 && answeredCount === questions.length
+  const unansweredCount = questions.length - answeredCount
 
   if (loading) {
     return (
@@ -281,13 +283,24 @@ export default function QuizModal({ lessonId, lessonName, onClose }: { lessonId:
           </button>
 
           {isLastQuestion ? (
-            <button
-              onClick={handleSubmit}
-              disabled={!allAnswered || submitting}
-              className="flex-1 sm:flex-none bg-violet-600 hover:bg-violet-700 disabled:bg-violet-300 text-white px-10 py-4 rounded-2xl font-black transition-all shadow-lg shadow-violet-200 flex items-center justify-center gap-2 transform active:scale-95"
-            >
-              {submitting ? <FaSpinner className="animate-spin" /> : 'Kirim Jawaban'}
-            </button>
+            <div className="flex flex-col items-end gap-2">
+              {!allAnswered && (
+                <p className="text-xs text-amber-600 font-semibold">
+                  ⚠️ {unansweredCount} soal belum dijawab
+                </p>
+              )}
+              <button
+                onClick={handleSubmit}
+                disabled={!allAnswered || submitting}
+                className={`px-10 py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-2 transform active:scale-95 ${
+                  !allAnswered || submitting
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-200'
+                }`}
+              >
+                {submitting ? <FaSpinner className="animate-spin" /> : 'Kirim Jawaban'}
+              </button>
+            </div>
           ) : (
             <button
               onClick={() => setCurrentIndex(prev => prev + 1)}
