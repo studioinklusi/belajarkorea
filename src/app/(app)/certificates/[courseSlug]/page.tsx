@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { FaChevronLeft, FaAward, FaCircleInfo } from 'react-icons/fa6'
 import PrintButton from './PrintButton'
+import CertificateScaler from './CertificateScaler'
 import CertificateQR from './CertificateQR'
 import crypto from 'crypto'
 import { SubmitButton } from '@/components/SubmitButton'
@@ -190,58 +191,61 @@ export default async function CertificatePage(props: {
 
       {/* Konten Sertifikat */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-8 overflow-auto">
-        {/* Certificate Container: A4 Landscape Aspect Ratio */}
-        <div 
-          id="certificate-container"
-          className="bg-white relative w-full max-w-[1056px] aspect-[1.414/1] shadow-2xl overflow-hidden"
-          style={{ minHeight: '600px' }}
-        >
-          {/* Background image as img tag for html2canvas compatibility */}
-          <img 
-            src="/cert-bg.png" 
-            alt="" 
-            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-            crossOrigin="anonymous"
-          />
-          <div className="absolute inset-0 flex flex-col items-center text-center pt-[18%] px-24">
-            
-            <p className="text-gray-500 mb-3 uppercase tracking-widest text-sm font-medium">
-              Sertifikat ini diberikan kepada:
-            </p>
-            
-            <h2 className="text-5xl font-bold text-violet-800 mb-6 italic border-b border-gray-300 pb-3 px-8 inline-block" style={{ fontFamily: 'Georgia, serif' }}>
-              {studentName}
-            </h2>
-            
-            <p className="text-gray-600 max-w-2xl text-lg leading-relaxed mb-6">
-              Telah berhasil menyelesaikan program kursus bahasa Korea dengan predikat sangat memuaskan pada program:
-            </p>
-            <span className="font-bold text-gray-900 text-2xl mb-8">{course.title}</span>
-            
-            <div className="flex items-end justify-between w-full max-w-3xl mt-auto pb-[6%] px-4">
-              {/* QR Code Section */}
-              <div className="flex flex-col items-center">
-                <CertificateQR url={verificationUrl} certId={certId} />
-              </div>
+        {/* Scaling wrapper: maintains aspect ratio so the fixed-size certificate scales to fit */}
+        <CertificateScaler>
+          {/* Certificate Container: Always renders at fixed desktop size (1056x747) */}
+          <div 
+            id="certificate-container"
+            className="bg-white relative shadow-2xl overflow-hidden"
+            style={{ width: '1056px', height: '747px' }}
+          >
+            {/* Background image as img tag for html2canvas compatibility */}
+            <img 
+              src="/cert-bg.png" 
+              alt="" 
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              crossOrigin="anonymous"
+            />
+            <div className="absolute inset-0 flex flex-col items-center text-center pt-[18%] px-24">
               
-              <div className="flex flex-col items-center pb-4">
-                <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white shadow-lg border-4 border-white mb-2">
-                  <FaAward className="w-8 h-8 drop-shadow-md" />
+              <p className="text-gray-500 mb-3 uppercase tracking-widest text-sm font-medium">
+                Sertifikat ini diberikan kepada:
+              </p>
+              
+              <h2 className="text-5xl font-bold text-violet-800 mb-6 italic border-b border-gray-300 pb-3 px-8 inline-block" style={{ fontFamily: 'Georgia, serif' }}>
+                {studentName}
+              </h2>
+              
+              <p className="text-gray-600 max-w-2xl text-lg leading-relaxed mb-6">
+                Telah berhasil menyelesaikan program kursus bahasa Korea dengan predikat sangat memuaskan pada program:
+              </p>
+              <span className="font-bold text-gray-900 text-2xl mb-8">{course.title}</span>
+              
+              <div className="flex items-end justify-between w-full max-w-3xl mt-auto pb-[6%] px-4">
+                {/* QR Code Section */}
+                <div className="flex flex-col items-center">
+                  <CertificateQR url={verificationUrl} certId={certId} />
                 </div>
-                <div className="bg-white text-amber-600 text-[9px] font-black px-3 py-1 rounded-full border border-amber-200 shadow-sm uppercase tracking-widest">
-                  {course.level}
+                
+                <div className="flex flex-col items-center pb-4">
+                  <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white shadow-lg border-4 border-white mb-2">
+                    <FaAward className="w-8 h-8 drop-shadow-md" />
+                  </div>
+                  <div className="bg-white text-amber-600 text-[9px] font-black px-3 py-1 rounded-full border border-amber-200 shadow-sm uppercase tracking-widest">
+                    {course.level}
+                  </div>
                 </div>
-              </div>
 
-              <div className="text-center pb-4">
-                <div className="border-b border-gray-400 w-40 pb-2 mb-2 font-bold text-gray-900 text-sm">
-                  {dateStr}
+                <div className="text-center pb-4">
+                  <div className="border-b border-gray-400 w-40 pb-2 mb-2 font-bold text-gray-900 text-sm">
+                    {dateStr}
+                  </div>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Tanggal Diberikan</p>
                 </div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Tanggal Diberikan</p>
               </div>
             </div>
           </div>
-        </div>
+        </CertificateScaler>
       </div>
     </div>
   )
