@@ -18,19 +18,55 @@ export default function PrintButton() {
         return
       }
 
+      // Save original styles to restore after capture
+      const originalWidth = container.style.width
+      const originalMinWidth = container.style.minWidth
+      const originalMaxWidth = container.style.maxWidth
+      const originalHeight = container.style.height
+      const originalMinHeight = container.style.minHeight
+      const originalOverflow = container.style.overflow
+
+      // Force the container to render at a fixed desktop size for consistent capture
+      // This ensures mobile devices produce the same result as desktop
+      const FIXED_WIDTH = 1056
+      const FIXED_HEIGHT = Math.round(FIXED_WIDTH / 1.414) // Match A4 landscape aspect ratio
+
+      container.style.width = `${FIXED_WIDTH}px`
+      container.style.minWidth = `${FIXED_WIDTH}px`
+      container.style.maxWidth = `${FIXED_WIDTH}px`
+      container.style.height = `${FIXED_HEIGHT}px`
+      container.style.minHeight = `${FIXED_HEIGHT}px`
+      container.style.overflow = 'hidden'
+
+      // Force layout reflow so the browser renders at the new size
+      container.getBoundingClientRect()
+
+      // Small delay to let fonts/images settle at the new size
+      await new Promise(resolve => setTimeout(resolve, 300))
+
       // Run toPng twice - first call warms up fonts/images, second produces clean result
-      await toPng(container, { quality: 1, pixelRatio: 1, skipAutoScale: true }).catch(() => {})
+      await toPng(container, { quality: 1, pixelRatio: 1, skipAutoScale: true, width: FIXED_WIDTH, height: FIXED_HEIGHT }).catch(() => {})
       
       const dataUrl = await toPng(container, {
         quality: 1,
         pixelRatio: 2,
         cacheBust: true,
         skipAutoScale: true,
+        width: FIXED_WIDTH,
+        height: FIXED_HEIGHT,
         fetchRequestInit: {
           mode: 'cors',
           credentials: 'same-origin',
         },
       })
+
+      // Restore original styles
+      container.style.width = originalWidth
+      container.style.minWidth = originalMinWidth
+      container.style.maxWidth = originalMaxWidth
+      container.style.height = originalHeight
+      container.style.minHeight = originalMinHeight
+      container.style.overflow = originalOverflow
 
       const link = document.createElement('a')
       link.download = 'Sertifikat-Tsuha.id.png'

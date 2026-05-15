@@ -203,20 +203,20 @@ export default async function CertificatePage(props: {
             className="absolute inset-0 w-full h-full object-cover pointer-events-none"
             crossOrigin="anonymous"
           />
-          <div className="absolute inset-0 flex flex-col items-center text-center pt-[18%] px-12 sm:px-24">
+          <div className="absolute inset-0 flex flex-col items-center text-center pt-[18%] px-24">
             
-            <p className="text-gray-500 mb-3 uppercase tracking-widest text-xs sm:text-sm font-medium">
+            <p className="text-gray-500 mb-3 uppercase tracking-widest text-sm font-medium">
               Sertifikat ini diberikan kepada:
             </p>
             
-            <h2 className="text-3xl sm:text-5xl font-bold text-violet-800 mb-6 italic border-b border-gray-300 pb-3 px-8 inline-block" style={{ fontFamily: 'Georgia, serif' }}>
+            <h2 className="text-5xl font-bold text-violet-800 mb-6 italic border-b border-gray-300 pb-3 px-8 inline-block" style={{ fontFamily: 'Georgia, serif' }}>
               {studentName}
             </h2>
             
-            <p className="text-gray-600 max-w-2xl text-sm sm:text-lg leading-relaxed mb-6">
+            <p className="text-gray-600 max-w-2xl text-lg leading-relaxed mb-6">
               Telah berhasil menyelesaikan program kursus bahasa Korea dengan predikat sangat memuaskan pada program:
             </p>
-            <span className="font-bold text-gray-900 text-xl sm:text-2xl mb-8">{course.title}</span>
+            <span className="font-bold text-gray-900 text-2xl mb-8">{course.title}</span>
             
             <div className="flex items-end justify-between w-full max-w-3xl mt-auto pb-[6%] px-4">
               {/* QR Code Section */}
