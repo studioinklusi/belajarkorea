@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import Script from "next/script";
 import { I18nProvider } from "@/lib/i18n";
 import InstallPrompt from "@/components/InstallPrompt";
+import SWUpdateNotifier from "@/components/SWUpdateNotifier";
 import "./globals.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -115,6 +116,7 @@ export default function RootLayout({
         <I18nProvider>
           {children}
           <InstallPrompt />
+          <SWUpdateNotifier />
         </I18nProvider>
         {/* Midtrans Snap Script */}
         <Script
@@ -122,20 +124,6 @@ export default function RootLayout({
           data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
           strategy="lazyOnload"
         />
-        {/* Service Worker Registration */}
-        <Script id="sw-register" strategy="lazyOnload">
-          {`
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.register('/sw.js')
-                .then(function(registration) {
-                  console.log('SW registered:', registration.scope);
-                })
-                .catch(function(error) {
-                  console.log('SW registration failed:', error);
-                });
-            }
-          `}
-        </Script>
       </body>
     </html>
   );

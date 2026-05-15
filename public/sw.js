@@ -1,22 +1,23 @@
-const CACHE_NAME = 'belajarkorea-v1';
+const CACHE_VERSION = 'v2';
+const CACHE_NAME = `belajarkorea-${CACHE_VERSION}`;
 const STATIC_ASSETS = [
-  '/',
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
 ];
 
-// Install: cache static assets
+// Install: cache minimal static assets, then immediately activate
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(STATIC_ASSETS);
     })
   );
+  // Force the waiting service worker to become active immediately
   self.skipWaiting();
 });
 
-// Activate: clean up old caches
+// Activate: clean up ALL old caches and take control immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -25,53 +26,59 @@ self.addEventListener('activate', (event) => {
           .filter((key) => key !== CACHE_NAME)
           .map((key) => caches.delete(key))
       )
-    )
+    ).then(() => {
+      // Notify all clients that a new version is active
+      self.clients.matchAll({ type: 'window' }).then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({ type: 'SW_UPDATED', version: CACHE_VERSION });
+        });
+      });
+    })
   );
+  // Take control of all pages immediately (don't wait for next navigation)
   self.clients.claim();
 });
 
-// Fetch: network-first strategy for API/dynamic, cache-first for static
+// Fetch: network-first for everything to ensure freshness
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
 
-  // Skip API routes and auth - always fetch from network
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) {
+  // Skip API routes, auth, and Midtrans - always go to network directly
+  if (
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/auth/') ||
+    url.hostname.includes('midtrans')
+  ) {
     return;
   }
 
-  // For navigation requests (HTML pages): network-first with cache fallback
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-          return response;
-        })
-        .catch(() => caches.match(event.request))
-    );
-    return;
-  }
-
-  // For static assets: cache-first with network fallback
+  // Network-first strategy for ALL requests
+  // This ensures users always get the latest version when online
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        // Only cache successful responses
-        if (response.status === 200) {
+    fetch(event.request)
+      .then((response) => {
+        // Only cache successful same-origin responses
+        if (response.status === 200 && url.origin === self.location.origin) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone);
           });
         }
         return response;
-      });
-    })
+      })
+      .catch(() => {
+        // Offline fallback: serve from cache
+        return caches.match(event.request);
+      })
   );
+});
+
+// Listen for skip waiting message from the client
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
