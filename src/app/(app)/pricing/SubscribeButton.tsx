@@ -22,7 +22,6 @@ export default function SubscribeButton({
   variant?: 'default' | 'renew'
 }) {
   const [isLoading, setIsLoading] = useState(false)
-  const [showVoucher, setShowVoucher] = useState(false)
   const [voucherCode, setVoucherCode] = useState('')
   const [isCheckingVoucher, setIsCheckingVoucher] = useState(false)
   const [voucherResult, setVoucherResult] = useState<{ discountAmount: number, finalPrice: number, code: string } | null>(null)
@@ -85,14 +84,12 @@ export default function SubscribeButton({
 
       if (!response.ok) {
         if (response.status === 401) {
-          // Belum login
           router.push(`/login?redirectTo=/pricing`)
           return
         }
         throw new Error(data.error || 'Terjadi kesalahan')
       }
 
-      // Jika harga menjadi 0 setelah diskon (gratis), kita anggap langsung sukses (tanpa midtrans)
       if (data.isFree) {
         router.push('/dashboard?payment=success')
         return
@@ -114,7 +111,6 @@ export default function SubscribeButton({
           setIsLoading(false)
         },
         onClose: function () {
-          // User menutup popup tanpa bayar — tandai transaksi sebagai expired
           fetch('/api/payment/cancel', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -135,69 +131,90 @@ export default function SubscribeButton({
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(p)
   }
 
-  const defaultLabel = label || `Berlangganan ${formatPrice(price)}/bulan`
-
   const styles = variant === 'renew'
-    ? `w-full py-3 px-6 border-2 border-indigo-500 rounded-md text-center font-medium ${
+    ? `w-full py-3.5 px-6 border-2 border-indigo-500 rounded-xl text-center font-bold ${
         isLoading 
           ? 'bg-indigo-50 text-indigo-300 cursor-not-allowed' 
           : 'bg-white text-indigo-600 hover:bg-indigo-50'
       } transition-colors duration-200`
-    : `mt-8 block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium ${
+    : `block w-full py-3.5 px-6 border border-transparent rounded-xl text-center font-bold ${
         isLoading 
           ? 'bg-indigo-400 cursor-not-allowed' 
           : 'bg-indigo-600 hover:bg-indigo-700'
-      } text-white transition-colors duration-200`
+      } text-white transition-all duration-200 shadow-md hover:shadow-lg`
 
   const displayedPrice = voucherResult ? voucherResult.finalPrice : price
   const activeLabel = label || (voucherResult ? `Bayar ${formatPrice(displayedPrice)}` : `Berlangganan ${formatPrice(price)}/bulan`)
 
   return (
-    <div className={`w-full ${variant === 'default' ? 'mt-8' : 'mt-4'}`}>
-      {!showVoucher && !voucherResult && (
-        <button 
-          onClick={() => setShowVoucher(true)}
-          className="text-indigo-600 text-sm font-medium hover:text-indigo-800 mb-3 block w-full text-center"
-        >
-          Punya Kode Promo?
-        </button>
-      )}
-
-      {showVoucher && !voucherResult && (
+    <div className={`w-full ${variant === 'default' ? 'mt-6' : 'mt-4'}`}>
+      {/* Promo Code Section — Always visible as a clear input */}
+      {!voucherResult && (
         <div className="mb-4">
+          <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 text-indigo-400">
+              <path fillRule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+            </svg>
+            Kode Promo
+          </label>
           <div className="flex items-stretch gap-2">
             <input 
               type="text" 
               value={voucherCode}
               onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
-              placeholder="Masukkan kode..."
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase"
+              onKeyDown={(e) => { if (e.key === 'Enter') handleCheckVoucher() }}
+              placeholder="Contoh: BELAJAR50"
+              className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg text-sm font-bold text-gray-800 placeholder:font-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 uppercase transition-all"
             />
             <button 
               onClick={handleCheckVoucher}
               disabled={isCheckingVoucher || !voucherCode}
-              className="bg-gray-900 text-white px-4 text-sm font-medium rounded-md hover:bg-gray-800 disabled:opacity-50"
+              className="bg-gray-800 text-white px-5 text-sm font-bold rounded-lg hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 whitespace-nowrap"
             >
-              {isCheckingVoucher ? 'Cek...' : 'Pakai'}
+              {isCheckingVoucher ? (
+                <span className="flex items-center gap-1.5">
+                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Cek
+                </span>
+              ) : 'Pakai'}
             </button>
           </div>
-          {voucherError && <p className="text-red-500 text-xs font-medium mt-1.5">{voucherError}</p>}
+          {voucherError && (
+            <p className="flex items-center gap-1 text-red-500 text-xs font-medium mt-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 flex-shrink-0">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              </svg>
+              {voucherError}
+            </p>
+          )}
         </div>
       )}
 
+      {/* Applied Voucher Badge */}
       {voucherResult && (
-        <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-md p-3 text-sm relative">
+        <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 text-sm relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
           <button 
             onClick={handleRemoveVoucher}
-            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 font-bold"
+            className="absolute top-2.5 right-2.5 text-gray-400 hover:text-red-500 transition-colors"
             title="Hapus Voucher"
           >
-            ✕
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+            </svg>
           </button>
-          <div className="font-bold text-emerald-800 mb-1">✅ Promo {voucherResult.code} diterapkan!</div>
-          <div className="flex justify-between items-center text-emerald-700">
-            <span>Potongan Harga:</span>
-            <span className="font-bold">-{formatPrice(voucherResult.discountAmount)}</span>
+          <div className="flex items-center gap-2 font-bold text-emerald-800 mb-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-emerald-600">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+            </svg>
+            Kode {voucherResult.code} diterapkan!
+          </div>
+          <div className="flex justify-between items-center text-emerald-700 pl-6">
+            <span>Potongan harga:</span>
+            <span className="font-bold text-emerald-800">-{formatPrice(voucherResult.discountAmount)}</span>
           </div>
         </div>
       )}
@@ -207,8 +224,17 @@ export default function SubscribeButton({
         disabled={isLoading}
         className={styles}
       >
-        {isLoading ? 'Memproses...' : activeLabel}
+        {isLoading ? (
+          <span className="flex items-center justify-center gap-2">
+            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Memproses...
+          </span>
+        ) : activeLabel}
       </button>
     </div>
   )
 }
+
