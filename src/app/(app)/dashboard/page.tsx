@@ -86,9 +86,17 @@ export default async function DashboardPage() {
   const progresses = accurateProgresses
 
   // 4. Hitung Target Harian
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const todayStr = today.toISOString()
+  // Gunakan WIB (UTC+7) untuk menentukan "hari ini"
+  // Dapatkan tanggal hari ini di WIB, lalu set ke 00:00:00 WIB = 17:00:00 UTC kemarin
+  const nowUTC = new Date()
+  // Offset WIB = UTC+7 → kurangi 7 jam dari UTC untuk cari midnight WIB dalam UTC
+  const wibOffset = 7 * 60 * 60 * 1000 // 7 jam dalam ms
+  const nowInWIB = new Date(nowUTC.getTime() + wibOffset)
+  // Set ke midnight WIB: ambil tanggal WIB, reset waktu ke 00:00:00, lalu konversi balik ke UTC
+  const todayWIBMidnightUTC = new Date(
+    Date.UTC(nowInWIB.getUTCFullYear(), nowInWIB.getUTCMonth(), nowInWIB.getUTCDate()) - wibOffset
+  )
+  const todayStr = todayWIBMidnightUTC.toISOString()
 
   // Cek apakah ada video yang diselesaikan hari ini
   const { data: todayProgress } = await supabase
