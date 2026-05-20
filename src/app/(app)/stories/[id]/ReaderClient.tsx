@@ -271,8 +271,11 @@ export default function ReaderClient({ story, userId, initialCompleted }: Reader
                 return <span key={index} className="block h-4" />;
               }
 
+              // Clickable if it has a lemma (l) OR contains Hangul characters
+              const isClickable = !!token.l || /[\uac00-\ud7a3\u1100-\u11ff\u3130-\u318f]/.test(token.t);
+
               // Non-clickable whitespace / punctuation
-              if (!token.l) {
+              if (!isClickable) {
                 return (
                   <span key={index} className="text-gray-400">
                     {token.t}
