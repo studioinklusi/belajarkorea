@@ -25,6 +25,8 @@ export default function PrintButton() {
       const originalHeight = container.style.height
       const originalMinHeight = container.style.minHeight
       const originalOverflow = container.style.overflow
+      const originalTransform = container.style.transform
+      const originalTransformOrigin = container.style.transformOrigin
 
       // Force the container to render at a fixed desktop size for consistent capture
       // This ensures mobile devices produce the same result as desktop
@@ -37,6 +39,8 @@ export default function PrintButton() {
       container.style.height = `${FIXED_HEIGHT}px`
       container.style.minHeight = `${FIXED_HEIGHT}px`
       container.style.overflow = 'hidden'
+      container.style.transform = 'none'
+      container.style.transformOrigin = 'unset'
 
       // Force layout reflow so the browser renders at the new size
       container.getBoundingClientRect()
@@ -67,6 +71,8 @@ export default function PrintButton() {
       container.style.height = originalHeight
       container.style.minHeight = originalMinHeight
       container.style.overflow = originalOverflow
+      container.style.transform = originalTransform
+      container.style.transformOrigin = originalTransformOrigin
 
       const link = document.createElement('a')
       link.download = 'Sertifikat-Tsuha.id.png'
