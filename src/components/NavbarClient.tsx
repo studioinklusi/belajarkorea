@@ -25,6 +25,8 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
   if (pathname) {
     if (pathname.startsWith('/dashboard')) activePage = 'dashboard'
     else if (pathname.startsWith('/courses')) activePage = 'courses'
+    else if (pathname.startsWith('/stories')) activePage = 'stories'
+    else if (pathname.startsWith('/flashcards')) activePage = 'flashcards'
     else if (pathname.startsWith('/products')) activePage = 'products'
     else if (pathname.startsWith('/pricing')) activePage = 'pricing'
     else if (pathname.startsWith('/ai-buddy')) activePage = 'ai-buddy'
@@ -70,6 +72,12 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
                     </Link>
                   )}
                   <Link href="/courses" className={linkClass('courses')}>{t('common.courses')}</Link>
+                  {user && (
+                    <Link href="/stories" className={linkClass('stories')}>Cerita</Link>
+                  )}
+                  {user && (
+                    <Link href="/flashcards" className={linkClass('flashcards')}>Flashcard</Link>
+                  )}
                   <Link href="/products" className={linkClass('products')}>{t('common.products')}</Link>
                   <Link href="/pricing" className={linkClass('pricing')}>{t('common.pricing')}</Link>
                   {isAdmin && (
