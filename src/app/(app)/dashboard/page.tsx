@@ -174,7 +174,27 @@ export default async function DashboardPage() {
                 <FaTicket className="text-violet-500" /> Akses Belajar
               </h3>
               
-              {isSubscribed ? (
+              {isAdmin ? (
+                <div className="relative z-10">
+                  <div className="rounded-2xl p-5 text-white shadow-lg bg-gradient-to-r from-violet-600 to-fuchsia-500 shadow-violet-500/20">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-black bg-white/20 text-white uppercase tracking-wider shrink-0">
+                        ⚡ ADMIN
+                      </span>
+                      <span className="text-sm font-black uppercase tracking-widest opacity-80">
+                        Full Access
+                      </span>
+                    </div>
+                    <p className="text-sm text-white/90 mt-4 font-medium">Status Akses</p>
+                    <p className="text-2xl sm:text-3xl font-black mt-1 mb-2">
+                      Akses Penuh
+                    </p>
+                    <p className="text-xs text-white/90 font-medium opacity-90">
+                      Semua fitur terbuka otomatis untuk akun Admin.
+                    </p>
+                  </div>
+                </div>
+              ) : isSubscribed ? (
                 <div className="relative z-10">
                   <div className={`rounded-2xl p-5 text-white shadow-lg ${subscription.computed_status === 'active' ? 'bg-gradient-to-r from-green-500 to-emerald-400 shadow-green-500/20' : 'bg-gradient-to-r from-rose-500 to-red-500 shadow-red-500/20'}`}>
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
