@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { 
   FaVolumeHigh, FaArrowLeft, FaCheck, FaRotate, 
-  FaSpinner, FaCircleCheck, FaChartSimple 
+  FaSpinner, FaCircleCheck, FaChartSimple,
+  FaChevronLeft, FaChevronRight
 } from 'react-icons/fa6';
 
 interface Flashcard {
@@ -82,6 +83,20 @@ export default function ReviewSession({ cards, onBack, onFinish }: ReviewSession
       alert('Gagal mengirimkan penilaian. Coba lagi.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setFlipped(false);
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentIndex < cards.length - 1) {
+      setFlipped(false);
+      setCurrentIndex(currentIndex + 1);
     }
   };
 
@@ -250,10 +265,45 @@ export default function ReviewSession({ cards, onBack, onFinish }: ReviewSession
         </div>
       </div>
 
+      {/* Previous / Next Navigation */}
+      <div className="mt-5 shrink-0 flex items-center gap-3">
+        <button
+          onClick={handlePrevious}
+          disabled={currentIndex === 0}
+          className="flex items-center justify-center gap-1.5 px-5 py-3 rounded-xl font-bold text-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xs active:scale-95"
+        >
+          <FaChevronLeft className="w-3 h-3" /> Sebelumnya
+        </button>
+        <div className="flex-1 text-center">
+          <div className="flex justify-center gap-1.5">
+            {cards.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => { setFlipped(false); setCurrentIndex(i); }}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  i === currentIndex
+                    ? 'bg-violet-600 w-4'
+                    : history.find(h => h.cardId === cards[i].id)
+                    ? 'bg-violet-200'
+                    : 'bg-gray-200 hover:bg-gray-300'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+        <button
+          onClick={handleNext}
+          disabled={currentIndex === cards.length - 1}
+          className="flex items-center justify-center gap-1.5 px-5 py-3 rounded-xl font-bold text-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xs active:scale-95"
+        >
+          Berikutnya <FaChevronRight className="w-3 h-3" />
+        </button>
+      </div>
+
       {/* SRS Rating Actions (Only visible when flipped) */}
-      <div className="mt-8 shrink-0">
+      <div className="mt-3 shrink-0">
         {flipped ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <p className="text-center text-xs font-extrabold text-gray-400 uppercase tracking-widest">
               Seberapa baik Anda mengingat kata ini?
             </p>
