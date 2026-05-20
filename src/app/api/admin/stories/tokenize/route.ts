@@ -34,9 +34,10 @@ export async function POST(request: Request) {
 
     const prompt = `You are a linguist and Korean language teacher.
 Analyze the following Korean text and tokenize it into individual words, particles, spaces, and punctuation for language learners.
+Every part of the text must be represented by exactly ONE token in the output array. Do not output multiple duplicate tokens for the same word.
 For each token:
-1. If it is a word, provide:
-   - "t": the exact word form as it appears in the text (with particles if attached, e.g., "지우는", "한국어를").
+1. If it is a word (or word with attached particles, e.g., "지우는", "한국어를"), provide a single object with:
+   - "t": the exact word form as it appears in the text.
    - "l": the base/dictionary form of the word (the lemma, e.g. "지우" for "지우는", "한국어" for "한국어를", "가르치다" for "가르쳐").
 2. If it is a space, punctuation, or paragraph break, provide only:
    - "t": the character/string (e.g. " ", ".", "\\n").
