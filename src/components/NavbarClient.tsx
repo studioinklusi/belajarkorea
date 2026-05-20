@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { 
   FaHandSparkles, FaRobot, FaHouse, FaBookOpen, FaUser, FaBox, FaDownload,
-  FaChevronDown, FaUserShield, FaArrowRightFromBracket, FaGraduationCap, FaLayerGroup
+  FaChevronDown, FaUserShield, FaArrowRightFromBracket, FaGraduationCap, FaLayerGroup,
+  FaXmark
 } from 'react-icons/fa6'
 import MobileMenu from './MobileMenu'
 import LanguageSwitcher from './LanguageSwitcher'
@@ -27,6 +28,7 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
   
   const [isLearningOpen, setIsLearningOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isMobileLearningOpen, setIsMobileLearningOpen] = useState(false)
   
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -41,6 +43,11 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
     document.addEventListener('mousedown', handleOutsideClick)
     return () => document.removeEventListener('mousedown', handleOutsideClick)
   }, [])
+
+  // Auto close mobile learning sheet on path change
+  useEffect(() => {
+    setIsMobileLearningOpen(false)
+  }, [pathname])
   
   let activePage = ''
   if (pathname) {
@@ -293,16 +300,28 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
             <span className="text-[10px] font-bold">Beranda</span>
           </Link>
 
-          {/* 2. Program Belajar */}
-          <Link 
-            href="/courses" 
-            className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
-              activePage === 'courses' ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
-            }`}
-          >
-            <FaBookOpen className={`w-5 h-5 transition-transform ${activePage === 'courses' ? 'scale-110' : ''}`} />
-            <span className="text-[10px] font-bold">Belajar</span>
-          </Link>
+          {/* 2. Program Belajar (Mobile: Opens Bottom Sheet if logged in, otherwise goes to courses) */}
+          {user ? (
+            <button 
+              onClick={() => setIsMobileLearningOpen(true)}
+              className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
+                ['courses', 'stories', 'flashcards', 'ai-buddy'].includes(activePage) ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              <FaBookOpen className={`w-5 h-5 transition-transform ${['courses', 'stories', 'flashcards', 'ai-buddy'].includes(activePage) ? 'scale-110' : ''}`} />
+              <span className="text-[10px] font-bold">Belajar</span>
+            </button>
+          ) : (
+            <Link 
+              href="/courses" 
+              className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
+                activePage === 'courses' ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              <FaBookOpen className={`w-5 h-5 transition-transform ${activePage === 'courses' ? 'scale-110' : ''}`} />
+              <span className="text-[10px] font-bold">Belajar</span>
+            </Link>
+          )}
 
           {/* 3. AI Buddy / Produk */}
           {user ? (
@@ -357,6 +376,104 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
           </div>
         </div>
       </div>
+
+      {/* Mobile Learning Modules Bottom Sheet */}
+      {isMobileLearningOpen && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] transition-opacity md:hidden" 
+            onClick={() => setIsMobileLearningOpen(false)} 
+          />
+          
+          {/* Menu Panel */}
+          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.12)] pt-4 pb-safe z-[61] animate-slide-up flex flex-col md:hidden">
+            {/* Header / Handle */}
+            <div className="flex justify-between items-center px-6 pb-2">
+              <span className="text-sm font-black text-gray-900">Menu Belajar</span>
+              <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
+              <button 
+                onClick={() => setIsMobileLearningOpen(false)} 
+                className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full"
+              >
+                <FaXmark className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Learning Modules Options */}
+            <div className="flex flex-col gap-2 px-4 pb-6 mt-3 max-h-[70vh] overflow-y-auto">
+              <Link 
+                href="/courses" 
+                className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all border ${
+                  activePage === 'courses' 
+                    ? 'bg-violet-50/70 border-violet-100' 
+                    : 'hover:bg-gray-50 border-transparent'
+                }`}
+              >
+                <div className="w-11 h-11 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center font-bold shrink-0">
+                  <FaGraduationCap className="w-5.5 h-5.5" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-extrabold text-gray-900">Kursus Mandiri</p>
+                  <p className="text-[11px] text-gray-400 font-semibold leading-tight mt-0.5">Video materi terstruktur gratis & interaktif</p>
+                </div>
+              </Link>
+
+              <Link 
+                href="/stories" 
+                className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all border ${
+                  activePage === 'stories' 
+                    ? 'bg-orange-50/70 border-orange-100' 
+                    : 'hover:bg-gray-50 border-transparent'
+                }`}
+              >
+                <div className="w-11 h-11 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold shrink-0">
+                  <FaBookOpen className="w-5.5 h-5.5" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-extrabold text-gray-900">Membaca Cerita</p>
+                  <p className="text-[11px] text-gray-400 font-semibold leading-tight mt-0.5">Ketuk kosa kata terjemah & jadikan flashcard</p>
+                </div>
+              </Link>
+
+              <Link 
+                href="/flashcards" 
+                className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all border ${
+                  activePage === 'flashcards' 
+                    ? 'bg-emerald-50/70 border-emerald-100' 
+                    : 'hover:bg-gray-50 border-transparent'
+                }`}
+              >
+                <div className="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold shrink-0">
+                  <FaLayerGroup className="w-5.5 h-5.5" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-extrabold text-gray-900">Flashcard & SRS</p>
+                  <p className="text-[11px] text-gray-400 font-semibold leading-tight mt-0.5">Hafalkan kosa kata dengan metode Leitner Box</p>
+                </div>
+              </Link>
+
+              <Link 
+                href="/ai-buddy" 
+                className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all border ${
+                  activePage === 'ai-buddy' 
+                    ? 'bg-fuchsia-50/70 border-fuchsia-100' 
+                    : 'hover:bg-gray-50 border-transparent'
+                }`}
+              >
+                <div className="w-11 h-11 rounded-xl bg-fuchsia-100 text-fuchsia-600 flex items-center justify-center font-bold shrink-0">
+                  <FaRobot className="w-5.5 h-5.5" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-extrabold text-gray-900">AI Buddy</p>
+                  <p className="text-[11px] text-gray-400 font-semibold leading-tight mt-0.5">Latihan percakapan bahasa Korea secara langsung</p>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </>
+      )}
     </>
   )
 }
+
