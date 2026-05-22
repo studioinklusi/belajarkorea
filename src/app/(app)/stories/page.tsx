@@ -105,48 +105,50 @@ export default async function StoriesPage({ searchParams }: { searchParams: Sear
         </div>
 
         {/* Level Filters */}
-        <div className="mb-8 flex flex-wrap items-center gap-3">
-          <span className="text-sm font-bold text-gray-500 mr-2">Filter Level:</span>
-          <Link
-            href="/stories"
-            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
-              !filterLevel 
-                ? 'bg-gray-900 text-white shadow-md' 
-                : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            Semua
-          </Link>
-          <Link
-            href="/stories?level=beginner"
-            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
-              filterLevel === 'beginner'
-                ? 'bg-emerald-500 text-white shadow-md'
-                : 'bg-white text-gray-600 border border-gray-200 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700'
-            }`}
-          >
-            📘 Pemula
-          </Link>
-          <Link
-            href="/stories?level=intermediate"
-            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
-              filterLevel === 'intermediate'
-                ? 'bg-amber-500 text-white shadow-md'
-                : 'bg-white text-gray-600 border border-gray-200 hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700'
-            }`}
-          >
-            📗 Menengah
-          </Link>
-          <Link
-            href="/stories?level=advanced"
-            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
-              filterLevel === 'advanced'
-                ? 'bg-purple-600 text-white shadow-md'
-                : 'bg-white text-gray-600 border border-gray-200 hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700'
-            }`}
-          >
-            📕 Mahir
-          </Link>
+        <div className="mb-8 flex items-center">
+          <span className="text-sm font-bold text-gray-500 mr-3 hidden sm:inline-block shrink-0">Filter Level:</span>
+          <div className="flex overflow-x-auto gap-3 pb-2 -mb-2 w-full snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <Link
+              href="/stories"
+              className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all shrink-0 snap-start ${
+                !filterLevel 
+                  ? 'bg-gray-900 text-white shadow-md' 
+                  : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              Semua
+            </Link>
+            <Link
+              href="/stories?level=beginner"
+              className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all shrink-0 snap-start ${
+                filterLevel === 'beginner'
+                  ? 'bg-emerald-500 text-white shadow-md'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700'
+              }`}
+            >
+              📘 Pemula
+            </Link>
+            <Link
+              href="/stories?level=intermediate"
+              className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all shrink-0 snap-start ${
+                filterLevel === 'intermediate'
+                  ? 'bg-amber-500 text-white shadow-md'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700'
+              }`}
+            >
+              📗 Menengah
+            </Link>
+            <Link
+              href="/stories?level=advanced"
+              className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all shrink-0 snap-start ${
+                filterLevel === 'advanced'
+                  ? 'bg-purple-600 text-white shadow-md'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700'
+              }`}
+            >
+              📕 Mahir
+            </Link>
+          </div>
         </div>
 
         {/* Subscription Status Banner */}
