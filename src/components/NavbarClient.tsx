@@ -59,7 +59,6 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
     else if (pathname.startsWith('/pricing')) activePage = 'pricing'
     else if (pathname.startsWith('/ai-buddy')) activePage = 'ai-buddy'
     else if (pathname.startsWith('/quiz-games')) activePage = 'quiz-games'
-    else if (pathname.startsWith('/tebak-hangul')) activePage = 'tebak-hangul'
     else if (pathname.startsWith('/profile')) activePage = 'profile'
   }
 
@@ -102,7 +101,7 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
                           setIsProfileOpen(false);
                         }}
                         className={`flex items-center gap-1 px-4 py-2.5 rounded-full text-sm font-bold transition-colors cursor-pointer ${
-                          isLearningOpen || ['courses', 'stories', 'flashcards', 'ai-buddy', 'quiz-games', 'tebak-hangul'].includes(activePage)
+                          isLearningOpen || ['courses', 'stories', 'flashcards', 'ai-buddy', 'quiz-games'].includes(activePage)
                             ? "bg-violet-50 text-violet-700 shadow-sm"
                             : "text-gray-500 hover:text-violet-600 hover:bg-gray-50"
                         }`}
@@ -183,20 +182,6 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
                             <div>
                               <p className="text-sm font-extrabold text-gray-900 group-hover:text-pink-700 transition-colors">Quiz & Games</p>
                               <p className="text-[11px] text-gray-400 font-semibold leading-none mt-0.5">Tebak Hangul & latihan interaktif</p>
-                            </div>
-                          </Link>
-
-                          <Link 
-                            href="/tebak-hangul" 
-                            onClick={() => setIsLearningOpen(false)}
-                            className="flex items-center gap-3.5 p-3 rounded-2xl hover:bg-amber-50/50 hover:backdrop-blur-md transition-all duration-300 transform hover:scale-[1.02] group"
-                          >
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-100 via-yellow-50 to-orange-100 text-amber-600 flex items-center justify-center font-bold shrink-0 shadow-xs border border-amber-200/30">
-                              <FaPuzzlePiece className="w-5 h-5" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-extrabold text-gray-900 group-hover:text-amber-700 transition-colors">Tebak Hangul</p>
-                              <p className="text-[11px] text-gray-400 font-semibold leading-none mt-0.5">Quiz cepat mengenal huruf Korea</p>
                             </div>
                           </Link>
                         </div>
@@ -335,10 +320,10 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
             <button 
               onClick={() => setIsMobileLearningOpen(true)}
               className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
-                ['courses', 'stories', 'flashcards', 'ai-buddy', 'quiz-games', 'tebak-hangul'].includes(activePage) ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
-              }`}
-            >
-              <FaBookOpen className={`w-5 h-5 transition-transform ${['courses', 'stories', 'flashcards', 'ai-buddy', 'quiz-games', 'tebak-hangul'].includes(activePage) ? 'scale-110' : ''}`} />
+              ['courses', 'stories', 'flashcards', 'ai-buddy', 'quiz-games'].includes(activePage) ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            <FaBookOpen className={`w-5 h-5 transition-transform ${['courses', 'stories', 'flashcards', 'ai-buddy', 'quiz-games'].includes(activePage) ? 'scale-110' : ''}`} />
               <span className="text-[10px] font-bold">Belajar</span>
             </button>
           ) : (
@@ -514,23 +499,6 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
                 <div className="flex-1">
                   <p className="text-sm font-extrabold text-gray-900">Quiz & Games</p>
                   <p className="text-[11px] text-gray-400 font-semibold leading-tight mt-0.5">Tebak Hangul & latihan interaktif</p>
-                </div>
-              </Link>
-
-              <Link 
-                href="/tebak-hangul" 
-                className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all border ${
-                  activePage === 'tebak-hangul' 
-                    ? 'bg-amber-50/70 border-amber-100' 
-                    : 'hover:bg-amber-50/30 border-transparent hover:scale-[1.01] transform duration-200'
-                }`}
-              >
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-100 via-yellow-50 to-orange-100 text-amber-600 flex items-center justify-center font-bold shrink-0 shadow-xs border border-amber-200/30">
-                  <FaPuzzlePiece className="w-5.5 h-5.5" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-extrabold text-gray-900">Tebak Hangul</p>
-                  <p className="text-[11px] text-gray-400 font-semibold leading-tight mt-0.5">Quiz cepat mengenal huruf Korea</p>
                 </div>
               </Link>
             </div>

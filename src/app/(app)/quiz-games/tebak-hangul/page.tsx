@@ -12,7 +12,7 @@ export default async function TebakHangulPage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/login?redirectTo=/tebak-hangul');
+    redirect('/login?redirectTo=/quiz-games/tebak-hangul');
   }
 
   const { data: profile } = await supabase
