@@ -219,7 +219,7 @@ export default function AiBuddyClient() {
   const activePersona = PERSONAS.find(p => p.id === selectedPersona)!
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-160px)] md:h-[calc(100dvh-80px)] bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900 overflow-hidden">
+    <div className="flex flex-col chat-container-mobile bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900 overflow-hidden">
 
       {/* ===== HEADER & CONTROLS ===== */}
       {/* ===== HEADER & CONTROLS ===== */}
@@ -402,7 +402,7 @@ export default function AiBuddyClient() {
       </main>
 
       {/* ===== INPUT AREA ===== */}
-      <footer className="md:relative fixed bottom-16 md:bottom-auto left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 p-2.5 sm:p-4 shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] z-40">
+      <footer className="chat-footer-mobile left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 p-2.5 sm:p-4 shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] z-40">
         <div className="max-w-3xl mx-auto flex items-end gap-2">
           {/* Speech Button */}
           {hasSpeechSupport && (

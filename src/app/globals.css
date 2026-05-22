@@ -52,3 +52,24 @@ body {
 .animation-delay-200 { animation-delay: 0.2s; }
 .animation-delay-300 { animation-delay: 0.3s; }
 .animation-delay-400 { animation-delay: 0.4s; }
+
+/* AI Buddy layout classes with safe area handling */
+.chat-container-mobile {
+  height: calc(100dvh - 144px - env(safe-area-inset-bottom, 0px));
+}
+
+.chat-footer-mobile {
+  position: fixed;
+  bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  .chat-container-mobile {
+    height: calc(100dvh - 80px);
+  }
+  .chat-footer-mobile {
+    position: relative;
+    bottom: auto;
+  }
+}
+
