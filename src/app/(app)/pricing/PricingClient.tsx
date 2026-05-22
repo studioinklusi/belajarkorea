@@ -5,10 +5,12 @@ import SubscribeButton from './SubscribeButton'
 
 export default function PricingClient({ 
   packages, 
-  activePackageId 
+  activePackageId,
+  activePackageSlug 
 }: { 
   packages: any[], 
-  activePackageId: string | null 
+  activePackageId: string | null,
+  activePackageSlug: string | null 
 }) {
   // Temukan semua durasi unik yang tersedia dari database
   const availableDurations = Array.from(new Set(packages.map(p => p.duration_days))).sort((a, b) => a - b)
@@ -83,13 +85,14 @@ export default function PricingClient({
         {filteredPackages.map((pkg) => {
           const features = pkg.features as string[] || []
           
-          // Cek apakah paket ini sedang aktif
-          // (Menggunakan slug base, contoh: pro-3-month -> pro)
-          // Ini agar tombol "Perpanjang" tetap muncul di paket 3 bulan jika user punya paket pro bulanan
+          // Cek apakah paket ini sedang aktif menggunakan UUID (unik per paket)
+          const isExactActive = activePackageId === pkg.id
+          
+          // Gunakan slug base untuk menentukan grup paket (pro, basic, premium)
+          // agar tombol "Perpanjang" muncul di semua paket sejenis
           const baseSlug = pkg.slug.split('-')[0]
-          const activeBaseSlug = activePackageId ? activePackageId.split('-')[0] : null
+          const activeBaseSlug = activePackageSlug ? activePackageSlug.split('-')[0] : null
           const isActiveGroup = activeBaseSlug === baseSlug
-          const isExactActive = activePackageId === pkg.slug
 
           return (
             <div 

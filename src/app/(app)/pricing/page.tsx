@@ -23,19 +23,24 @@ export default async function PricingPage() {
 
   // Cek apakah user sudah punya subscription aktif
   const { data: { user } } = await supabase.auth.getUser()
-  let activePackageId = null
+  let activePackageId: string | null = null
+  let activePackageSlug: string | null = null
 
   if (user) {
+    // Ambil subscription aktif beserta package_id (UUID) untuk matching yang akurat
     const { data: sub } = await supabase
-      .from('v_active_subscriptions')
-      .select('package_slug, computed_status, days_remaining')
-      .eq('user_id', user.id).eq('computed_status', 'active')
+      .from('subscriptions')
+      .select('package_id, status, expires_at, packages!inner(slug)')
+      .eq('user_id', user.id)
+      .in('status', ['active', 'grace_period'])
+      .gt('expires_at', new Date().toISOString())
+      .order('expires_at', { ascending: false })
+      .limit(1)
       .single()
     
-    // Only consider it "active" (blocking repurchase) if it's truly active
-    // If it's grace_period or expired, allow them to repurchase
-    if (sub && sub.computed_status === 'active') {
-      activePackageId = sub.package_slug
+    if (sub) {
+      activePackageId = sub.package_id
+      activePackageSlug = (sub.packages as any)?.slug || null
     }
   }
 
@@ -43,7 +48,7 @@ export default async function PricingPage() {
     <div className="bg-gray-50 min-h-screen">
       <div className="py-12 sm:py-24 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <PricingClient packages={packages || []} activePackageId={activePackageId} />
+          <PricingClient packages={packages || []} activePackageId={activePackageId} activePackageSlug={activePackageSlug} />
         </div>
       </div>
     </div>
