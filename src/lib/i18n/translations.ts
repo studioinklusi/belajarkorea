@@ -108,7 +108,7 @@ export const translations = {
 
   // === AI Buddy ===
   'aiBuddy.title': { id: 'AI Teman Belajar Korea', en: 'AI Korean Study Buddy' },
-  'aiBuddy.placeholder': { id: 'Ketik pesan dalam bahasa Korea...', en: 'Type a message in Korean...' },
+  'aiBuddy.placeholder': { id: 'Ketik pesan...', en: 'Type a message...' },
   'aiBuddy.send': { id: 'Kirim', en: 'Send' },
 
   // === Error Pages ===

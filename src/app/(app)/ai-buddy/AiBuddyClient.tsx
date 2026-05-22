@@ -419,11 +419,11 @@ export default function AiBuddyClient() {
             </button>
           )}
 
-          {/* Text Input */}
-          <div className="relative flex-1">
+          {/* Text Input Wrapper */}
+          <div className="flex-1 flex items-end bg-white border border-gray-200 rounded-2xl p-1 focus-within:ring-2 focus-within:ring-violet-400 focus-within:border-transparent transition-all shadow-sm focus-within:shadow-violet-100">
             <textarea
               ref={textareaRef}
-              className="w-full bg-white border border-gray-200 text-gray-800 rounded-2xl pl-4 pr-12 py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent resize-none overflow-hidden min-h-[44px] max-h-[120px] shadow-sm transition-shadow focus:shadow-violet-100"
+              className="flex-1 bg-transparent text-gray-800 pl-3 pr-2 py-2 text-sm sm:text-base focus:outline-none resize-none overflow-hidden min-h-[36px] max-h-[120px] leading-relaxed"
               rows={1}
               placeholder={isListening ? (locale === 'en' ? 'Listening...' : 'Mendengarkan...') : t('aiBuddy.placeholder')}
               value={input}
@@ -438,7 +438,7 @@ export default function AiBuddyClient() {
             <button
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className="absolute right-1.5 bottom-1.5 w-9 h-9 grid place-items-center bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-full hover:from-violet-700 hover:to-fuchsia-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md shadow-violet-200/50 hover:shadow-lg active:scale-95"
+              className="w-9 h-9 shrink-0 flex items-center justify-center bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-xl hover:from-violet-700 hover:to-fuchsia-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md shadow-violet-200/50 hover:shadow-lg active:scale-95"
             >
               <FaPaperPlane className="w-3.5 h-3.5" />
             </button>
