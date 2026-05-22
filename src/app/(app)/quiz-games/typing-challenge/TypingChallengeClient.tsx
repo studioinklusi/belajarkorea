@@ -870,15 +870,17 @@ export default function TypingChallengeClient({ userId, userName }: TypingChalle
       )}
 
       {/* AUDIO MUTE TOGGLE AT TOP RIGHT */}
-      <div className="absolute top-2 right-4 z-40">
-        <button
-          onClick={() => setIsMuted(!isMuted)}
-          className="p-3 bg-white border border-gray-100 text-gray-500 hover:text-pink-500 rounded-full shadow-sm hover:shadow transition-all cursor-pointer"
-          title={isMuted ? 'Nyalakan Suara' : 'Bisukan Suara'}
-        >
-          {isMuted ? <FaVolumeXmark className="w-4 h-4" /> : <FaVolumeHigh className="w-4 h-4" />}
-        </button>
-      </div>
+      {gameState !== 'menu' && (
+        <div className="absolute top-2 right-4 z-40 animate-in fade-in duration-300">
+          <button
+            onClick={() => setIsMuted(!isMuted)}
+            className="p-3 bg-white border border-gray-100 text-gray-500 hover:text-pink-500 rounded-full shadow-sm hover:shadow transition-all cursor-pointer"
+            title={isMuted ? 'Nyalakan Suara' : 'Bisukan Suara'}
+          >
+            {isMuted ? <FaVolumeXmark className="w-4 h-4" /> : <FaVolumeHigh className="w-4 h-4" />}
+          </button>
+        </div>
+      )}
 
       {/* ------------------------------------------------------------- */}
       {/* SCREEN 1: MODE SELECTOR / MENU */}
