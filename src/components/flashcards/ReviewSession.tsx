@@ -161,7 +161,7 @@ export default function ReviewSession({ cards, onBack, onFinish }: ReviewSession
             {/* FRONT OF THE CARD */}
             <div 
               style={cardStyleFront}
-              className="bg-white rounded-3xl p-8 border border-orange-100 shadow-lg flex flex-col justify-between items-center text-center"
+              className="bg-white rounded-3xl p-6 sm:p-8 border border-orange-100 shadow-lg flex flex-col justify-between items-center text-center"
             >
               <div className="w-full flex justify-between items-center text-gray-300 text-xs shrink-0">
                 <span className="font-bold tracking-widest uppercase bg-orange-50 text-orange-700 px-2.5 py-1 rounded-md">Box {activeCard.box_level}</span>
@@ -198,7 +198,7 @@ export default function ReviewSession({ cards, onBack, onFinish }: ReviewSession
             {/* BACK OF THE CARD */}
             <div 
               style={cardStyleBack}
-              className="bg-white rounded-3xl p-8 border border-violet-100 shadow-lg flex flex-col justify-between items-center text-center overflow-y-auto"
+              className="bg-white rounded-3xl p-6 sm:p-8 border border-violet-100 shadow-lg flex flex-col justify-between items-center text-center overflow-y-auto"
             >
               <div className="w-full flex justify-between items-center text-gray-300 text-xs shrink-0">
                 <span className="font-bold tracking-widest uppercase bg-violet-50 text-violet-700 px-2.5 py-1 rounded-md">Jawaban</span>
@@ -266,16 +266,18 @@ export default function ReviewSession({ cards, onBack, onFinish }: ReviewSession
       </div>
 
       {/* Previous / Next Navigation */}
-      <div className="mt-5 shrink-0 flex items-center gap-3">
+      <div className="mt-5 shrink-0 flex items-center justify-between gap-2 sm:gap-3">
         <button
           onClick={handlePrevious}
           disabled={currentIndex === 0}
-          className="flex items-center justify-center gap-1.5 px-5 py-3 rounded-xl font-bold text-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xs active:scale-95"
+          className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:px-5 sm:py-3 rounded-xl font-bold text-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xs active:scale-95 shrink-0"
         >
-          <FaChevronLeft className="w-3 h-3" /> Sebelumnya
+          <FaChevronLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Sebelumnya</span>
         </button>
+        
         <div className="flex-1 text-center">
-          <div className="flex justify-center gap-1.5">
+          {/* Progress Dots (Hidden on mobile) */}
+          <div className="hidden sm:flex justify-center gap-1.5">
             {cards.map((_, i) => (
               <button
                 key={i}
@@ -290,13 +292,19 @@ export default function ReviewSession({ cards, onBack, onFinish }: ReviewSession
               />
             ))}
           </div>
+
+          {/* Progress Fraction (Shown on mobile) */}
+          <div className="sm:hidden text-xs font-bold text-gray-400">
+            {currentIndex + 1} / {cards.length}
+          </div>
         </div>
+
         <button
           onClick={handleNext}
           disabled={currentIndex === cards.length - 1}
-          className="flex items-center justify-center gap-1.5 px-5 py-3 rounded-xl font-bold text-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xs active:scale-95"
+          className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:px-5 sm:py-3 rounded-xl font-bold text-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xs active:scale-95 shrink-0"
         >
-          Berikutnya <FaChevronRight className="w-3 h-3" />
+          <span className="hidden sm:inline">Berikutnya</span> <FaChevronRight className="w-3.5 h-3.5" />
         </button>
       </div>
 

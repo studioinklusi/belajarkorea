@@ -73,9 +73,8 @@ export function ResetPasswordButton({ email }: { email: string }) {
 
       <form action={formAction}>
         <SubmitButton pendingText="Mengirim..." className="w-full !rounded-xl !py-3 !bg-gray-900 !text-white hover:!bg-gray-800">
-          <span className="flex items-center justify-center gap-2">
-            <FaEnvelope className="w-4 h-4" /> Kirim Link Ubah Password ke Email
-          </span>
+          <FaEnvelope className="w-4 h-4 shrink-0" />
+          <span>Kirim Link Ubah Password ke Email</span>
         </SubmitButton>
       </form>
     </div>

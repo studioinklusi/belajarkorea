@@ -81,7 +81,13 @@ export default function PricingClient({
         </div>
       )}
 
-      <div className={`mt-12 grid gap-8 ${filteredPackages.length === 1 ? 'max-w-md mx-auto' : filteredPackages.length === 2 ? 'max-w-4xl mx-auto lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
+      <div className={`mt-12 grid gap-8 w-full ${
+        filteredPackages.length === 1 
+          ? 'max-w-md mx-auto' 
+          : filteredPackages.length === 2 
+            ? 'max-w-4xl mx-auto lg:grid-cols-2' 
+            : 'max-w-md mx-auto lg:max-w-7xl lg:grid-cols-3'
+      }`}>
         {filteredPackages.map((pkg) => {
           const features = pkg.features as string[] || []
           
@@ -97,7 +103,7 @@ export default function PricingClient({
           return (
             <div 
               key={pkg.id} 
-              className={`relative p-8 bg-white border rounded-2xl shadow-sm flex flex-col transition-all hover:shadow-lg ${
+              className={`relative p-6 sm:p-8 bg-white border rounded-2xl shadow-sm flex flex-col transition-all hover:shadow-lg ${
                 baseSlug === 'pro' ? 'border-indigo-500 ring-2 ring-indigo-500' : 'border-gray-200'
               }`}
             >

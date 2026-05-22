@@ -164,7 +164,7 @@ export default function SubscribeButton({
               onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
               onKeyDown={(e) => { if (e.key === 'Enter') handleCheckVoucher() }}
               placeholder="Contoh: BELAJAR50"
-              className="flex-1 px-3 py-2.5 border border-gray-300 rounded-lg text-sm font-bold text-gray-800 placeholder:font-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 uppercase transition-all"
+              className="flex-1 min-w-0 px-3 py-2.5 border border-gray-300 rounded-lg text-sm font-bold text-gray-800 placeholder:font-normal placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 uppercase transition-all"
             />
             <button 
               onClick={handleCheckVoucher}
