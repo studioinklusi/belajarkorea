@@ -47,16 +47,76 @@ export default function QuizGamesClient({ userId, userName }: QuizGamesClientPro
     }
   }, [userId]);
 
-  // Determine Rank based on XP
-  const getRank = (xp: number) => {
-    if (xp >= 1000) return { name: 'Master Hangul 👑', color: 'text-violet-600 border-violet-200 bg-violet-50' };
-    if (xp >= 500) return { name: 'Prajurit Hangul 🛡️', color: 'text-indigo-600 border-indigo-200 bg-indigo-50' };
-    if (xp >= 200) return { name: 'Penjelajah Hangul 🗺️', color: 'text-emerald-600 border-emerald-200 bg-emerald-50' };
-    if (xp >= 50) return { name: 'Pembelajar Aktif ⚡', color: 'text-amber-600 border-amber-200 bg-amber-50' };
-    return { name: 'Sikembar Pemula 🌱', color: 'text-gray-500 border-gray-200 bg-gray-50' };
+  // Determine Rank and level up details based on XP
+  const getRankDetails = (xp: number) => {
+    if (xp >= 1000) {
+      return {
+        name: 'Master Hangul 👑',
+        color: 'text-violet-600 border-violet-200 bg-violet-50',
+        currentMin: 1000,
+        nextMax: null,
+        nextName: null,
+        progressPercent: 100,
+        remainingXp: 0,
+      };
+    }
+    if (xp >= 500) {
+      const currentMin = 500;
+      const nextMax = 1000;
+      const progressPercent = Math.min(100, Math.max(0, ((xp - currentMin) / (nextMax - currentMin)) * 100));
+      return {
+        name: 'Prajurit Hangul 🛡️',
+        color: 'text-indigo-600 border-indigo-200 bg-indigo-50',
+        currentMin,
+        nextMax,
+        nextName: 'Master Hangul 👑',
+        progressPercent,
+        remainingXp: nextMax - xp,
+      };
+    }
+    if (xp >= 200) {
+      const currentMin = 200;
+      const nextMax = 500;
+      const progressPercent = Math.min(100, Math.max(0, ((xp - currentMin) / (nextMax - currentMin)) * 100));
+      return {
+        name: 'Penjelajah Hangul 🗺️',
+        color: 'text-emerald-600 border-emerald-200 bg-emerald-50',
+        currentMin,
+        nextMax,
+        nextName: 'Prajurit Hangul 🛡️',
+        progressPercent,
+        remainingXp: nextMax - xp,
+      };
+    }
+    if (xp >= 50) {
+      const currentMin = 50;
+      const nextMax = 200;
+      const progressPercent = Math.min(100, Math.max(0, ((xp - currentMin) / (nextMax - currentMin)) * 100));
+      return {
+        name: 'Pembelajar Aktif ⚡',
+        color: 'text-amber-600 border-amber-200 bg-amber-50',
+        currentMin,
+        nextMax,
+        nextName: 'Penjelajah Hangul 🗺️',
+        progressPercent,
+        remainingXp: nextMax - xp,
+      };
+    }
+    const currentMin = 0;
+    const nextMax = 50;
+    const progressPercent = Math.min(100, Math.max(0, ((xp - currentMin) / (nextMax - currentMin)) * 100));
+    return {
+      name: 'Sikembar Pemula 🌱',
+      color: 'text-gray-500 border-gray-200 bg-gray-50',
+      currentMin,
+      nextMax,
+      nextName: 'Pembelajar Aktif ⚡',
+      progressPercent,
+      remainingXp: nextMax - xp,
+    };
   };
 
-  const rank = getRank(totalXP);
+  const rank = getRankDetails(totalXP);
 
   return (
     <main className="max-w-7xl mx-auto pt-10 px-4 sm:px-6 lg:px-8 select-none font-sans animate-in fade-in duration-300">
@@ -79,28 +139,48 @@ export default function QuizGamesClient({ userId, userName }: QuizGamesClientPro
         </div>
 
         {/* Stats Grid */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full lg:w-auto shrink-0 z-10 justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto shrink-0 z-10 items-stretch justify-center">
           {/* XP Stat Badge */}
-          <div className="bg-amber-50/60 border border-amber-200/30 shadow-xs p-3.5 sm:p-4 rounded-3xl flex items-center gap-3 shrink-0 w-full sm:w-auto">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-md">
-              <FaBolt className="w-4 h-4 sm:w-5 sm:h-5" />
+          <div className="bg-amber-50/60 border border-amber-200/30 shadow-xs p-4 rounded-3xl flex items-center gap-4 shrink-0 w-full sm:w-48">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-md shrink-0">
+              <FaBolt className="w-5 h-5" />
             </div>
             <div className="text-left">
-              <p className="text-[8px] sm:text-[9px] text-gray-400 font-black uppercase tracking-wider">Total Energi</p>
-              <p className="text-base sm:text-lg font-black text-gray-900 leading-none mt-0.5">{totalXP} <span className="text-[10px] sm:text-xs font-semibold text-amber-600">XP</span></p>
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider">Total Energi</p>
+              <p className="text-xl font-black text-gray-900 leading-none mt-1.5">{totalXP} <span className="text-xs font-bold text-amber-600">XP</span></p>
             </div>
           </div>
 
           {/* Rank Badge */}
-          <div className="bg-violet-50/60 border border-violet-200/30 shadow-xs p-3.5 sm:p-4 rounded-3xl flex items-center gap-3 shrink-0 w-full sm:w-auto">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-violet-500 to-fuchsia-500 flex items-center justify-center text-white shadow-md">
-              <FaAward className="w-4 h-4 sm:w-5 sm:h-5" />
+          <div className="bg-violet-50/60 border border-violet-200/30 shadow-xs p-4 rounded-3xl flex flex-col justify-between gap-3 shrink-0 w-full sm:w-72">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-violet-500 to-fuchsia-500 flex items-center justify-center text-white shadow-sm shrink-0">
+                <FaAward className="w-5 h-5" />
+              </div>
+              <div className="text-left overflow-hidden">
+                <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider">Pangkat Belajar</p>
+                <span className={`inline-block text-xs font-extrabold mt-1 px-2 py-0.5 rounded-md border whitespace-nowrap ${rank.color}`}>
+                  {rank.name}
+                </span>
+              </div>
             </div>
-            <div className="text-left">
-              <p className="text-[8px] sm:text-[9px] text-gray-400 font-black uppercase tracking-wider">Pangkat Belajar</p>
-              <span className={`inline-block text-xs font-extrabold mt-1 px-2 py-0.5 rounded-md border whitespace-nowrap ${rank.color}`}>
-                {rank.name}
-              </span>
+
+            {/* Progress Bar */}
+            <div className="space-y-1">
+              <div className="flex justify-between text-[10px] font-bold text-gray-400">
+                <span>{totalXP} / {rank.nextMax ?? 'Max'} XP</span>
+                {rank.remainingXp > 0 && rank.nextName ? (
+                  <span className="text-violet-600">{rank.remainingXp} XP lagi ke {rank.nextName.split(' ')[0]}</span>
+                ) : (
+                  <span className="text-violet-600">Tingkat Maksimal 🎉</span>
+                )}
+              </div>
+              <div className="w-full bg-violet-100/60 rounded-full h-2.5 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-violet-500 to-fuchsia-500 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${rank.progressPercent}%` }}
+                ></div>
+              </div>
             </div>
           </div>
         </div>
