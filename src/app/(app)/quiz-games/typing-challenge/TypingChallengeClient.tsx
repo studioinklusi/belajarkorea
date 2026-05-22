@@ -469,7 +469,8 @@ export default function TypingChallengeClient({ userId, userName }: TypingChalle
     if (typeof window !== 'undefined') {
       const storedXP = localStorage.getItem(`tsuha_hangul_xp_${userId}`);
       if (storedXP) {
-        setTotalXP(parseInt(storedXP, 10));
+        const parsed = parseInt(storedXP, 10);
+        setTotalXP(isNaN(parsed) ? 0 : parsed);
       }
     }
   }, [userId]);
@@ -607,7 +608,16 @@ export default function TypingChallengeClient({ userId, userName }: TypingChalle
 
   // Realtime typing handler
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
+    let val = e.target.value;
+    
+    // Safety limit: Enforce maximum length to prevent performance issues / browser freeze
+    const maxInputLen = Math.max(targetWord.length + 10, 30);
+    if (val.length > maxInputLen) {
+      val = val.slice(0, maxInputLen);
+    }
+    
+    // Safety sanitization: Remove non-printable control characters, newlines, and tabs
+    val = val.replace(/[\x00-\x1F\x7F-\x9F\r\n\t]/g, '');
     
     // Stop if word completed and already matching (to prevent extra typing processing)
     if (inputVal === targetWord && val.length >= inputVal.length) {
@@ -745,7 +755,8 @@ export default function TypingChallengeClient({ userId, userName }: TypingChalle
 
     // Save typing score (WPM)
     const storedWpm = localStorage.getItem(`tsuha_hangul_typing_wpm_${userId}`);
-    const prevWpm = storedWpm ? parseInt(storedWpm, 10) : 0;
+    const parsedWpm = storedWpm ? parseInt(storedWpm, 10) : 0;
+    const prevWpm = isNaN(parsedWpm) ? 0 : parsedWpm;
     if (rawWPM > prevWpm) {
       localStorage.setItem(`tsuha_hangul_typing_wpm_${userId}`, rawWPM.toString());
     }
@@ -1073,6 +1084,7 @@ export default function TypingChallengeClient({ userId, userName }: TypingChalle
               type="text"
               value={inputVal}
               onChange={handleInputChange}
+              maxLength={Math.max(targetWord.length + 10, 30)}
               className={`w-full py-4 px-6 border bg-[#FAFAFA] rounded-2xl font-sans text-xl font-bold text-center tracking-widest text-gray-800 placeholder-gray-300 focus:outline-none focus:bg-white transition-all shadow-inner ${
                 shake 
                   ? 'border-rose-400 ring-4 ring-rose-100/50' 

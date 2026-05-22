@@ -171,7 +171,10 @@ export default function TebakHangulClient({ userId, userName }: TebakHangulClien
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedXP = localStorage.getItem(`tsuha_hangul_xp_${userId}`);
-      if (storedXP) setTotalXP(parseInt(storedXP, 10));
+      if (storedXP) {
+        const parsed = parseInt(storedXP, 10);
+        setTotalXP(isNaN(parsed) ? 0 : parsed);
+      }
 
       const storedHighScores = localStorage.getItem(`tsuha_hangul_highscores_${userId}`);
       if (storedHighScores) {
