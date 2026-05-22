@@ -8,7 +8,18 @@ export const metadata = {
   description: 'Latih membaca Hangul dengan cerita interaktif dan kembangkan kosakata Korea-mu.',
 };
 
-export default async function StoriesPage() {
+const LEVEL_WEIGHT: Record<string, number> = {
+  beginner: 1,
+  intermediate: 2,
+  advanced: 3,
+};
+
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+
+export default async function StoriesPage({ searchParams }: { searchParams: SearchParams }) {
+  const resolvedSearchParams = await searchParams;
+  const filterLevel = resolvedSearchParams.level as string | undefined;
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -38,11 +49,10 @@ export default async function StoriesPage() {
   const isBasic = activeBaseSlugs.includes('basic') && !isProOrPremium;
 
   // 3. Fetch Stories
-  const { data: stories, error: storiesError } = await supabase
+  const { data: stories } = await supabase
     .from('stories')
     .select('*')
     .eq('is_published', true)
-    .order('level', { ascending: true })
     .order('created_at', { ascending: false });
 
   // 4. Fetch User's Reading Progress
@@ -55,11 +65,29 @@ export default async function StoriesPage() {
     userProgress?.filter(p => p.is_completed).map(p => p.story_id) || []
   );
 
+  // 5. Sort & Filter Stories
+  let displayStories = stories ? [...stories] : [];
+  
+  // Sort: beginner -> intermediate -> advanced, then by created_at desc
+  displayStories.sort((a, b) => {
+    const weightA = LEVEL_WEIGHT[a.level] || 99;
+    const weightB = LEVEL_WEIGHT[b.level] || 99;
+    if (weightA !== weightB) {
+      return weightA - weightB; // Ascending by level weight (Beginner=1, Adv=3)
+    }
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
+  // Filter
+  if (filterLevel && ['beginner', 'intermediate', 'advanced'].includes(filterLevel)) {
+    displayStories = displayStories.filter(s => s.level === filterLevel);
+  }
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans pb-16">
       <main className="max-w-7xl mx-auto pt-10 px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-10 text-center sm:text-left flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div className="mb-8 text-center sm:text-left flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
               <FaBookOpen className="text-violet-600 shrink-0" /> Cerita & Artikel
@@ -73,6 +101,51 @@ export default async function StoriesPage() {
             className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-full font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
           >
             <FaGraduationCap className="w-5 h-5" /> Review Flashcards
+          </Link>
+        </div>
+
+        {/* Level Filters */}
+        <div className="mb-8 flex flex-wrap items-center gap-3">
+          <span className="text-sm font-bold text-gray-500 mr-2">Filter Level:</span>
+          <Link
+            href="/stories"
+            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
+              !filterLevel 
+                ? 'bg-gray-900 text-white shadow-md' 
+                : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            Semua
+          </Link>
+          <Link
+            href="/stories?level=beginner"
+            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
+              filterLevel === 'beginner'
+                ? 'bg-emerald-500 text-white shadow-md'
+                : 'bg-white text-gray-600 border border-gray-200 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700'
+            }`}
+          >
+            📘 Pemula
+          </Link>
+          <Link
+            href="/stories?level=intermediate"
+            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
+              filterLevel === 'intermediate'
+                ? 'bg-amber-500 text-white shadow-md'
+                : 'bg-white text-gray-600 border border-gray-200 hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700'
+            }`}
+          >
+            📗 Menengah
+          </Link>
+          <Link
+            href="/stories?level=advanced"
+            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
+              filterLevel === 'advanced'
+                ? 'bg-purple-600 text-white shadow-md'
+                : 'bg-white text-gray-600 border border-gray-200 hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700'
+            }`}
+          >
+            📕 Mahir
           </Link>
         </div>
 
@@ -93,9 +166,9 @@ export default async function StoriesPage() {
         )}
 
         {/* Stories Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {stories && stories.length > 0 ? (
-            stories.map((story) => {
+        {displayStories.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {displayStories.map((story) => {
               // Determine if story is locked for this user
               let isLocked = false;
               if (isAdmin) {
@@ -135,7 +208,7 @@ export default async function StoriesPage() {
                             : 'bg-purple-600'
                         }`}
                       >
-                        {story.level}
+                        {story.level === 'beginner' ? 'Pemula' : story.level === 'intermediate' ? 'Menengah' : 'Mahir'}
                       </span>
                     </div>
 
@@ -190,15 +263,17 @@ export default async function StoriesPage() {
                   </div>
                 </div>
               );
-            })
-          ) : (
-            <div className="col-span-full text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-              <FaBookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900">Belum Ada Cerita</h3>
-              <p className="text-gray-500 text-sm mt-1">Saat ini belum ada cerita atau artikel yang dirilis.</p>
-            </div>
-          )}
-        </div>
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
+            <FaBookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-900">Belum Ada Cerita</h3>
+            <p className="text-gray-500 text-sm mt-1">
+              {filterLevel ? 'Tidak ada cerita untuk level ini.' : 'Saat ini belum ada cerita atau artikel yang dirilis.'}
+            </p>
+          </div>
+        )}
       </main>
     </div>
   );
