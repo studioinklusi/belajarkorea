@@ -15,6 +15,7 @@ interface QuizGamesClientProps {
 export default function QuizGamesClient({ userId, userName }: QuizGamesClientProps) {
   const [totalXP, setTotalXP] = useState<number>(0);
   const [maxHighScore, setMaxHighScore] = useState<number>(0);
+  const [maxWpm, setMaxWpm] = useState<number>(0);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -36,6 +37,12 @@ export default function QuizGamesClient({ userId, userName }: QuizGamesClientPro
         } catch (e) {
           console.error('Error parsing highscores in hub:', e);
         }
+      }
+
+      // Load typing high score (WPM)
+      const storedWPM = localStorage.getItem(`tsuha_hangul_typing_wpm_${userId}`);
+      if (storedWPM) {
+        setMaxWpm(parseInt(storedWPM, 10));
       }
     }
   }, [userId]);
@@ -140,24 +147,27 @@ export default function QuizGamesClient({ userId, userName }: QuizGamesClientPro
           </Link>
         </div>
 
-        {/* CARD 2: TYPING CHALLENGE (COMING SOON) */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs flex flex-col justify-between group relative overflow-hidden opacity-80 border-dashed">
-          <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-br from-pink-50 to-rose-50/10 rounded-bl-full -mr-12 -mt-12 opacity-50 z-0"></div>
+        {/* CARD 2: TYPING CHALLENGE (ACTIVE) */}
+        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs hover:shadow-xl hover:scale-[1.01] transform transition-all duration-300 flex flex-col justify-between group relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-br from-pink-100/40 to-rose-50/10 rounded-bl-full -mr-12 -mt-12 opacity-50 z-0"></div>
           
           <div className="relative z-10">
             <div className="flex justify-between items-start">
-              <div className="w-12 h-12 rounded-2xl bg-pink-50 text-pink-500 flex items-center justify-center font-bold text-lg shadow-xs border border-pink-100/50">
-                <FaKeyboard className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-100 via-rose-50 to-pink-50 text-pink-600 flex items-center justify-center font-bold text-lg shadow-sm border border-pink-200/30">
+                <FaKeyboard className="w-5 h-5 animate-pulse" />
               </div>
-              <span className="bg-gray-100 border border-gray-200/50 text-gray-500 text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-full flex items-center gap-1">
-                <FaLock className="w-2.5 h-2.5" /> Segera Hadir
-              </span>
+
+              {maxWpm > 0 && (
+                <span className="bg-green-50 border border-green-200/50 text-green-700 text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-full flex items-center gap-1 shadow-xs">
+                  🏆 Terbaik: {maxWpm} WPM
+                </span>
+              )}
             </div>
 
-            <h3 className="text-xl font-extrabold text-gray-400 mt-5">
+            <h3 className="text-xl font-extrabold text-gray-900 mt-5 group-hover:text-pink-600 transition-colors">
               Typing Challenge
             </h3>
-            <p className="text-[11px] text-pink-400 font-extrabold tracking-wide uppercase mt-0.5">
+            <p className="text-[11px] text-pink-600 font-extrabold tracking-wide uppercase mt-0.5">
               Latihan mengetik cepat Hangul
             </p>
             <p className="text-xs sm:text-sm text-gray-400 font-medium leading-relaxed mt-3 mb-8">
@@ -165,12 +175,12 @@ export default function QuizGamesClient({ userId, userName }: QuizGamesClientPro
             </p>
           </div>
 
-          <button
-            disabled
-            className="w-full py-4 bg-gray-50 text-gray-400 font-bold rounded-2xl border border-gray-200 flex items-center justify-center gap-2 cursor-not-allowed"
+          <Link
+            href="/quiz-games/typing-challenge"
+            className="relative z-10 w-full py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-extrabold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-lg active:scale-98 cursor-pointer border border-transparent"
           >
-            Terkunci <FaLock className="w-3.5 h-3.5" />
-          </button>
+            Main Sekarang <FaArrowRight />
+          </Link>
         </div>
 
         {/* CARD 3: VOCABULARY QUIZ (COMING SOON) */}
