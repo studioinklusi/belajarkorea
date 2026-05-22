@@ -98,7 +98,6 @@ export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAct
                   <form action="/auth/signout" method="POST">
                     <button 
                       type="submit" 
-                      onClick={() => setIsOpen(false)} 
                       className="w-full flex items-center gap-3 text-rose-600 hover:bg-rose-50 px-4 py-3 rounded-xl text-sm font-bold transition-colors"
                     >
                       <FaRightFromBracket className="w-4 h-4" />

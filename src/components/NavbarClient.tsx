@@ -274,7 +274,6 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
                         <form action="/auth/signout" method="POST" className="w-full">
                           <button
                             type="submit"
-                            onClick={() => setIsProfileOpen(false)}
                             className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-extrabold text-gray-600 hover:text-red-700 hover:bg-red-50/50 rounded-2xl transition-colors text-left cursor-pointer"
                           >
                             <FaArrowRightFromBracket className="w-4 h-4 text-red-500" /> Keluar
