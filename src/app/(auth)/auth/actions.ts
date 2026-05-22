@@ -57,7 +57,7 @@ export async function signup(formData: FormData) {
   if (fullName.length > 50) {
     return redirect(`/register?error=${encodeURIComponent('Nama Lengkap terlalu panjang (maksimal 50 karakter).')}`)
   }
-  if (!/^[a-zA-Z\s'\.-]+$/.test(fullName)) {
+  if (!/^[a-zA-Z\s'. -]+$/.test(fullName)) {
     return redirect(`/register?error=${encodeURIComponent('Pastikan Nama Lengkap hanya menggunakan huruf, spasi, atau tanda baca dasar.')}`)
   }
 
