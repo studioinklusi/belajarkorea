@@ -49,8 +49,8 @@ export default function PricingClient({
 
       {/* Toggle Durasi (Hanya muncul jika ada lebih dari 1 durasi) */}
       {availableDurations.length > 1 && (
-        <div className="mt-12 flex justify-center">
-          <div className="relative flex p-1 bg-white border border-gray-200 rounded-full shadow-sm">
+        <div className="mt-10 sm:mt-12 flex justify-center w-full px-1 sm:px-0">
+          <div className="relative flex w-full max-w-2xl p-1 bg-white border border-gray-200 rounded-full shadow-sm">
             {availableDurations.map((d) => {
               const isActive = activeDuration === d
               const discount = getDiscountLabel(d)
@@ -59,16 +59,16 @@ export default function PricingClient({
                 <button
                   key={d}
                   onClick={() => setActiveDuration(d)}
-                  className={`relative flex-1 py-2.5 px-6 rounded-full text-sm font-bold transition-all duration-200 ${
+                  className={`relative flex-1 flex flex-col items-center justify-center py-2 sm:py-2.5 px-1 sm:px-6 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 ${
                     isActive 
-                      ? 'bg-violet-600 text-white shadow-md transform scale-105' 
+                      ? 'bg-violet-600 text-white shadow-md transform sm:scale-105' 
                       : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  {getDurationLabel(d)}
+                  <span className="whitespace-nowrap">{getDurationLabel(d)}</span>
                   
                   {discount && (
-                    <span className={`absolute -top-3 -right-2 text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-sm ${
+                    <span className={`absolute -top-3 left-1/2 transform -translate-x-1/2 whitespace-nowrap text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full shadow-sm ${
                       isActive ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-600'
                     }`}>
                       {discount}
