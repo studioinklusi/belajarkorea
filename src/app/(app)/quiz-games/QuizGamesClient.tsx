@@ -79,27 +79,27 @@ export default function QuizGamesClient({ userId, userName }: QuizGamesClientPro
         </div>
 
         {/* Stats Grid */}
-        <div className="flex flex-row gap-4 w-full lg:w-auto shrink-0 z-10 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full lg:w-auto shrink-0 z-10 justify-center">
           {/* XP Stat Badge */}
-          <div className="bg-amber-50/60 border border-amber-200/30 shadow-xs p-4 rounded-3xl flex items-center gap-3 shrink-0 flex-1 sm:flex-initial">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-md">
-              <FaBolt className="w-5 h-5" />
+          <div className="bg-amber-50/60 border border-amber-200/30 shadow-xs p-3.5 sm:p-4 rounded-3xl flex items-center gap-3 shrink-0 w-full sm:w-auto">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-md">
+              <FaBolt className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div className="text-left">
-              <p className="text-[9px] text-gray-400 font-black uppercase tracking-wider">Total Energi</p>
-              <p className="text-lg font-black text-gray-900 leading-none mt-0.5">{totalXP} <span className="text-xs font-semibold text-amber-600">XP</span></p>
+              <p className="text-[8px] sm:text-[9px] text-gray-400 font-black uppercase tracking-wider">Total Energi</p>
+              <p className="text-base sm:text-lg font-black text-gray-900 leading-none mt-0.5">{totalXP} <span className="text-[10px] sm:text-xs font-semibold text-amber-600">XP</span></p>
             </div>
           </div>
 
           {/* Rank Badge */}
-          <div className="bg-violet-50/60 border border-violet-200/30 shadow-xs p-4 rounded-3xl flex items-center gap-3 shrink-0 flex-1 sm:flex-initial">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-violet-500 to-fuchsia-500 flex items-center justify-center text-white shadow-md">
-              <FaAward className="w-5 h-5" />
+          <div className="bg-violet-50/60 border border-violet-200/30 shadow-xs p-3.5 sm:p-4 rounded-3xl flex items-center gap-3 shrink-0 w-full sm:w-auto">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-violet-500 to-fuchsia-500 flex items-center justify-center text-white shadow-md">
+              <FaAward className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div className="text-left">
-              <p className="text-[9px] text-gray-400 font-black uppercase tracking-wider">Pangkat Belajar</p>
-              <span className={`inline-block text-xs font-extrabold mt-1 px-2 py-0.5 rounded-md border ${rank.color}`}>
-                {rank.name.split(' ')[0]} {rank.name.split(' ')[1]}
+              <p className="text-[8px] sm:text-[9px] text-gray-400 font-black uppercase tracking-wider">Pangkat Belajar</p>
+              <span className={`inline-block text-xs font-extrabold mt-1 px-2 py-0.5 rounded-md border whitespace-nowrap ${rank.color}`}>
+                {rank.name}
               </span>
             </div>
           </div>
