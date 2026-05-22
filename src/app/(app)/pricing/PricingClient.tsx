@@ -89,6 +89,7 @@ export default function PricingClient({
           const baseSlug = pkg.slug.split('-')[0]
           const activeBaseSlug = activePackageId ? activePackageId.split('-')[0] : null
           const isActiveGroup = activeBaseSlug === baseSlug
+          const isExactActive = activePackageId === pkg.slug
 
           return (
             <div 
@@ -134,13 +135,15 @@ export default function PricingClient({
                   })}
                 </ul>
               </div>
-
+ 
               {isActiveGroup ? (
                 <div className="mt-8 space-y-3">
-                  <div className="w-full py-2.5 px-4 rounded-lg text-center text-sm font-bold bg-green-50 text-green-700 border border-green-200 flex items-center justify-center gap-2">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
-                    Paket Aktif Anda
-                  </div>
+                  {isExactActive && (
+                    <div className="w-full py-2.5 px-4 rounded-lg text-center text-sm font-bold bg-green-50 text-green-700 border border-green-200 flex items-center justify-center gap-2 animate-in fade-in duration-200">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                      Paket Aktif Anda
+                    </div>
+                  )}
                   <SubscribeButton packageId={pkg.id} price={pkg.price} label={`Perpanjang +${pkg.duration_days} Hari`} variant="renew" />
                 </div>
               ) : (
