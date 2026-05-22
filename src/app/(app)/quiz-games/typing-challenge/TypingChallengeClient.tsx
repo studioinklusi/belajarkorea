@@ -307,19 +307,27 @@ interface TypingChallengeClientProps {
   userName: string;
 }
 
+let globalAudioCtx: AudioContext | null = null;
+
 export default function TypingChallengeClient({ userId, userName }: TypingChallengeClientProps) {
   const router = useRouter();
 
   // General audio volume settings
   const [isMuted, setIsMuted] = useState<boolean>(false);
 
-  // Audio synthesis function using Web Audio API
   const synthSound = (type: 'type' | 'correct' | 'wrong' | 'combo' | 'finish', comboCount: number = 0) => {
     if (isMuted || typeof window === 'undefined') return;
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioCtx) return;
-      const ctx = new AudioCtx();
+      if (!globalAudioCtx) {
+        globalAudioCtx = new AudioCtx();
+      }
+      const ctx = globalAudioCtx;
+      
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
       
       if (type === 'type') {
         // Keyboard click
