@@ -384,6 +384,16 @@ export default function TebakHangulClient({ userId, userName }: TebakHangulClien
       {/* ----------------------------------------------------------- */}
       {gameState === 'menu' && (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+          {/* Back Button */}
+          <div className="mb-6 flex justify-start">
+            <Link 
+              href="/quiz-games" 
+              className="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 bg-white hover:bg-gray-50 px-4 py-2 rounded-full border border-gray-200 transition-all shadow-sm cursor-pointer"
+            >
+              <FaArrowLeft className="w-4 h-4" /> Kembali
+            </Link>
+          </div>
+
           {/* Header */}
           <div className="mb-10 text-center sm:text-left flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
             <div>
