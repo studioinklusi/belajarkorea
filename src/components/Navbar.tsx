@@ -30,6 +30,18 @@ export default async function Navbar({ isLandingPage }: { isLandingPage?: boolea
 
   const isAdmin = profile?.role === 'content_admin' || profile?.role === 'super_admin'
 
+  // Fetch subscription status
+  let isPremium = false
+  if (user) {
+    const { data: activeSubs } = await supabase
+      .from('v_active_subscriptions')
+      .select('package_slug')
+      .eq('user_id', user.id)
+      .eq('computed_status', 'active')
+    const activeBaseSlugs = activeSubs?.map(s => s.package_slug.split('-')[0]) || []
+    isPremium = activeBaseSlugs.includes('pro') || activeBaseSlugs.includes('premium') || isAdmin
+  }
+
   return (
     <NavbarClient 
       user={user}
@@ -37,6 +49,7 @@ export default async function Navbar({ isLandingPage }: { isLandingPage?: boolea
       isAdmin={isAdmin}
       isLandingPage={isLandingPage}
       signoutAction={signout}
+      isPremium={isPremium}
     />
   )
 }

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { 
   FaHandSparkles, FaRobot, FaHouse, FaBookOpen, FaUser, FaBox, FaDownload,
   FaChevronDown, FaUserShield, FaArrowRightFromBracket, FaGraduationCap, FaLayerGroup,
-  FaXmark, FaGamepad, FaPuzzlePiece
+  FaXmark, FaGamepad, FaPuzzlePiece, FaCrown
 } from 'react-icons/fa6'
 import MobileMenu from './MobileMenu'
 import LanguageSwitcher from './LanguageSwitcher'
@@ -20,9 +20,10 @@ interface NavbarClientProps {
   isAdmin: boolean
   isLandingPage?: boolean
   signoutAction: () => void
+  isPremium?: boolean
 }
 
-export default function NavbarClient({ user, profile, isAdmin, isLandingPage, signoutAction }: NavbarClientProps) {
+export default function NavbarClient({ user, profile, isAdmin, isLandingPage, signoutAction, isPremium = false }: NavbarClientProps) {
   const { t, locale } = useTranslation()
   const pathname = usePathname()
   
@@ -371,7 +372,14 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
                 activePage === 'profile' ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
-              <FaUser className={`w-5 h-5 transition-transform ${activePage === 'profile' ? 'scale-110' : ''}`} />
+              <div className="relative">
+                <FaUser className={`w-5 h-5 transition-transform ${activePage === 'profile' ? 'scale-110' : ''}`} />
+                {!isPremium && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-amber-400 text-white rounded-full p-0.5 shadow-xs animate-bounce">
+                    <FaCrown className="w-2.5 h-2.5 text-white" />
+                  </span>
+                )}
+              </div>
               <span className="text-[10px] font-bold">Profil</span>
             </Link>
           ) : (
