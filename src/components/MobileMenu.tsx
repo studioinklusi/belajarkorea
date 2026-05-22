@@ -93,9 +93,9 @@ export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAct
               )}
 
               {/* Logout */}
-              {isLoggedIn && signoutAction && (
+              {isLoggedIn && (
                 <div className="mt-1 pt-2 border-t border-gray-100">
-                  <form action={signoutAction}>
+                  <form action="/auth/signout" method="POST">
                     <button 
                       type="submit" 
                       onClick={() => setIsOpen(false)} 

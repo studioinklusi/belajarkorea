@@ -271,7 +271,7 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
                       <div className="border-t border-gray-50 my-2"></div>
 
                       <div className="px-2">
-                        <form action={signoutAction} className="w-full">
+                        <form action="/auth/signout" method="POST" className="w-full">
                           <button
                             type="submit"
                             onClick={() => setIsProfileOpen(false)}

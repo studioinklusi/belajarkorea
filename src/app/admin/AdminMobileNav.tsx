@@ -92,7 +92,7 @@ export default function AdminMobileNav({ signoutAction }: { signoutAction: () =>
               <FaArrowLeft className="w-5 h-5 text-gray-400" />
               Kembali ke App
             </Link>
-            <form action={signoutAction}>
+            <form action="/auth/signout" method="POST">
               <button type="submit" onClick={() => setIsOpen(false)} className="w-full text-left text-base font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-3 px-4 py-3 rounded-xl transition-colors">
                 <FaRightFromBracket className="w-5 h-5 text-rose-500" />
                 Keluar
