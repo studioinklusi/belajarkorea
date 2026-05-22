@@ -320,10 +320,10 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
             <button 
               onClick={() => setIsMobileLearningOpen(true)}
               className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
-              ['courses', 'stories', 'flashcards', 'ai-buddy', 'quiz-games'].includes(activePage) ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
+              ['courses', 'stories', 'flashcards', 'quiz-games'].includes(activePage) ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
             }`}
           >
-            <FaBookOpen className={`w-5 h-5 transition-transform ${['courses', 'stories', 'flashcards', 'ai-buddy', 'quiz-games'].includes(activePage) ? 'scale-110' : ''}`} />
+            <FaBookOpen className={`w-5 h-5 transition-transform ${['courses', 'stories', 'flashcards', 'quiz-games'].includes(activePage) ? 'scale-110' : ''}`} />
               <span className="text-[10px] font-bold">Belajar</span>
             </button>
           ) : (
