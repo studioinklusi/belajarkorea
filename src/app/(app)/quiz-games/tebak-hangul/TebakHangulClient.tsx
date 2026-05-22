@@ -313,7 +313,7 @@ export default function TebakHangulClient({ userId, userName }: TebakHangulClien
     const nextIdx = currentIndex + 1;
 
     // Check if game over (no lives)
-    if (lives <= 0 || (isCorrect === false && lives - 1 <= 0)) {
+    if (lives <= 0) {
       setGameState('gameover');
       return;
     }
