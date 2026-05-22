@@ -449,6 +449,7 @@ export default function TypingChallengeClient({ userId, userName }: TypingChalle
   const [shake, setShake] = useState<boolean>(false);
   const [perfectConfetti, setPerfectConfetti] = useState<boolean>(false);
   const [keyboardHelperActive, setKeyboardHelperActive] = useState<boolean>(true);
+  const [showImeWarning, setShowImeWarning] = useState<boolean>(false);
 
   // Local Storage gamification totals
   const [totalXP, setTotalXP] = useState<number>(0);
@@ -568,6 +569,7 @@ export default function TypingChallengeClient({ userId, userName }: TypingChalle
     setTimeSpent(0);
     setShake(false);
     setPerfectConfetti(false);
+    setShowImeWarning(false);
     
     setGameState('playing');
   };
@@ -625,7 +627,11 @@ export default function TypingChallengeClient({ userId, userName }: TypingChalle
       setTypoCount((prev) => prev + 1);
       setCombo(0);
       setTimeout(() => setShake(false), 300);
+      if (/[a-zA-Z]/.test(val)) {
+        setShowImeWarning(true);
+      }
     } else {
+      setShowImeWarning(false);
       // Correct keystroke progress
       if (newInputJamos.length > inputJamos.length) {
         if (combo > 5) {
@@ -680,6 +686,7 @@ export default function TypingChallengeClient({ userId, userName }: TypingChalle
     setInputVal('');
     setWordTimeLeft(selectedMode?.wordTimer || 7);
     setCombo(0);
+    setShowImeWarning(false);
     
     if (selectedMode?.id === 'survival') {
       setLives((curr) => {
@@ -1074,6 +1081,11 @@ export default function TypingChallengeClient({ userId, userName }: TypingChalle
               >
                 Lewati (Skip)
               </button>
+            )}
+            {showImeWarning && (
+              <div className="mt-3 text-center text-xs font-semibold text-rose-500 bg-rose-50 border border-rose-100 py-2.5 px-4 rounded-2xl animate-in fade-in duration-200">
+                ⚠️ Kamu mengetik huruf Latin. Harap aktifkan/pilih <strong>Keyboard Korea (Hangul)</strong> di sistem OS/HP kamu terlebih dahulu!
+              </div>
             )}
           </div>
 
