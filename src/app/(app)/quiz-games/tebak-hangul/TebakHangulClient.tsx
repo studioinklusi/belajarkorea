@@ -7,6 +7,7 @@ import {
   FaGamepad, FaVolumeHigh, FaHeart, FaTrophy, FaArrowRight, 
   FaRotateLeft, FaCircleCheck, FaCircleXmark, FaArrowLeft, FaGraduationCap
 } from 'react-icons/fa6';
+import { saveGameScore, syncLegacyScores } from '../actions';
 
 // -------------------------------------------------------------
 // DATA HANGUL
@@ -132,6 +133,9 @@ const levels: LevelConfig[] = [
 interface TebakHangulClientProps {
   userId: string;
   userName: string;
+  initialTotalXP: number;
+  initialHighScores: Record<string, number>;
+  hasScoresInDb: boolean;
 }
 
 interface Question {
@@ -140,7 +144,13 @@ interface Question {
   options: string[]; // can be hangul characters or romanizations
 }
 
-export default function TebakHangulClient({ userId, userName }: TebakHangulClientProps) {
+export default function TebakHangulClient({ 
+  userId, 
+  userName,
+  initialTotalXP,
+  initialHighScores,
+  hasScoresInDb,
+}: TebakHangulClientProps) {
   const router = useRouter();
 
   // Game state
@@ -160,28 +170,44 @@ export default function TebakHangulClient({ userId, userName }: TebakHangulClien
   const [hasAnswered, setHasAnswered] = useState<boolean>(false);
   const [shakeActive, setShakeActive] = useState<boolean>(false);
 
-  // User Stats (cached from localStorage)
-  const [totalXP, setTotalXP] = useState<number>(0);
-  const [highScores, setHighScores] = useState<Record<string, number>>({});
+  // User Stats (loaded from props, with fallback caching)
+  const [totalXP, setTotalXP] = useState<number>(initialTotalXP);
+  const [highScores, setHighScores] = useState<Record<string, number>>(initialHighScores);
 
   // TTS status
   const [voicesLoaded, setVoicesLoaded] = useState<boolean>(false);
 
-  // Load user stats on mount
+  // Load user stats on mount and perform legacy sync if DB is empty
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedXP = localStorage.getItem(`tsuha_hangul_xp_${userId}`);
-      if (storedXP) {
-        const parsed = parseInt(storedXP, 10);
-        setTotalXP(isNaN(parsed) ? 0 : parsed);
-      }
+      if (!hasScoresInDb) {
+        const storedXP = localStorage.getItem(`tsuha_hangul_xp_${userId}`);
+        const storedHighScores = localStorage.getItem(`tsuha_hangul_highscores_${userId}`);
+        const storedWPM = localStorage.getItem(`tsuha_hangul_typing_wpm_${userId}`);
 
-      const storedHighScores = localStorage.getItem(`tsuha_hangul_highscores_${userId}`);
-      if (storedHighScores) {
-        try {
-          setHighScores(JSON.parse(storedHighScores));
-        } catch (e) {
-          console.error(e);
+        const xp = storedXP ? parseInt(storedXP, 10) : 0;
+        let hs: Record<string, number> = {};
+        if (storedHighScores) {
+          try {
+            hs = JSON.parse(storedHighScores);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        const typingWpm = storedWPM ? parseInt(storedWPM, 10) : 0;
+
+        if (xp > 0 || Object.keys(hs).length > 0 || typingWpm > 0) {
+          syncLegacyScores({ xp, highscores: hs, typingWpm })
+            .then((res) => {
+              if (res.success && res.synced) {
+                console.log('Legacy game progress successfully synced to database from Tebak Hangul page!');
+                setTotalXP(xp);
+                setHighScores(hs);
+              }
+            })
+            .catch((err) => {
+              console.error('Failed to sync legacy game progress from Tebak Hangul page:', err);
+            });
         }
       }
     }
@@ -197,7 +223,7 @@ export default function TebakHangulClient({ userId, userName }: TebakHangulClien
         setVoicesLoaded(true);
       }
     }
-  }, [userId]);
+  }, [userId, hasScoresInDb]);
 
   // Audio synthesis helper
   const speak = (text: string) => {
@@ -362,6 +388,23 @@ export default function TebakHangulClient({ userId, userName }: TebakHangulClien
       const newTotalXP = totalXP + finalEarnedXP;
       setTotalXP(newTotalXP);
       localStorage.setItem(`tsuha_hangul_xp_${userId}`, newTotalXP.toString());
+
+      // Save to Supabase database (Server Action)
+      saveGameScore({
+        gameSlug: 'tebak-hangul',
+        gameMode: levelId,
+        score: finalScore,
+        accuracy: finalScore * 10,
+        xpEarned: finalEarnedXP,
+      }).then(res => {
+        if (res.error) {
+          console.error('Failed to save score to database:', res.error);
+        } else {
+          console.log('Score successfully saved to database!');
+        }
+      }).catch(err => {
+        console.error('Network error saving score to database:', err);
+      });
     }
 
     setGameState('completed');

@@ -352,7 +352,7 @@ export default function AiBuddyClient() {
 
       {/* ===== CHAT AREA ===== */}
       <main className="flex-1 overflow-y-auto p-4 sm:p-6">
-        <div className="max-w-3xl mx-auto space-y-5">
+        <div className="max-w-3xl mx-auto space-y-5 pb-24 md:pb-0">
           {messages.map((message, index) => (
             <div
               key={index}

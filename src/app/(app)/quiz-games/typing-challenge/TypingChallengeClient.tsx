@@ -7,6 +7,7 @@ import {
   FaKeyboard, FaBolt, FaTrophy, FaArrowLeft, FaArrowRight, 
   FaRotateLeft, FaHeart, FaCircleCheck, FaRegLightbulb, FaVolumeHigh, FaVolumeXmark
 } from 'react-icons/fa6';
+import { saveGameScore, syncLegacyScores } from '../actions';
 
 // -------------------------------------------------------------
 // JAMO DECOMPOSITION CONSTANTS & UTILITIES
@@ -305,11 +306,20 @@ function getKeyForJamo(jamo: string): { eng: string; shift: boolean } | null {
 interface TypingChallengeClientProps {
   userId: string;
   userName: string;
+  initialTotalXP: number;
+  initialMaxWpm: number;
+  hasScoresInDb: boolean;
 }
 
 let globalAudioCtx: AudioContext | null = null;
 
-export default function TypingChallengeClient({ userId, userName }: TypingChallengeClientProps) {
+export default function TypingChallengeClient({ 
+  userId, 
+  userName,
+  initialTotalXP,
+  initialMaxWpm,
+  hasScoresInDb,
+}: TypingChallengeClientProps) {
   const router = useRouter();
 
   // General audio volume settings
@@ -459,21 +469,47 @@ export default function TypingChallengeClient({ userId, userName }: TypingChalle
   const [keyboardHelperActive, setKeyboardHelperActive] = useState<boolean>(true);
   const [showImeWarning, setShowImeWarning] = useState<boolean>(false);
 
-  // Local Storage gamification totals
-  const [totalXP, setTotalXP] = useState<number>(0);
+  // Database & Local Storage stats
+  const [totalXP, setTotalXP] = useState<number>(initialTotalXP);
+  const [maxWpm, setMaxWpm] = useState<number>(initialMaxWpm);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load profile XP
+  // Load and sync stats
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedXP = localStorage.getItem(`tsuha_hangul_xp_${userId}`);
-      if (storedXP) {
-        const parsed = parseInt(storedXP, 10);
-        setTotalXP(isNaN(parsed) ? 0 : parsed);
+      if (!hasScoresInDb) {
+        const storedXP = localStorage.getItem(`tsuha_hangul_xp_${userId}`);
+        const storedHighScores = localStorage.getItem(`tsuha_hangul_highscores_${userId}`);
+        const storedWPM = localStorage.getItem(`tsuha_hangul_typing_wpm_${userId}`);
+
+        const xp = storedXP ? parseInt(storedXP, 10) : 0;
+        let hs: Record<string, number> = {};
+        if (storedHighScores) {
+          try {
+            hs = JSON.parse(storedHighScores);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        const typingWpm = storedWPM ? parseInt(storedWPM, 10) : 0;
+
+        if (xp > 0 || Object.keys(hs).length > 0 || typingWpm > 0) {
+          syncLegacyScores({ xp, highscores: hs, typingWpm })
+            .then((res) => {
+              if (res.success && res.synced) {
+                console.log('Legacy game progress successfully synced to database from Typing Challenge page!');
+                setTotalXP(xp);
+                setMaxWpm(typingWpm);
+              }
+            })
+            .catch((err) => {
+              console.error('Failed to sync legacy game progress from Typing Challenge page:', err);
+            });
+        }
       }
     }
-  }, [userId]);
+  }, [userId, hasScoresInDb]);
 
   // Main game timers
   useEffect(() => {
@@ -744,7 +780,7 @@ export default function TypingChallengeClient({ userId, userName }: TypingChalle
     ? Math.round(score * selectedMode.xpPerWord * (calculatedAccuracy / 100))
     : 0;
 
-  // Save rewards and Highscores to Local Storage
+  // Save rewards and Highscores to Local Storage & Database
   const handleSaveResult = () => {
     if (!selectedMode) return;
     
@@ -759,7 +795,25 @@ export default function TypingChallengeClient({ userId, userName }: TypingChalle
     const prevWpm = isNaN(parsedWpm) ? 0 : parsedWpm;
     if (rawWPM > prevWpm) {
       localStorage.setItem(`tsuha_hangul_typing_wpm_${userId}`, rawWPM.toString());
+      setMaxWpm(rawWPM);
     }
+
+    // Save score to database (Server Action)
+    saveGameScore({
+      gameSlug: 'typing-challenge',
+      gameMode: selectedMode.id,
+      score: rawWPM,
+      accuracy: calculatedAccuracy,
+      xpEarned: xpReward,
+    }).then(res => {
+      if (res.error) {
+        console.error('Failed to save typing score to database:', res.error);
+      } else {
+        console.log('Typing score successfully saved to database!');
+      }
+    }).catch(err => {
+      console.error('Network error saving typing score to database:', err);
+    });
   };
 
   useEffect(() => {

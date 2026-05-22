@@ -7,45 +7,74 @@ import {
   FaLock, FaArrowRight, FaBolt, FaAward, FaStar
 } from 'react-icons/fa6';
 
+import { syncLegacyScores } from './actions';
+
 interface QuizGamesClientProps {
   userId: string;
   userName: string;
+  initialTotalXP: number;
+  initialMaxHighScore: number;
+  initialMaxWpm: number;
+  hasScoresInDb: boolean;
 }
 
-export default function QuizGamesClient({ userId, userName }: QuizGamesClientProps) {
-  const [totalXP, setTotalXP] = useState<number>(0);
-  const [maxHighScore, setMaxHighScore] = useState<number>(0);
-  const [maxWpm, setMaxWpm] = useState<number>(0);
+export default function QuizGamesClient({ 
+  userId, 
+  userName,
+  initialTotalXP,
+  initialMaxHighScore,
+  initialMaxWpm,
+  hasScoresInDb,
+}: QuizGamesClientProps) {
+  const [totalXP, setTotalXP] = useState<number>(initialTotalXP);
+  const [maxHighScore, setMaxHighScore] = useState<number>(initialMaxHighScore);
+  const [maxWpm, setMaxWpm] = useState<number>(initialMaxWpm);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Load total XP
-      const storedXP = localStorage.getItem(`tsuha_hangul_xp_${userId}`);
-      if (storedXP) {
-        setTotalXP(parseInt(storedXP, 10));
-      }
+      // If DB has no scores, check if legacy data exists in localStorage
+      if (!hasScoresInDb) {
+        const storedXP = localStorage.getItem(`tsuha_hangul_xp_${userId}`);
+        const storedHighScores = localStorage.getItem(`tsuha_hangul_highscores_${userId}`);
+        const storedWPM = localStorage.getItem(`tsuha_hangul_typing_wpm_${userId}`);
 
-      // Load highscores and find the max high score
-      const storedHighScores = localStorage.getItem(`tsuha_hangul_highscores_${userId}`);
-      if (storedHighScores) {
-        try {
-          const highScores: Record<string, number> = JSON.parse(storedHighScores);
-          const scores = Object.values(highScores);
-          if (scores.length > 0) {
-            setMaxHighScore(Math.max(...scores) * 10); // convert 0-10 score to percentage 0-100
+        const xp = storedXP ? parseInt(storedXP, 10) : 0;
+        let highscores: Record<string, number> = {};
+        if (storedHighScores) {
+          try {
+            highscores = JSON.parse(storedHighScores);
+          } catch (e) {
+            console.error('Error parsing legacy highscores:', e);
           }
-        } catch (e) {
-          console.error('Error parsing highscores in hub:', e);
+        }
+        const typingWpm = storedWPM ? parseInt(storedWPM, 10) : 0;
+
+        // Only sync if there is actual legacy data to sync
+        if (xp > 0 || Object.keys(highscores).length > 0 || typingWpm > 0) {
+          syncLegacyScores({ xp, highscores, typingWpm })
+            .then((res) => {
+              if (res.success && res.synced) {
+                console.log('Legacy game progress successfully synced to database!');
+                // Update local state to show legacy synced stats immediately
+                setTotalXP(xp);
+                
+                const scores = Object.values(highscores);
+                if (scores.length > 0) {
+                  setMaxHighScore(Math.max(...scores) * 10);
+                }
+                
+                if (typingWpm > 0) {
+                  setMaxWpm(typingWpm);
+                }
+              }
+            })
+            .catch((err) => {
+              console.error('Failed to sync legacy game progress:', err);
+            });
         }
       }
-
-      // Load typing high score (WPM)
-      const storedWPM = localStorage.getItem(`tsuha_hangul_typing_wpm_${userId}`);
-      if (storedWPM) {
-        setMaxWpm(parseInt(storedWPM, 10));
-      }
     }
-  }, [userId]);
+  }, [userId, hasScoresInDb]);
 
   // Determine Rank and level up details based on XP
   const getRankDetails = (xp: number) => {
