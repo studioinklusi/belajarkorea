@@ -386,6 +386,7 @@ export default function HangulSurvivalClient({
   const arenaRef = useRef<HTMLDivElement>(null);
   const gameLoopRef = useRef<number | null>(null);
   const lastSpawnTimeRef = useRef<number>(0);
+  const timerRef = useRef<number>(0);
 
   // Play synthesized audio
   const playSound = (type: 'type' | 'correct' | 'wrong' | 'hit' | 'combo' | 'gameover' | 'victory') => {
@@ -556,6 +557,7 @@ export default function HangulSurvivalClient({
           setCombo(0);
           setMaxCombo(0);
           setTimer(0);
+          timerRef.current = 0;
           setTimeSpent(0);
           setTypoCount(0);
           setCorrectKeypresses(0);
@@ -584,13 +586,17 @@ export default function HangulSurvivalClient({
     }
 
     const intervalTimer = setInterval(() => {
-      setTimer((prev) => prev + 1);
+      setTimer((prev) => {
+        const next = prev + 1;
+        timerRef.current = next;
+        return next;
+      });
       setTimeSpent((prev) => prev + 1);
     }, 1000);
 
     const updateFrame = () => {
       const now = Date.now();
-      const currentDifficultyMultiplier = Math.min(1.8, 1 + timer / 45); // speed increases over time
+      const currentDifficultyMultiplier = Math.min(1.8, 1 + timerRef.current / 45); // speed increases over time
 
       // 1. Spawning logic
       const spawnSpeed = selectedMode.id === 'speed' ? 2200 : selectedMode.spawnSpeedMs;
@@ -666,7 +672,7 @@ export default function HangulSurvivalClient({
       clearInterval(intervalTimer);
       if (gameLoopRef.current) cancelAnimationFrame(gameLoopRef.current);
     };
-  }, [gameState, selectedMode, timer]);
+  }, [gameState, selectedMode]);
 
   // Set the first enemy in line as the active input target
   useEffect(() => {
@@ -1348,7 +1354,7 @@ export default function HangulSurvivalClient({
               return (
                 <div
                   key={enemy.id}
-                  className={`absolute bottom-16 -translate-x-1/2 flex flex-col items-center z-20 transition-all duration-75`}
+                  className="absolute bottom-16 -translate-x-1/2 flex flex-col items-center z-20"
                   style={{ left: `${enemy.x}%` }}
                 >
                   {/* Danger border if object is very close */}
