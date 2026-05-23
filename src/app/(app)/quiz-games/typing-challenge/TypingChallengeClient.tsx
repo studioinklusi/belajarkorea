@@ -796,15 +796,7 @@ export default function TypingChallengeClient({
           setInputVal('');
           setWordTimeLeft(selectedMode?.wordTimer || 7);
           if (currentWordIdx >= words.length - 1) {
-            // All words cleared! Let's shuffle again or finish if it's sentence mode
-            if (selectedMode?.id === 'sentence') {
-              finishGame();
-            } else {
-              // Reshuffle and continue
-              const reshuffled = [...words].sort(() => Math.random() - 0.5);
-              setWords(reshuffled);
-              setCurrentWordIdx(0);
-            }
+            finishGame();
           } else {
             setCurrentWordIdx((prev) => prev + 1);
           }
@@ -868,13 +860,7 @@ export default function TypingChallengeClient({
     }
 
     if (currentWordIdx >= words.length - 1) {
-      if (selectedMode?.id === 'sentence') {
-        finishGame();
-      } else {
-        const reshuffled = [...words].sort(() => Math.random() - 0.5);
-        setWords(reshuffled);
-        setCurrentWordIdx(0);
-      }
+      finishGame();
     } else {
       setCurrentWordIdx((prev) => prev + 1);
     }
