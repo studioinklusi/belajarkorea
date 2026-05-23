@@ -273,7 +273,7 @@ const sentenceWords: WordItem[] = [
   { word: '날씨가 좋아요', romanization: 'nalssiga johayo', translation: 'Cuacanya bagus' },
   { word: '밥을 먹었어요', romanization: 'babeul meogeosseoyo', translation: 'Sudah makan nasi' },
   { word: '이름이 뭐예요', romanization: 'ireumi mwoyeyo', translation: 'Siapa namamu?' },
-  { word: '만na서 반가워요', romanization: 'mannaso bangawoyo', translation: 'Senang bertemu denganmu' },
+  { word: '만나서 반가워요', romanization: 'mannaso bangawoyo', translation: 'Senang bertemu denganmu' },
   { word: '한국어를 공부해요', romanization: 'hangugoreul gongbuhaeyo', translation: 'Belajar bahasa Korea' },
   { word: '어디에 가요', romanization: 'eodie gayo', translation: 'Pergi ke mana?' },
   { word: '지금 몇 시예요', romanization: 'jigeum myeot siyeyo', translation: 'Sekarang jam berapa?' }
@@ -383,10 +383,10 @@ const keyboardLayout: KeyboardKey[] = [
   { eng: 'R', ko: 'ㄱ', koShift: 'ㄲ', row: 1 },
   { eng: 'T', ko: 'ㅅ', koShift: 'ㅆ', row: 1 },
   { eng: 'Y', ko: 'ㅛ', row: 1 },
-  { eng: 'O', ko: 'ㅐ', koShift: 'ㅒ', row: 1 },
-  { eng: 'P', ko: 'ㅔ', koShift: 'ㅖ', row: 1 },
   { eng: 'U', ko: 'ㅕ', row: 1 },
   { eng: 'I', ko: 'ㅑ', row: 1 },
+  { eng: 'O', ko: 'ㅐ', koShift: 'ㅒ', row: 1 },
+  { eng: 'P', ko: 'ㅔ', koShift: 'ㅖ', row: 1 },
   
   { eng: 'A', ko: 'ㅁ', row: 2 },
   { eng: 'S', ko: 'ㄴ', row: 2 },
@@ -492,12 +492,20 @@ export default function HangulSurvivalClient({
   // Chibi Character visual states
   const [characterState, setCharacterState] = useState<'idle' | 'jump' | 'dodge' | 'hit' | 'attack'>('idle');
   const [showDangerWarning, setShowDangerWarning] = useState<boolean>(false);
+  const [showFrenzyBanner, setShowFrenzyBanner] = useState<boolean>(false);
   const [screenShake, setScreenShake] = useState<boolean>(false);
   const [showSlowMoEffect, setShowSlowMoEffect] = useState<boolean>(false);
 
   // Game Arena Entities
   const [enemies, setEnemies] = useState<ActiveEnemy[]>([]);
-  const [activeWordIdx, setActiveWordIdx] = useState<number>(-1);
+  const [activeEnemyId, setActiveEnemyId] = useState<string | null>(null);
+  const activeEnemyIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    activeEnemyIdRef.current = activeEnemyId;
+  }, [activeEnemyId]);
+
+  const activeWordIdx = activeEnemyId ? enemies.findIndex((e) => e.id === activeEnemyId) : -1;
   const [inputVal, setInputVal] = useState<string>('');
   const [showImeWarning, setShowImeWarning] = useState<boolean>(false);
 
@@ -766,7 +774,8 @@ export default function HangulSurvivalClient({
 
     const updateFrame = () => {
       const now = Date.now();
-      const currentDifficultyMultiplier = Math.min(1.8, 1 + timerRef.current / 45); // speed increases over time
+      const isFrenzy = selectedMode.id !== 'boss' && selectedMode.targetWords && wordsClearedRef.current >= selectedMode.targetWords;
+      const currentDifficultyMultiplier = Math.min(1.8, 1 + timerRef.current / 45) * (isFrenzy ? 1.5 : 1.0); // speed increases over time
 
       // 1. Spawning logic
       const maxEnemiesMap: Record<string, number> = {
@@ -784,7 +793,7 @@ export default function HangulSurvivalClient({
       const minGap = selectedMode.id === 'sentence' ? 35 : 25; // minimum % distance between centers
       const hasEnoughSpace = !lastEnemy || lastEnemy.x <= (100 - minGap);
 
-      const isTargetReached = selectedMode.id !== 'boss' && selectedMode.targetWords && wordsClearedRef.current >= selectedMode.targetWords;
+      const isTargetReached = selectedMode.id !== 'boss' && selectedMode.targetWords && wordsClearedRef.current >= selectedMode.targetWords * 2;
 
       if (
         !isTargetReached &&
@@ -873,14 +882,14 @@ export default function HangulSurvivalClient({
 
   // Set the first enemy in line as the active input target
   useEffect(() => {
-    if (enemies.length > 0) {
-      // Find first non-defeated enemy in line
-      const firstActive = enemies.findIndex((e) => !e.isDefeated && e.x > 15);
-      setActiveWordIdx(firstActive);
-    } else {
-      setActiveWordIdx(-1);
+    const currentActiveStillValid = activeEnemyId && enemies.some((e) => e.id === activeEnemyId && !e.isDefeated && e.x > 15);
+    
+    if (!currentActiveStillValid) {
+      const firstActive = enemies.find((e) => !e.isDefeated && e.x > 15);
+      setActiveEnemyId(firstActive ? firstActive.id : null);
+      setInputVal(''); // Clear input when target changes or disappears
     }
-  }, [enemies]);
+  }, [enemies, activeEnemyId]);
 
   // Danger warning at low HP
   useEffect(() => {
@@ -997,8 +1006,9 @@ export default function HangulSurvivalClient({
 
   // Shared match and metrics validator
   const checkInput = (val: string): boolean => {
-    if (activeWordIdx === -1) return false;
-    const targetEnemy = enemies[activeWordIdx];
+    const currentActiveId = activeEnemyIdRef.current;
+    if (!currentActiveId) return false;
+    const targetEnemy = enemiesRef.current.find((e) => e.id === currentActiveId);
     if (!targetEnemy) return false;
     const targetWord = targetEnemy.word;
 
@@ -1067,7 +1077,18 @@ export default function HangulSurvivalClient({
           // Increment words cleared for normal modes
           setWordsCleared((prev) => {
             const next = prev + 1;
-            if (selectedMode.targetWords && next >= selectedMode.targetWords) {
+            const victoryTarget = selectedMode.targetWords ? selectedMode.targetWords * 2 : 0;
+            
+            if (selectedMode.targetWords && next === selectedMode.targetWords) {
+              // Trigger Frenzy Mode!
+              setShowFrenzyBanner(true);
+              playSound('combo');
+              setScreenShake(true);
+              setTimeout(() => setScreenShake(false), 500);
+              setTimeout(() => setShowFrenzyBanner(false), 2200);
+            }
+
+            if (selectedMode.targetWords && next >= victoryTarget) {
               setTimeout(() => {
                 playSound('victory');
                 setGameState('result');
@@ -1091,7 +1112,7 @@ export default function HangulSurvivalClient({
         setCorrectKeypresses((prev) => prev + targetJamos.length);
 
         // Remove defeated enemy and reset input
-        setEnemies((prev) => prev.filter((_, idx) => idx !== activeWordIdx));
+        setEnemies((prev) => prev.filter((enemy) => enemy.id !== currentActiveId));
         setInputVal('');
         
         // Reset player posture back to idle after animation
@@ -1120,8 +1141,9 @@ export default function HangulSurvivalClient({
 
   // Keyboard layout virtual keys handler
   const handleVirtualKeyClick = (keyKo: string) => {
-    if (activeWordIdx === -1) return;
-    const targetEnemy = enemies[activeWordIdx];
+    const currentActiveId = activeEnemyIdRef.current;
+    if (!currentActiveId) return;
+    const targetEnemy = enemiesRef.current.find((e) => e.id === currentActiveId);
     if (!targetEnemy) return;
 
     const currentJamos = decomposeStringToJamos(inputVal);
@@ -1397,7 +1419,7 @@ export default function HangulSurvivalClient({
                   </p>
                   <div className="flex gap-4 mt-3 text-[10px] font-bold text-gray-500 uppercase tracking-wide">
                     <span>⏱️ Kecepatan: {mode.initialSpeed}s</span>
-                    <span>{mode.id === 'boss' ? '👿 Boss Battle' : `🎯 Target: ${mode.targetWords} Kata`}</span>
+                    <span>{mode.id === 'boss' ? '👿 Boss Battle' : `🎯 Target: ${mode.targetWords * 2} Kata (Frenzy)`}</span>
                   </div>
                 </div>
               </button>
@@ -1484,9 +1506,15 @@ export default function HangulSurvivalClient({
                 </div>
                 {selectedMode.id !== 'boss' && selectedMode.targetWords && (
                   <div className="text-right">
-                    <span className="text-[8px] sm:text-[9px] text-gray-400 font-black uppercase">Target</span>
-                    <p className="text-xs sm:text-base font-black text-indigo-600 leading-none mt-0.5">
-                      {wordsCleared} / {selectedMode.targetWords}
+                    <span className={`text-[8px] sm:text-[9px] font-black uppercase ${
+                      wordsCleared >= selectedMode.targetWords ? 'text-red-500 animate-pulse' : 'text-gray-400'
+                    }`}>
+                      {wordsCleared >= selectedMode.targetWords ? '🔥 FRENZY TARGET' : 'Target'}
+                    </span>
+                    <p className={`text-xs sm:text-base font-black leading-none mt-0.5 ${
+                      wordsCleared >= selectedMode.targetWords ? 'text-red-600 animate-pulse' : 'text-indigo-600'
+                    }`}>
+                      {wordsCleared} / {selectedMode.targetWords * 2}
                     </p>
                   </div>
                 )}
@@ -1513,6 +1541,20 @@ export default function HangulSurvivalClient({
             {/* Background Cute Clouds */}
             <div className="absolute top-8 left-12 text-5xl opacity-20 select-none pointer-events-none animate-float">☁️</div>
             <div className="absolute top-16 right-20 text-6xl opacity-15 select-none pointer-events-none animate-float" style={{ animationDelay: '1.5s' }}>☁️</div>
+
+            {/* Frenzy Mode Speed Up Banner Overlay */}
+            {showFrenzyBanner && (
+              <div className="absolute inset-0 bg-red-500/10 backdrop-blur-[0.5px] z-25 flex flex-col items-center justify-center animate-pulse pointer-events-none">
+                <div className="bg-red-600 text-white font-black text-xs sm:text-base px-4 py-2 sm:px-6 sm:py-3 rounded-2xl shadow-xl border border-red-500/30 flex items-center gap-2 animate-bounce">
+                  ⚡ FRENZY MODE: SPEED UP! ⚡
+                </div>
+              </div>
+            )}
+
+            {/* Frenzy Mode Vignette Overlay (Always visible in Frenzy phase) */}
+            {selectedMode.id !== 'boss' && selectedMode.targetWords && wordsCleared >= selectedMode.targetWords && (
+              <div className="absolute inset-0 ring-inset ring-8 ring-red-500/20 pointer-events-none z-10 animate-pulse" />
+            )}
 
             {/* Combat visual log notifications */}
             {logs.map((log) => (
