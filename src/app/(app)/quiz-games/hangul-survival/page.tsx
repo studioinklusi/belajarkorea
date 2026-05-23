@@ -1,18 +1,18 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import QuizGamesClient from './QuizGamesClient';
+import HangulSurvivalClient from './HangulSurvivalClient';
 
 export const metadata = {
-  title: 'Quiz & Games Bahasa Korea - Tsuha.id',
-  description: 'Kumpulan kuis dan game interaktif untuk belajar bahasa Korea dengan seru.',
+  title: 'Hangul Survival - Tsuha.id',
+  description: 'Tantang dirimu mengetik huruf dan kosakata Korea untuk melatih refleks bertahan hidup dari serangan objek!',
 };
 
-export default async function QuizGamesPage() {
+export default async function HangulSurvivalPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/login?redirectTo=/quiz-games');
+    redirect('/login?redirectTo=/quiz-games/hangul-survival');
   }
 
   const { data: profile } = await supabase
@@ -37,25 +37,16 @@ export default async function QuizGamesPage() {
   // Calculate statistics from database rows
   const initialTotalXP = scores.reduce((acc, row) => acc + (row.xp_earned || 0), 0);
 
-  const hangulScores = scores.filter(row => row.game_slug === 'tebak-hangul');
-  const maxHangulScore = hangulScores.length > 0 ? Math.max(...hangulScores.map(row => row.score)) : 0;
-  const initialMaxHighScore = maxHangulScore * 10;
-
-  const typingScores = scores.filter(row => row.game_slug === 'typing-challenge');
-  const initialMaxWpm = typingScores.length > 0 ? Math.max(...typingScores.map(row => row.score)) : 0;
-
   const survivalScores = scores.filter(row => row.game_slug === 'hangul-survival');
-  const initialMaxSurvivalScore = survivalScores.length > 0 ? Math.max(...survivalScores.map(row => row.score)) : 0;
+  const initialMaxScore = survivalScores.length > 0 ? Math.max(...survivalScores.map(row => row.score)) : 0;
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans pb-16">
-      <QuizGamesClient 
+      <HangulSurvivalClient 
         userId={user.id} 
         userName={profile?.full_name || 'Chingu'} 
         initialTotalXP={initialTotalXP}
-        initialMaxHighScore={initialMaxHighScore}
-        initialMaxWpm={initialMaxWpm}
-        initialMaxSurvivalScore={initialMaxSurvivalScore}
+        initialMaxScore={initialMaxScore}
         hasScoresInDb={hasScoresInDb}
       />
     </div>

@@ -15,6 +15,7 @@ interface QuizGamesClientProps {
   initialTotalXP: number;
   initialMaxHighScore: number;
   initialMaxWpm: number;
+  initialMaxSurvivalScore: number;
   hasScoresInDb: boolean;
 }
 
@@ -24,11 +25,13 @@ export default function QuizGamesClient({
   initialTotalXP,
   initialMaxHighScore,
   initialMaxWpm,
+  initialMaxSurvivalScore,
   hasScoresInDb,
 }: QuizGamesClientProps) {
   const [totalXP, setTotalXP] = useState<number>(initialTotalXP);
   const [maxHighScore, setMaxHighScore] = useState<number>(initialMaxHighScore);
   const [maxWpm, setMaxWpm] = useState<number>(initialMaxWpm);
+  const [maxSurvivalScore, setMaxSurvivalScore] = useState<number>(initialMaxSurvivalScore);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -325,37 +328,40 @@ export default function QuizGamesClient({
           </button>
         </div>
 
-        {/* CARD 4: DAILY CHALLENGE (COMING SOON) */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs flex flex-col justify-between group relative overflow-hidden opacity-80 border-dashed">
-          <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-br from-indigo-50 to-violet-50/10 rounded-bl-full -mr-12 -mt-12 opacity-50 z-0"></div>
+        {/* CARD 4: HANGUL SURVIVAL (ACTIVE) */}
+        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs hover:shadow-xl hover:scale-[1.01] transform transition-all duration-300 flex flex-col justify-between group relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-br from-indigo-100/40 to-violet-50/10 rounded-bl-full -mr-12 -mt-12 opacity-50 z-0"></div>
           
           <div className="relative z-10">
             <div className="flex justify-between items-start">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center font-bold text-lg shadow-xs border border-indigo-100/50">
-                <FaStar className="w-5 h-5 animate-pulse" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-100 via-violet-50 to-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg shadow-sm border border-indigo-200/30">
+                <FaStar className="w-5 h-5 animate-spin" style={{ animationDuration: '6s' }} />
               </div>
-              <span className="bg-gray-100 border border-gray-200/50 text-gray-500 text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-full flex items-center gap-1">
-                <FaLock className="w-2.5 h-2.5" /> Segera Hadir
-              </span>
+
+              {maxSurvivalScore > 0 && (
+                <span className="bg-green-50 border border-green-200/50 text-green-700 text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-full flex items-center gap-1 shadow-xs">
+                  🏆 Terbaik: {maxSurvivalScore} Poin
+                </span>
+              )}
             </div>
 
-            <h3 className="text-xl font-extrabold text-gray-400 mt-5">
-              Daily Challenge
+            <h3 className="text-xl font-extrabold text-gray-900 mt-5 group-hover:text-indigo-600 transition-colors">
+              Hangul Survival
             </h3>
-            <p className="text-[11px] text-indigo-400 font-extrabold tracking-wide uppercase mt-0.5">
-              Misi harian & bonus XP
+            <p className="text-[11px] text-indigo-600 font-extrabold tracking-wide uppercase mt-0.5">
+              Ketik cepat untuk bertahan hidup!
             </p>
             <p className="text-xs sm:text-sm text-gray-400 font-medium leading-relaxed mt-3 mb-8">
-              Pertahankan streak belajarmu dengan menyelesaikan quest harian khusus. Raih reward XP ganda untuk menaikkan peringkat pangkat belajarmu.
+              Ketik kosakata Korea dengan gesit untuk menghindari objek terbang yang menyerang karakter chibi Anda. Pertahankan combo dan raih skor tertinggi!
             </p>
           </div>
 
-          <button
-            disabled
-            className="w-full py-4 bg-gray-50 text-gray-400 font-bold rounded-2xl border border-gray-200 flex items-center justify-center gap-2 cursor-not-allowed"
+          <Link
+            href="/quiz-games/hangul-survival"
+            className="relative z-10 w-full py-4 bg-gradient-to-r from-indigo-500 to-violet-500 text-white font-extrabold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-lg active:scale-98 cursor-pointer border border-transparent"
           >
-            Terkunci <FaLock className="w-3.5 h-3.5" />
-          </button>
+            Main Sekarang <FaArrowRight />
+          </Link>
         </div>
 
         {/* CARD 5: MINI GAMES (COMING SOON) */}

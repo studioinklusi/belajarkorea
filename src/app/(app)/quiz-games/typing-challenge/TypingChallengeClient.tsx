@@ -229,18 +229,6 @@ const gameModes: ModeConfig[] = [
     wordTimer: 7,
     hasLives: true,
     xpPerWord: 12
-  },
-  {
-    id: 'daily',
-    name: 'Daily Challenge',
-    description: 'Misi harian spesial dengan Double XP!',
-    iconBg: 'bg-emerald-100 text-emerald-600 border border-emerald-200/50',
-    textColor: 'text-emerald-600',
-    gradient: 'from-emerald-500 to-teal-500',
-    defaultTimer: 60,
-    hasLives: false,
-    xpPerWord: 20, // Double XP
-    doubleXP: true
   }
 ];
 
@@ -589,15 +577,6 @@ export default function TypingChallengeClient({
       selectedWordsList = [...beginnerWords, ...vocabularyWords].sort(() => Math.random() - 0.5);
     } else if (mode.id === 'survival') {
       selectedWordsList = [...beginnerWords, ...vocabularyWords].sort(() => Math.random() - 0.5);
-    } else if (mode.id === 'daily') {
-      // Deterministic shuffle using day of month to keep it identical for all users on a day
-      const day = new Date().getDate();
-      const allWords = [...beginnerWords, ...vocabularyWords, ...sentenceWords];
-      selectedWordsList = allWords
-        .map((value) => ({ value, sort: (value.word.charCodeAt(0) * day) % 100 }))
-        .sort((a, b) => a.sort - b.sort)
-        .map(({ value }) => value)
-        .slice(0, 10); // Fixed 10 words daily
     }
 
     setWords(selectedWordsList);
@@ -713,11 +692,7 @@ export default function TypingChallengeClient({
         setTimeout(() => {
           setInputVal('');
           setWordTimeLeft(selectedMode?.wordTimer || 7);
-          
-          if (selectedMode?.id === 'daily' && currentWordIdx === 9) {
-            // Daily challenge finishes after 10 words
-            finishGame();
-          } else if (currentWordIdx >= words.length - 1) {
+          if (currentWordIdx >= words.length - 1) {
             // All words cleared! Let's shuffle again or finish if it's sentence mode
             if (selectedMode?.id === 'sentence') {
               finishGame();
@@ -753,7 +728,7 @@ export default function TypingChallengeClient({
     }
 
     if (currentWordIdx >= words.length - 1) {
-      if (selectedMode?.id === 'sentence' || selectedMode?.id === 'daily') {
+      if (selectedMode?.id === 'sentence') {
         finishGame();
       } else {
         const reshuffled = [...words].sort(() => Math.random() - 0.5);
@@ -1002,7 +977,7 @@ export default function TypingChallengeClient({
                   {mode.id === 'sentence' && '✍️'}
                   {mode.id === 'speed' && '⚡'}
                   {mode.id === 'survival' && '❤️'}
-                  {mode.id === 'daily' && '🎁'}
+
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
@@ -1127,7 +1102,7 @@ export default function TypingChallengeClient({
 
             {/* Progress Indicator */}
             <p className="text-[10px] text-gray-400 font-extrabold mt-3 uppercase tracking-wider">
-              {selectedMode.id === 'daily' ? `Kata ${currentWordIdx + 1} dari 10` : `Kosakata ke-${currentWordIdx + 1}`}
+              Kosakata ke-{currentWordIdx + 1}
             </p>
           </div>
 
