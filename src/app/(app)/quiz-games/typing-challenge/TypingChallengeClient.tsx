@@ -177,7 +177,7 @@ interface ModeConfig {
 const gameModes: ModeConfig[] = [
   {
     id: 'beginner',
-    name: 'Beginner Typing',
+    name: 'Basic Typing',
     description: 'Latih mengetik suku kata dasar tunggal',
     iconBg: 'bg-pink-100 text-pink-600 border border-pink-200/50',
     textColor: 'text-pink-600',
