@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { 
   FaVolumeHigh, FaPlus, FaCheck, FaBookOpen, FaCircleInfo, 
-  FaArrowLeft, FaCircleCheck, FaSpinner, FaCirclePlay 
+  FaArrowLeft, FaCircleCheck, FaSpinner, FaCirclePlay, FaCircleQuestion 
 } from 'react-icons/fa6';
 
 interface Token {
@@ -509,7 +509,7 @@ export default function ReaderClient({ story, userId, initialCompleted }: Reader
         className="fixed bottom-20 right-6 lg:hidden z-30 w-14 h-14 bg-gradient-to-tr from-amber-500 to-orange-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-orange-400/50"
         title="Panduan Membaca"
       >
-        <FaBookOpen className="w-5 h-5" />
+        <FaCircleQuestion className="w-6 h-6" />
       </button>
 
       {/* Mobile Bottom Sheet Panel (lg:hidden) */}
