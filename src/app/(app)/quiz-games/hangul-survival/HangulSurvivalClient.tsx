@@ -582,6 +582,7 @@ export default function HangulSurvivalClient({
   // Interactive settings
   const [countdownVal, setCountdownVal] = useState<number>(3);
   const [showVirtualKeyboard, setShowVirtualKeyboard] = useState<boolean>(false);
+  const [virtualShiftActive, setVirtualShiftActive] = useState<boolean>(false);
   
   // Refs
   const inputRef = useRef<HTMLInputElement>(null);
@@ -1519,6 +1520,7 @@ export default function HangulSurvivalClient({
     if (!matched) {
       setInputVal(nextVal);
     }
+    setVirtualShiftActive(false); // Reset shift state after a keypress
     triggerFocus();
   };
 
@@ -2254,24 +2256,27 @@ export default function HangulSurvivalClient({
                     {keyboardLayout
                       .filter((k) => k.row === rowNum)
                       .map((k) => {
-                        const isTargetHighlight = nextKey?.eng === k.eng;
-                        const isShiftRequired = nextKey?.shift === true;
+                        const hasShiftChar = !!k.koShift;
+                        const activeChar = virtualShiftActive && k.koShift ? k.koShift : k.ko;
                         
                         return (
                           <button
                             key={k.eng}
-                            onClick={() => handleVirtualKeyClick(isShiftRequired && k.koShift ? k.koShift : k.ko)}
-                            className={`h-10 w-8 sm:h-12 sm:w-11 lg:h-11 lg:w-9 xl:h-12 xl:w-11 rounded-xl flex flex-col justify-between p-1 border text-center transition-all cursor-pointer ${
-                              isTargetHighlight
-                                ? 'bg-indigo-500 text-white border-indigo-600 scale-105 animate-pulse shadow-md'
-                                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 shadow-xs text-xs font-semibold'
-                            }`}
+                            onClick={() => handleVirtualKeyClick(activeChar)}
+                            className="h-10 w-8 sm:h-12 sm:w-11 lg:h-11 lg:w-9 xl:h-12 xl:w-11 rounded-xl flex flex-col justify-between p-1 border text-center transition-all cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 active:scale-95 shadow-xs text-xs font-semibold"
                           >
-                            <span className={`text-[8px] block text-left leading-none ${isTargetHighlight ? 'text-indigo-100' : 'text-gray-300'}`}>
-                              {k.eng}
-                            </span>
+                            <div className="flex justify-between items-center w-full leading-none">
+                              <span className="text-[8px] text-gray-300 font-bold block text-left">
+                                {k.eng}
+                              </span>
+                              {hasShiftChar && (
+                                <span className="text-[7px] text-gray-400 font-bold block text-right">
+                                  {k.koShift}
+                                </span>
+                              )}
+                            </div>
                             <span className="text-xs sm:text-base font-extrabold leading-none pb-0.5">
-                              {isShiftRequired && isTargetHighlight && k.koShift ? k.koShift : k.ko}
+                              {activeChar}
                             </span>
                           </button>
                         );
@@ -2281,28 +2286,25 @@ export default function HangulSurvivalClient({
 
                 {/* Bottom helpers */}
                 <div className="flex justify-center gap-2 mt-2">
-                  <div 
-                    className={`h-9 px-4 rounded-xl flex items-center justify-center border text-[9px] font-black transition-all ${
-                      nextKey?.shift
-                        ? 'bg-indigo-500 text-white border-indigo-600 animate-pulse shadow'
-                        : 'bg-white text-gray-400 border-gray-200'
+                  <button 
+                    onClick={() => setVirtualShiftActive(!virtualShiftActive)}
+                    className={`h-9 px-4 rounded-xl flex items-center justify-center border text-[9px] font-black transition-all cursor-pointer ${
+                      virtualShiftActive
+                        ? 'bg-indigo-500 text-white border-indigo-600 shadow active:scale-95'
+                        : 'bg-white text-gray-400 border-gray-200 hover:bg-gray-50 active:scale-95'
                     }`}
                   >
                     SHIFT
-                  </div>
+                  </button>
                   <button
                     onClick={() => handleVirtualKeyClick(' ')}
-                    className={`h-9 w-24 sm:w-36 lg:w-28 xl:w-36 rounded-xl flex items-center justify-center border text-[9px] font-bold transition-all cursor-pointer ${
-                      nextJamo === ' '
-                        ? 'bg-indigo-500 text-white border-indigo-600 animate-pulse shadow'
-                        : 'bg-white text-gray-300 border-gray-200 hover:bg-gray-50'
-                    }`}
+                    className="h-9 w-24 sm:w-36 lg:w-28 xl:w-36 rounded-xl flex items-center justify-center border text-[9px] font-bold transition-all cursor-pointer bg-white text-gray-400 border-gray-200 hover:bg-gray-50 active:scale-95"
                   >
                     SPACEBAR
                   </button>
                   <button
                     onClick={handleVirtualBackspace}
-                    className="h-9 px-4 rounded-xl flex items-center justify-center border text-[9px] font-black bg-white text-gray-500 border-gray-200 hover:bg-gray-50 hover:text-rose-500 transition-colors cursor-pointer"
+                    className="h-9 px-4 rounded-xl flex items-center justify-center border text-[9px] font-black bg-white text-gray-500 border-gray-200 hover:bg-gray-50 hover:text-rose-500 transition-colors cursor-pointer active:scale-95"
                   >
                     BACKSPACE
                   </button>
