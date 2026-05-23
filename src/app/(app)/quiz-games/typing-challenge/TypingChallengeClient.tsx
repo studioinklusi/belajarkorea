@@ -90,6 +90,132 @@ function decomposeStringToJamos(text: string): string[] {
   return result;
 }
 
+function assembleJamos(jamos: string[]): string {
+  const CHOSEONG_MAP: Record<string, number> = {};
+  CHOSEONG.forEach((char, idx) => {
+    CHOSEONG_MAP[char] = idx;
+  });
+
+  const JUNGSEONG_MAP: Record<string, number> = {};
+  JUNGSEONG.forEach((char, idx) => {
+    JUNGSEONG_MAP[char] = idx;
+  });
+
+  const JONGSEONG_MAP: Record<string, number> = {};
+  JONGSEONG.forEach((char, idx) => {
+    if (char) JONGSEONG_MAP[char] = idx;
+  });
+
+  const VOWEL_COMBINATIONS: Record<string, string> = {
+    'ㅗㅏ': 'ㅘ',
+    'ㅗㅐ': 'ㅙ',
+    'ㅗㅣ': 'ㅚ',
+    'ㅜㅓ': 'ㅝ',
+    'ㅜㅔ': 'ㅞ',
+    'ㅜㅣ': 'ㅟ',
+    'ㅡㅣ': 'ㅢ'
+  };
+
+  const JONG_COMBINATIONS: Record<string, string> = {
+    'ㄱㅅ': 'ㄳ',
+    'ㄴㅈ': 'ㄵ',
+    'ㄴㅎ': 'ㄶ',
+    'ㄹㄱ': 'ㄺ',
+    'ㄹㅁ': 'ㄻ',
+    'ㄹㅂ': 'ㄼ',
+    'ㄹㅅ': 'ㄽ',
+    'ㄹㅌ': 'ㄾ',
+    'ㄹㅍ': 'ㄿ',
+    'ㄹㅎ': 'ㅀ',
+    'ㅂㅅ': 'ㅄ'
+  };
+
+  let result = '';
+  let i = 0;
+  
+  while (i < jamos.length) {
+    const C = jamos[i];
+    
+    // Check if C is a valid choseong consonant
+    if (CHOSEONG_MAP[C] === undefined) {
+      result += C;
+      i++;
+      continue;
+    }
+    
+    // Check if next is a vowel
+    const V1 = jamos[i + 1];
+    if (!V1 || JUNGSEONG_MAP[V1] === undefined) {
+      result += C;
+      i++;
+      continue;
+    }
+    
+    // We have a core syllable: C + V1
+    let V = V1;
+    let nextIdx = i + 2;
+    
+    // Check for compound vowel
+    const V2 = jamos[i + 2];
+    if (V2 && JUNGSEONG_MAP[V2] !== undefined) {
+      const combinedV = VOWEL_COMBINATIONS[V + V2];
+      if (combinedV) {
+        V = combinedV;
+        nextIdx = i + 3;
+      }
+    }
+    
+    // Check if there is a consonant that can be jongseong
+    const J1 = jamos[nextIdx];
+    if (J1 && JONGSEONG_MAP[J1] !== undefined) {
+      // Is J1 followed by a vowel? If so, J1 is pulled to the next syllable as choseong
+      const nextJamo = jamos[nextIdx + 1];
+      if (nextJamo && JUNGSEONG_MAP[nextJamo] !== undefined) {
+        // No jongseong for this syllable
+        const charCode = 0xAC00 + (CHOSEONG_MAP[C] * 588) + (JUNGSEONG_MAP[V] * 28) + 0;
+        result += String.fromCharCode(charCode);
+        i = nextIdx;
+        continue;
+      }
+      
+      // J1 can be jongseong. Can it combine with J2 to form a compound jongseong?
+      const J2 = jamos[nextIdx + 1];
+      if (J2 && JONGSEONG_MAP[J2] !== undefined) {
+        const combinedJ = JONG_COMBINATIONS[J1 + J2];
+        if (combinedJ) {
+          // Check if J2 is followed by a vowel
+          const postJ2 = jamos[nextIdx + 2];
+          if (postJ2 && JUNGSEONG_MAP[postJ2] !== undefined) {
+            // J2 is pulled to the next syllable, so current syllable only has single jongseong J1
+            const charCode = 0xAC00 + (CHOSEONG_MAP[C] * 588) + (JUNGSEONG_MAP[V] * 28) + JONGSEONG_MAP[J1];
+            result += String.fromCharCode(charCode);
+            i = nextIdx + 1; // start next syllable at J2
+            continue;
+          } else {
+            // Compound jongseong is valid
+            const charCode = 0xAC00 + (CHOSEONG_MAP[C] * 588) + (JUNGSEONG_MAP[V] * 28) + JONGSEONG_MAP[combinedJ];
+            result += String.fromCharCode(charCode);
+            i = nextIdx + 2;
+            continue;
+          }
+        }
+      }
+      
+      // Single jongseong J1 is valid
+      const charCode = 0xAC00 + (CHOSEONG_MAP[C] * 588) + (JUNGSEONG_MAP[V] * 28) + JONGSEONG_MAP[J1];
+      result += String.fromCharCode(charCode);
+      i = nextIdx + 1;
+    } else {
+      // No jongseong
+      const charCode = 0xAC00 + (CHOSEONG_MAP[C] * 588) + (JUNGSEONG_MAP[V] * 28) + 0;
+      result += String.fromCharCode(charCode);
+      i = nextIdx;
+    }
+  }
+  
+  return result;
+}
+
 // -------------------------------------------------------------
 // GAME MODES & WORDS DATA
 // -------------------------------------------------------------
@@ -437,6 +563,7 @@ export default function TypingChallengeClient({
   const [perfectConfetti, setPerfectConfetti] = useState<boolean>(false);
   const [keyboardHelperActive, setKeyboardHelperActive] = useState<boolean>(true);
   const [showImeWarning, setShowImeWarning] = useState<boolean>(false);
+  const [virtualShiftActive, setVirtualShiftActive] = useState<boolean>(false);
 
   // Database & Local Storage stats
   const [totalXP, setTotalXP] = useState<number>(initialTotalXP);
@@ -604,10 +731,8 @@ export default function TypingChallengeClient({
   const nextJamoToType = targetJamos[inputJamos.length];
   const nextKeyInfo = nextJamoToType ? getKeyForJamo(nextJamoToType) : null;
 
-  // Realtime typing handler
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let val = e.target.value;
-    
+  // Core typing logic validation
+  const checkInput = (val: string): boolean => {
     // Safety limit: Enforce maximum length to prevent performance issues / browser freeze
     const maxInputLen = Math.max(targetWord.length + 10, 30);
     if (val.length > maxInputLen) {
@@ -619,11 +744,10 @@ export default function TypingChallengeClient({
     
     // Stop if word completed and already matching (to prevent extra typing processing)
     if (inputVal === targetWord && val.length >= inputVal.length) {
-      return;
+      return false;
     }
 
     setInputVal(val);
-    synthSound('type');
 
     // Decompose new input value
     const newInputJamos = decomposeStringToJamos(val);
@@ -646,6 +770,7 @@ export default function TypingChallengeClient({
       if (/[a-zA-Z]/.test(val)) {
         setShowImeWarning(true);
       }
+      return false;
     } else {
       setShowImeWarning(false);
       // Correct keystroke progress
@@ -666,8 +791,6 @@ export default function TypingChallengeClient({
         setScore((prev) => prev + 1);
         setCorrectKeypresses((prev) => prev + targetJamos.length);
         
-
-
         // Advance or Finish
         setTimeout(() => {
           setInputVal('');
@@ -686,8 +809,45 @@ export default function TypingChallengeClient({
             setCurrentWordIdx((prev) => prev + 1);
           }
         }, 150);
+        return true;
       }
+      return false;
     }
+  };
+
+  // Realtime typing handler
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    synthSound('type');
+    checkInput(val);
+  };
+
+  // Keyboard layout virtual keys handler
+  const handleVirtualKeyClick = (keyKo: string) => {
+    const currentJamos = decomposeStringToJamos(inputVal);
+    currentJamos.push(keyKo);
+    const nextVal = assembleJamos(currentJamos);
+
+    synthSound('type');
+    const matched = checkInput(nextVal);
+    if (!matched) {
+      setInputVal(nextVal);
+    }
+    setVirtualShiftActive(false); // Reset shift state after a keypress
+    inputRef.current?.focus();
+  };
+
+  // Keyboard layout virtual backspace handler
+  const handleVirtualBackspace = () => {
+    if (inputVal.length === 0) return;
+    const currentJamos = decomposeStringToJamos(inputVal);
+    currentJamos.pop();
+    const nextVal = assembleJamos(currentJamos);
+
+    synthSound('type');
+    setInputVal(nextVal);
+    checkInput(nextVal);
+    inputRef.current?.focus();
   };
 
   // Skip current word (Manual option or on Enter mismatch for survival)
@@ -1154,48 +1314,72 @@ export default function TypingChallengeClient({
                         const isNextBaseKey = nextKeyInfo?.eng === key.eng;
                         const isHighlight = isNextBaseKey;
                         const isShiftRequired = nextKeyInfo?.shift === true;
+                        const hasShiftChar = !!key.koShift;
+                        const activeChar = virtualShiftActive && key.koShift ? key.koShift : key.ko;
                         
                         return (
-                          <div
+                          <button
                             key={key.eng}
-                            className={`h-9 w-7 sm:h-12 sm:w-10 rounded-lg flex flex-col justify-between p-0.5 sm:p-1.5 border text-center transition-all ${
+                            type="button"
+                            onClick={() => handleVirtualKeyClick(activeChar)}
+                            className={`h-9 w-7 sm:h-12 sm:w-10 rounded-lg flex flex-col justify-between p-0.5 sm:p-1.5 border text-center transition-all cursor-pointer hover:bg-gray-50 active:scale-95 shadow-xs ${
                               isHighlight
-                                ? 'bg-pink-500 text-white border-pink-600 scale-105 animate-pulse shadow-md'
-                                : 'bg-white text-gray-700 border-gray-200 shadow-xs text-xs font-semibold'
+                                ? 'bg-pink-500 text-white border-pink-600 scale-105 animate-pulse shadow-md hover:bg-pink-600 hover:text-white'
+                                : 'bg-white text-gray-700 border-gray-200 text-xs font-semibold'
                             }`}
                           >
-                            <span className={`text-[8px] sm:text-[9px] block text-left ${isHighlight ? 'text-pink-100' : 'text-gray-300'}`}>
-                              {key.eng}
-                            </span>
+                            <div className="flex justify-between items-center w-full leading-none text-[8px] sm:text-[9px]">
+                              <span className={isHighlight ? 'text-pink-100' : 'text-gray-300'}>
+                                {key.eng}
+                              </span>
+                              {hasShiftChar && (
+                                <span className={isHighlight ? 'text-pink-200' : 'text-gray-400'}>
+                                  {key.koShift}
+                                </span>
+                              )}
+                            </div>
                             <span className="text-xs sm:text-base font-extrabold leading-none pb-0.5">
-                              {isShiftRequired && isHighlight && key.koShift ? key.koShift : key.ko}
+                              {activeChar}
                             </span>
-                          </div>
+                          </button>
                         );
                       })}
                   </div>
                 ))}
 
-                {/* Bottom Row Helper (Shift and Space indicators) */}
+                {/* Bottom Row Helper (Shift, Space, Backspace buttons) */}
                 <div className="flex justify-center gap-1.5 mt-2">
-                  <div 
-                    className={`h-9 sm:h-11 px-3 rounded-lg flex items-center justify-center border text-[9px] font-black transition-all ${
-                      nextKeyInfo?.shift
-                        ? 'bg-pink-500 text-white border-pink-600 animate-pulse shadow'
-                        : 'bg-white text-gray-400 border-gray-200'
+                  <button 
+                    type="button"
+                    onClick={() => setVirtualShiftActive(!virtualShiftActive)}
+                    className={`h-9 sm:h-11 px-3 rounded-lg flex items-center justify-center border text-[9px] font-black transition-all cursor-pointer active:scale-95 ${
+                      virtualShiftActive
+                        ? 'bg-pink-600 text-white border-pink-700 shadow-md'
+                        : nextKeyInfo?.shift
+                          ? 'bg-pink-500 text-white border-pink-600 animate-pulse shadow hover:bg-pink-600'
+                          : 'bg-white text-gray-400 border-gray-200 hover:bg-gray-50'
                     }`}
                   >
                     SHIFT
-                  </div>
-                  <div 
-                    className={`h-9 sm:h-11 w-32 sm:w-48 rounded-lg flex items-center justify-center border text-[9px] font-bold transition-all ${
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => handleVirtualKeyClick(' ')}
+                    className={`h-9 sm:h-11 w-32 sm:w-48 rounded-lg flex items-center justify-center border text-[9px] font-bold transition-all cursor-pointer active:scale-95 ${
                       nextJamoToType === ' '
-                        ? 'bg-pink-500 text-white border-pink-600 animate-pulse shadow'
-                        : 'bg-white text-gray-300 border-gray-200'
+                        ? 'bg-pink-500 text-white border-pink-600 animate-pulse shadow hover:bg-pink-600'
+                        : 'bg-white text-gray-400 border-gray-200 hover:bg-gray-50'
                     }`}
                   >
                     SPACEBAR
-                  </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleVirtualBackspace}
+                    className="h-9 sm:h-11 px-3 rounded-lg flex items-center justify-center border text-[9px] font-black bg-white text-gray-500 border-gray-200 hover:bg-gray-50 hover:text-pink-500 transition-colors cursor-pointer active:scale-95"
+                  >
+                    BACKSPACE
+                  </button>
                 </div>
 
               </div>
