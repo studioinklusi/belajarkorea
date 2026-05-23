@@ -1264,7 +1264,7 @@ export default function HangulSurvivalClient({
     // Save score to database
     if (selectedMode) {
       const bonusMultiplier = finalAccuracy === 100 ? 1.5 : 1.0;
-      const earnedXp = Math.round(finalScore * selectedMode.xpPerWord * bonusMultiplier);
+      const earnedXp = Math.round(wordsClearedRef.current * selectedMode.xpPerWord * bonusMultiplier);
       const newXP = totalXP + earnedXp;
       setTotalXP(newXP);
       try {
@@ -1740,8 +1740,9 @@ export default function HangulSurvivalClient({
       ? (correctKeypresses / (correctKeypresses + typoCount)) * 100
       : 100
   );
+  const bonusMultiplier = accuracy === 100 ? 1.5 : 1.0;
   const xpReward = selectedMode 
-    ? Math.round(score * selectedMode.xpPerWord * (accuracy / 100))
+    ? Math.round(wordsCleared * selectedMode.xpPerWord * bonusMultiplier)
     : 0;
 
   const isPlaying = gameState === 'playing';
@@ -1910,8 +1911,8 @@ export default function HangulSurvivalClient({
               {/* Score & Combo */}
               <div className="flex items-center gap-2 sm:gap-4">
                 {combo > 1 && (
-                  <span className="bg-indigo-50 text-indigo-600 text-[10px] sm:text-xs font-black px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full animate-bounce">
-                    🔥 {combo}
+                  <span className="bg-indigo-50 text-indigo-600 text-[10px] sm:text-xs font-black px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full animate-bounce animate-duration-500">
+                    🔥 {combo} Combo
                   </span>
                 )}
                 <div className="text-right">
