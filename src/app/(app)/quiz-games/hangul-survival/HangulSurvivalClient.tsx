@@ -90,6 +90,132 @@ function decomposeStringToJamos(text: string): string[] {
   return result;
 }
 
+function assembleJamos(jamos: string[]): string {
+  const CHOSEONG_MAP: Record<string, number> = {};
+  CHOSEONG.forEach((char, idx) => {
+    CHOSEONG_MAP[char] = idx;
+  });
+
+  const JUNGSEONG_MAP: Record<string, number> = {};
+  JUNGSEONG.forEach((char, idx) => {
+    JUNGSEONG_MAP[char] = idx;
+  });
+
+  const JONGSEONG_MAP: Record<string, number> = {};
+  JONGSEONG.forEach((char, idx) => {
+    if (char) JONGSEONG_MAP[char] = idx;
+  });
+
+  const VOWEL_COMBINATIONS: Record<string, string> = {
+    'ㅗㅏ': 'ㅘ',
+    'ㅗㅐ': 'ㅙ',
+    'ㅗㅣ': 'ㅚ',
+    'ㅜㅓ': 'ㅝ',
+    'ㅜㅔ': 'ㅞ',
+    'ㅜㅣ': 'ㅟ',
+    'ㅡㅣ': 'ㅢ'
+  };
+
+  const JONG_COMBINATIONS: Record<string, string> = {
+    'ㄱㅅ': 'ㄳ',
+    'ㄴㅈ': 'ㄵ',
+    'ㄴㅎ': 'ㄶ',
+    'ㄹㄱ': 'ㄺ',
+    'ㄹㅁ': 'ㄻ',
+    'ㄹㅂ': 'ㄼ',
+    'ㄹㅅ': 'ㄽ',
+    'ㄹㅌ': 'ㄾ',
+    'ㄹㅍ': 'ㄿ',
+    'ㄹㅎ': 'ㅀ',
+    'ㅂㅅ': 'ㅄ'
+  };
+
+  let result = '';
+  let i = 0;
+  
+  while (i < jamos.length) {
+    const C = jamos[i];
+    
+    // Check if C is a valid choseong consonant
+    if (CHOSEONG_MAP[C] === undefined) {
+      result += C;
+      i++;
+      continue;
+    }
+    
+    // Check if next is a vowel
+    const V1 = jamos[i + 1];
+    if (!V1 || JUNGSEONG_MAP[V1] === undefined) {
+      result += C;
+      i++;
+      continue;
+    }
+    
+    // We have a core syllable: C + V1
+    let V = V1;
+    let nextIdx = i + 2;
+    
+    // Check for compound vowel
+    const V2 = jamos[i + 2];
+    if (V2 && JUNGSEONG_MAP[V2] !== undefined) {
+      const combinedV = VOWEL_COMBINATIONS[V + V2];
+      if (combinedV) {
+        V = combinedV;
+        nextIdx = i + 3;
+      }
+    }
+    
+    // Check if there is a consonant that can be jongseong
+    const J1 = jamos[nextIdx];
+    if (J1 && JONGSEONG_MAP[J1] !== undefined) {
+      // Is J1 followed by a vowel? If so, J1 is pulled to the next syllable as choseong
+      const nextJamo = jamos[nextIdx + 1];
+      if (nextJamo && JUNGSEONG_MAP[nextJamo] !== undefined) {
+        // No jongseong for this syllable
+        const charCode = 0xAC00 + (CHOSEONG_MAP[C] * 588) + (JUNGSEONG_MAP[V] * 28) + 0;
+        result += String.fromCharCode(charCode);
+        i = nextIdx;
+        continue;
+      }
+      
+      // J1 can be jongseong. Can it combine with J2 to form a compound jongseong?
+      const J2 = jamos[nextIdx + 1];
+      if (J2 && JONGSEONG_MAP[J2] !== undefined) {
+        const combinedJ = JONG_COMBINATIONS[J1 + J2];
+        if (combinedJ) {
+          // Check if J2 is followed by a vowel
+          const postJ2 = jamos[nextIdx + 2];
+          if (postJ2 && JUNGSEONG_MAP[postJ2] !== undefined) {
+            // J2 is pulled to the next syllable, so current syllable only has single jongseong J1
+            const charCode = 0xAC00 + (CHOSEONG_MAP[C] * 588) + (JUNGSEONG_MAP[V] * 28) + JONGSEONG_MAP[J1];
+            result += String.fromCharCode(charCode);
+            i = nextIdx + 1; // start next syllable at J2
+            continue;
+          } else {
+            // Compound jongseong is valid
+            const charCode = 0xAC00 + (CHOSEONG_MAP[C] * 588) + (JUNGSEONG_MAP[V] * 28) + JONGSEONG_MAP[combinedJ];
+            result += String.fromCharCode(charCode);
+            i = nextIdx + 2;
+            continue;
+          }
+        }
+      }
+      
+      // Single jongseong J1 is valid
+      const charCode = 0xAC00 + (CHOSEONG_MAP[C] * 588) + (JUNGSEONG_MAP[V] * 28) + JONGSEONG_MAP[J1];
+      result += String.fromCharCode(charCode);
+      i = nextIdx + 1;
+    } else {
+      // No jongseong
+      const charCode = 0xAC00 + (CHOSEONG_MAP[C] * 588) + (JUNGSEONG_MAP[V] * 28) + 0;
+      result += String.fromCharCode(charCode);
+      i = nextIdx;
+    }
+  }
+  
+  return result;
+}
+
 // -------------------------------------------------------------
 // WORD POOLS & ENEMY DEFINITIONS
 // -------------------------------------------------------------
@@ -798,21 +924,11 @@ export default function HangulSurvivalClient({
     }
   };
 
-  // Typing Input handler
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let val = e.target.value;
-    
-    // Sanitization & bounds
-    const maxLen = 40;
-    if (val.length > maxLen) val = val.slice(0, maxLen);
-    val = val.replace(/[\x00-\x1F\x7F-\x9F\r\n\t]/g, '');
-
-    setInputVal(val);
-    playSound('type');
-
-    if (activeWordIdx === -1) return;
+  // Shared match and metrics validator
+  const checkInput = (val: string): boolean => {
+    if (activeWordIdx === -1) return false;
     const targetEnemy = enemies[activeWordIdx];
-    if (!targetEnemy) return;
+    if (!targetEnemy) return false;
     const targetWord = targetEnemy.word;
 
     // Jamos decomposition matching
@@ -835,6 +951,7 @@ export default function HangulSurvivalClient({
       if (/[a-zA-Z]/.test(val)) {
         setShowImeWarning(true);
       }
+      return false;
     } else {
       setShowImeWarning(false);
       
@@ -898,8 +1015,24 @@ export default function HangulSurvivalClient({
         setTimeout(() => {
           setCharacterState('idle');
         }, 500);
+        return true;
       }
+      return false;
     }
+  };
+
+  // Typing Input handler
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value;
+    
+    // Sanitization & bounds
+    const maxLen = 40;
+    if (val.length > maxLen) val = val.slice(0, maxLen);
+    val = val.replace(/[\x00-\x1F\x7F-\x9F\r\n\t]/g, '');
+
+    setInputVal(val);
+    playSound('type');
+    checkInput(val);
   };
 
   // Keyboard layout virtual keys handler
@@ -907,44 +1040,29 @@ export default function HangulSurvivalClient({
     if (activeWordIdx === -1) return;
     const targetEnemy = enemies[activeWordIdx];
     if (!targetEnemy) return;
-    const currentWord = targetEnemy.word;
-    
-    // Concat input character
-    let nextVal = inputVal + keyKo;
-    setInputVal(nextVal);
+
+    const currentJamos = decomposeStringToJamos(inputVal);
+    currentJamos.push(keyKo);
+    const nextVal = assembleJamos(currentJamos);
+
     playSound('type');
-
-    const targetJamos = decomposeStringToJamos(currentWord);
-    const inputJamos = decomposeStringToJamos(nextVal);
-
-    let isTypo = false;
-    for (let i = 0; i < inputJamos.length; i++) {
-      if (inputJamos[i] !== targetJamos[i]) {
-        isTypo = true;
-        break;
-      }
+    const matched = checkInput(nextVal);
+    if (!matched) {
+      setInputVal(nextVal);
     }
+    triggerFocus();
+  };
 
-    if (isTypo) {
-      playSound('wrong');
-      setCombo(0);
-      setTypoCount((prev) => prev + 1);
-    } else if (nextVal === currentWord) {
-      // Correct!
-      spawnExplosion(targetEnemy.x, 45, 'bg-pink-400', targetEnemy.emoji);
-      playSound('correct');
-      setScore((prev) => prev + 10 + Math.floor(combo / 5));
-      setCombo((prev) => {
-        const next = prev + 1;
-        if (next > maxCombo) setMaxCombo(next);
-        return next;
-      });
-      setCorrectKeypresses((prev) => prev + targetJamos.length);
-      setEnemies((prev) => prev.filter((_, idx) => idx !== activeWordIdx));
-      setInputVal('');
-      setCharacterState('attack');
-      setTimeout(() => setCharacterState('idle'), 500);
-    }
+  // Keyboard layout virtual backspace handler
+  const handleVirtualBackspace = () => {
+    if (inputVal.length === 0) return;
+    const currentJamos = decomposeStringToJamos(inputVal);
+    currentJamos.pop();
+    const nextVal = assembleJamos(currentJamos);
+
+    playSound('type');
+    setInputVal(nextVal);
+    checkInput(nextVal);
     triggerFocus();
   };
 
@@ -1516,13 +1634,19 @@ export default function HangulSurvivalClient({
                   </div>
                   <button
                     onClick={() => handleVirtualKeyClick(' ')}
-                    className={`h-9 w-32 sm:w-44 lg:w-36 xl:w-44 rounded-xl flex items-center justify-center border text-[9px] font-bold transition-all cursor-pointer ${
+                    className={`h-9 w-24 sm:w-36 lg:w-28 xl:w-36 rounded-xl flex items-center justify-center border text-[9px] font-bold transition-all cursor-pointer ${
                       nextJamo === ' '
                         ? 'bg-indigo-500 text-white border-indigo-600 animate-pulse shadow'
                         : 'bg-white text-gray-300 border-gray-200 hover:bg-gray-50'
                     }`}
                   >
                     SPACEBAR
+                  </button>
+                  <button
+                    onClick={handleVirtualBackspace}
+                    className="h-9 px-4 rounded-xl flex items-center justify-center border text-[9px] font-black bg-white text-gray-500 border-gray-200 hover:bg-gray-50 hover:text-rose-500 transition-colors cursor-pointer"
+                  >
+                    BACKSPACE
                   </button>
                 </div>
               </div>
