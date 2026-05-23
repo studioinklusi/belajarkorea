@@ -1178,8 +1178,11 @@ export default function HangulSurvivalClient({
       const firstActive = enemies.find((e) => !e.isDefeated && e.x > 15);
       setActiveEnemyId(firstActive ? firstActive.id : null);
       setInputVal(''); // Clear input when target changes or disappears
+      if (firstActive && gameState === 'playing') {
+        triggerFocus();
+      }
     }
-  }, [enemies, activeEnemyId]);
+  }, [enemies, activeEnemyId, gameState]);
 
   // Danger warning at low HP
   useEffect(() => {
@@ -1479,6 +1482,7 @@ export default function HangulSurvivalClient({
         // Remove defeated enemy and reset input
         setEnemies((prev) => prev.filter((enemy) => enemy.id !== currentActiveId));
         setInputVal('');
+        triggerFocus(); // Refocus automatically to save typing time
         
         // Reset player posture back to idle after animation
         setTimeout(() => {
@@ -1502,6 +1506,14 @@ export default function HangulSurvivalClient({
     setInputVal(val);
     playSound('type');
     checkInput(val);
+  };
+
+  // Key Down handler to prevent enter default blur
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      triggerFocus(); // Keep focus when pressing Enter
+    }
   };
 
   // Keyboard layout virtual keys handler
@@ -2209,6 +2221,7 @@ export default function HangulSurvivalClient({
               type="text"
               value={inputVal}
               onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
               inputMode={showVirtualKeyboard ? 'none' : 'text'}
               className={`w-full border bg-[#FAFAFA] rounded-2xl font-sans font-bold text-center tracking-widest text-gray-800 focus:outline-none focus:bg-white transition-all shadow-inner border-gray-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100/50 ${
                 isPlaying ? 'py-2.5 px-4 text-base sm:text-xl' : 'py-4 px-6 text-xl'
