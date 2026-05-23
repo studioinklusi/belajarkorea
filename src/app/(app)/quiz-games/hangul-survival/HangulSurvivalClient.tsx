@@ -496,9 +496,13 @@ export default function HangulSurvivalClient({
   // Sync profile data on init
   useEffect(() => {
     if (typeof window !== 'undefined' && !hasScoresInDb) {
-      const storedXP = localStorage.getItem(`tsuha_hangul_xp_${userId}`);
-      const xp = storedXP ? parseInt(storedXP, 10) : 0;
-      if (xp > 0) setTotalXP(xp);
+      try {
+        const storedXP = localStorage.getItem(`tsuha_hangul_xp_${userId}`);
+        const xp = storedXP ? parseInt(storedXP, 10) : 0;
+        if (xp > 0) setTotalXP(xp);
+      } catch (e) {
+        console.warn('LocalStorage is blocked or unavailable:', e);
+      }
     }
   }, [userId, hasScoresInDb]);
 
@@ -732,7 +736,11 @@ export default function HangulSurvivalClient({
       const earnedXp = Math.round(finalScore * selectedMode.xpPerWord * bonusMultiplier);
       const newXP = totalXP + earnedXp;
       setTotalXP(newXP);
-      localStorage.setItem(`tsuha_hangul_xp_${userId}`, newXP.toString());
+      try {
+        localStorage.setItem(`tsuha_hangul_xp_${userId}`, newXP.toString());
+      } catch (e) {
+        console.warn('LocalStorage is blocked or unavailable:', e);
+      }
 
       if (finalScore > maxScore) {
         setMaxScore(finalScore);
@@ -767,6 +775,7 @@ export default function HangulSurvivalClient({
 
     if (activeWordIdx === -1) return;
     const targetEnemy = enemies[activeWordIdx];
+    if (!targetEnemy) return;
     const targetWord = targetEnemy.word;
 
     // Jamos decomposition matching
@@ -859,7 +868,9 @@ export default function HangulSurvivalClient({
   // Keyboard layout virtual keys handler
   const handleVirtualKeyClick = (keyKo: string) => {
     if (activeWordIdx === -1) return;
-    const currentWord = enemies[activeWordIdx].word;
+    const targetEnemy = enemies[activeWordIdx];
+    if (!targetEnemy) return;
+    const currentWord = targetEnemy.word;
     
     // Concat input character
     let nextVal = inputVal + keyKo;
@@ -883,7 +894,7 @@ export default function HangulSurvivalClient({
       setTypoCount((prev) => prev + 1);
     } else if (nextVal === currentWord) {
       // Correct!
-      spawnExplosion(enemies[activeWordIdx].x, 45, 'bg-pink-400', enemies[activeWordIdx].emoji);
+      spawnExplosion(targetEnemy.x, 45, 'bg-pink-400', targetEnemy.emoji);
       playSound('correct');
       setScore((prev) => prev + 10 + Math.floor(combo / 5));
       setCombo((prev) => {
@@ -1034,7 +1045,9 @@ export default function HangulSurvivalClient({
   // Keyboard Helper details calculation
   const getNextJamoHighlight = () => {
     if (activeWordIdx === -1) return null;
-    const targetWord = enemies[activeWordIdx].word;
+    const targetEnemy = enemies[activeWordIdx];
+    if (!targetEnemy) return null;
+    const targetWord = targetEnemy.word;
     const targetJamos = decomposeStringToJamos(targetWord);
     const inputJamos = decomposeStringToJamos(inputVal);
     
