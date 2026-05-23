@@ -1292,8 +1292,8 @@ export default function HangulSurvivalClient({
       {/* STYLES FOR ANIMATIONS (Injected dynamically on mount) */}
       {/* ------------------------------------------------------------- */}
 
-      {/* AUDIO MUTE TOGGLE */}
-      {gameState !== 'menu' && (
+      {/* AUDIO MUTE TOGGLE (Result Screen Only) */}
+      {gameState === 'result' && (
         <div className="absolute top-2 right-4 z-40">
           <button
             onClick={() => setIsMuted(!isMuted)}
@@ -1405,13 +1405,20 @@ export default function HangulSurvivalClient({
             <div className={`bg-white border border-gray-100 rounded-2xl shadow-sm flex flex-wrap justify-between items-center relative overflow-hidden transition-all duration-300 ${
               isPlaying ? 'px-3 py-1.5 sm:py-2 gap-2 text-xs mb-3' : 'px-5 py-4 gap-4 mb-6'
             }`}>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <button
                   onClick={() => setGameState('menu')}
                   className="p-2 text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
                   title="Keluar"
                 >
                   <FaArrowLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setIsMuted(!isMuted)}
+                  className="p-2 text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
+                  title={isMuted ? 'Nyalakan Suara' : 'Bisukan Suara'}
+                >
+                  {isMuted ? <FaVolumeXmark className="w-4 h-4" /> : <FaVolumeHigh className="w-4 h-4 text-gray-400" />}
                 </button>
                 <div>
                   {!isPlaying && <span className="text-[9px] text-gray-400 font-black uppercase">Survival Mode</span>}
