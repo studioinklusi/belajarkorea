@@ -573,6 +573,7 @@ export default function HangulSurvivalClient({
   const [bossState, setBossState] = useState<'idle' | 'attack' | 'hit' | 'charging'>('idle');
   const [bossShieldActive, setBossShieldActive] = useState<boolean>(false);
   const bossShieldActiveRef = useRef<boolean>(false);
+  const shieldBreakerSpawnedRef = useRef<boolean>(false);
   const [bossSpecialActive, setBossSpecialActive] = useState<boolean>(false);
   const bossSpecialActiveRef = useRef<boolean>(false);
   const [bossSpecialTimer, setBossSpecialTimer] = useState<number>(5);
@@ -832,9 +833,10 @@ export default function HangulSurvivalClient({
 
     const pool = [...sentenceWords];
     const wordObj = pool[Math.floor(Math.random() * pool.length)] || sentenceWords[0];
+    const specialEnemyId = 'boss-special-attack-' + Math.random().toString();
 
     const specialEnemy: ActiveEnemy = {
-      id: 'boss-special-attack',
+      id: specialEnemyId,
       word: wordObj.word,
       romanization: wordObj.word === '만나서 반가워요' ? 'mannaso bangawoyo' : wordObj.romanization,
       translation: wordObj.translation,
@@ -849,10 +851,10 @@ export default function HangulSurvivalClient({
     };
 
     setEnemies((prev) => {
-      const filtered = prev.filter((e) => e.id !== 'boss-special-attack');
+      const filtered = prev.filter((e) => !e.isSpecialAttack);
       return [...filtered, specialEnemy];
     });
-    setActiveEnemyId('boss-special-attack');
+    setActiveEnemyId(specialEnemyId);
     setInputVal('');
   };
 
@@ -868,7 +870,7 @@ export default function HangulSurvivalClient({
     setScreenShake(true);
     setTimeout(() => setScreenShake(false), 800);
 
-    setEnemies((prev) => prev.filter((e) => e.id !== 'boss-special-attack'));
+    setEnemies((prev) => prev.filter((e) => !e.isSpecialAttack));
     setInputVal('');
 
     lastSpecialAttackTimeRef.current = timerRef.current;
@@ -906,6 +908,7 @@ export default function HangulSurvivalClient({
           setBossState('idle');
           setBossShieldActive(false);
           bossShieldActiveRef.current = false;
+          shieldBreakerSpawnedRef.current = false;
           setBossSpecialActive(false);
           bossSpecialActiveRef.current = false;
           setBossSpecialTimer(5);
@@ -1009,8 +1012,7 @@ export default function HangulSurvivalClient({
       const isTargetReached = selectedMode.id !== 'boss' && selectedMode.targetWords && wordsClearedRef.current >= selectedMode.targetWords * 2;
 
       // Force spawn shield breaker if boss shield is active but no shield breaker on screen
-      const hasShieldBreaker = enemiesRef.current.some(e => e.isShieldBreaker);
-      const shouldSpawnShieldBreaker = selectedMode.id === 'boss' && bossShieldActiveRef.current && !hasShieldBreaker;
+      const shouldSpawnShieldBreaker = selectedMode.id === 'boss' && bossShieldActiveRef.current && !shieldBreakerSpawnedRef.current;
 
       const canSpawn = !isTargetReached && !bossSpecialActiveRef.current && (
         enemiesRef.current.length < maxEnemies &&
@@ -1023,11 +1025,13 @@ export default function HangulSurvivalClient({
         let newEnemy: ActiveEnemy;
 
         if (shouldSpawnShieldBreaker) {
+          shieldBreakerSpawnedRef.current = true;
           const pool = [...vocabularyWords];
           const wordObjLocal = pool[Math.floor(Math.random() * pool.length)] || vocabularyWords[0];
+          const shieldBreakerId = 'boss-shield-breaker-' + Math.random().toString();
           
           newEnemy = {
-            id: 'boss-shield-breaker',
+            id: shieldBreakerId,
             word: wordObjLocal.word,
             romanization: wordObjLocal.word === '만나서 반가워요' ? 'mannaso bangawoyo' : wordObjLocal.romanization,
             translation: wordObjLocal.translation,
@@ -1117,6 +1121,7 @@ export default function HangulSurvivalClient({
       // 2. Entity update logic
       setEnemies((prevEnemies) => {
         let reachedPlayerCount = 0;
+        let shieldBreakerDied = false;
         const updated = prevEnemies.map((enemy) => {
           if (enemy.isDefeated) return enemy;
           
@@ -1127,6 +1132,9 @@ export default function HangulSurvivalClient({
           // Collision with player (reached around 15%)
           if (newX <= 15) {
             reachedPlayerCount++;
+            if (enemy.isShieldBreaker) {
+              shieldBreakerDied = true;
+            }
             return { ...enemy, isDefeated: true, x: 15 };
           }
 
@@ -1135,6 +1143,10 @@ export default function HangulSurvivalClient({
 
         if (reachedPlayerCount > 0) {
           triggerPlayerHit(reachedPlayerCount * 15);
+        }
+
+        if (shieldBreakerDied) {
+          shieldBreakerSpawnedRef.current = false;
         }
 
         return updated.filter((enemy) => !enemy.isDefeated);
@@ -1372,6 +1384,7 @@ export default function HangulSurvivalClient({
           } else if (targetEnemy.isShieldBreaker) {
             setBossShieldActive(false);
             bossShieldActiveRef.current = false;
+            shieldBreakerSpawnedRef.current = false;
             setBossHp((prev) => {
               const nextHp = Math.max(0, prev - 4);
               bossHpRef.current = nextHp;
