@@ -925,6 +925,7 @@ export default function TypingChallengeClient({
         console.error('Failed to save typing score to database:', res.error);
       } else {
         console.log('Typing score successfully saved to database!');
+        router.refresh();
       }
     }).catch(err => {
       console.error('Network error saving typing score to database:', err);
@@ -1070,6 +1071,7 @@ export default function TypingChallengeClient({
           {/* Back button */}
           <Link 
             href="/quiz-games"
+            onClick={() => router.refresh()}
             className="inline-flex items-center gap-2 text-sm font-black text-gray-500 hover:text-gray-800 transition-colors mb-6 cursor-pointer"
           >
             <FaArrowLeft className="w-3.5 h-3.5" /> Kembali ke Hub
@@ -1089,17 +1091,6 @@ export default function TypingChallengeClient({
                 Uji dan tingkatkan kecepatan membaca kata Korea serta kelincahan jari Anda mengetik layout keyboard Korea (Dubeolsik) dengan interaktif!
               </p>
             </div>
-            {totalXP > 0 && (
-              <div className="bg-pink-50/60 border border-pink-200/30 p-4 rounded-2xl flex items-center gap-3 shrink-0 relative z-10 shadow-inner">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-rose-500 flex items-center justify-center text-white shadow">
-                  <FaBolt className="w-4 h-4 animate-pulse" />
-                </div>
-                <div>
-                  <p className="text-[9px] text-gray-400 font-extrabold uppercase">Total XP Anda</p>
-                  <p className="text-sm font-black text-gray-800 leading-none mt-0.5">{totalXP} XP</p>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Modes Grid */}

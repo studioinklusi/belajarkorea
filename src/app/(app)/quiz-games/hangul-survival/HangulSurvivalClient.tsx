@@ -1290,7 +1290,10 @@ export default function HangulSurvivalClient({
         xpEarned: earnedXp
       }).then(res => {
         if (res.error) console.error('Error saving score:', res.error);
-        else console.log('Score saved successfully!');
+        else {
+          console.log('Score saved successfully!');
+          router.refresh();
+        }
       }).catch(err => {
         console.error('Error sending request:', err);
       });
@@ -1793,6 +1796,7 @@ export default function HangulSurvivalClient({
         <div className="animate-in fade-in duration-300">
           <Link 
             href="/quiz-games"
+            onClick={() => router.refresh()}
             className="inline-flex items-center gap-2 text-sm font-black text-gray-500 hover:text-gray-800 transition-colors mb-6 cursor-pointer"
           >
             <FaArrowLeft className="w-3.5 h-3.5" /> Kembali ke Hub
@@ -1811,17 +1815,6 @@ export default function HangulSurvivalClient({
               <p className="mt-2 text-gray-500 text-sm font-semibold max-w-lg">
                 Uji kecepatan refleks jemari mengetik Hangul Korea. Lakukan hindaran, serangan balik, dan bertahanlah dari rintangan musuh secepat mungkin!
               </p>
-            </div>
-            
-            {/* Stats XP */}
-            <div className="bg-indigo-50/60 border border-indigo-200/30 p-4 rounded-2xl flex items-center gap-3 shrink-0 relative z-10 shadow-inner">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow">
-                <FaBolt className="w-4 h-4 animate-pulse" />
-              </div>
-              <div>
-                <p className="text-[9px] text-gray-400 font-extrabold uppercase">Total XP Anda</p>
-                <p className="text-sm font-black text-gray-800 leading-none mt-0.5">{totalXP} XP</p>
-              </div>
             </div>
           </div>
 

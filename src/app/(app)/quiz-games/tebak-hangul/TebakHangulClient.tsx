@@ -401,6 +401,7 @@ export default function TebakHangulClient({
           console.error('Failed to save score to database:', res.error);
         } else {
           console.log('Score successfully saved to database!');
+          router.refresh();
         }
       }).catch(err => {
         console.error('Network error saving score to database:', err);
@@ -434,6 +435,7 @@ export default function TebakHangulClient({
           <div className="mb-6 flex justify-start">
             <Link 
               href="/quiz-games" 
+              onClick={() => router.refresh()}
               className="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 bg-white hover:bg-gray-50 px-4 py-2 rounded-full border border-gray-200 transition-all shadow-sm cursor-pointer"
             >
               <FaArrowLeft className="w-4 h-4" /> Kembali ke Hub
@@ -452,17 +454,6 @@ export default function TebakHangulClient({
               <p className="mt-2 text-gray-500 font-medium">
                 Quiz cepat multiple choice untuk melatih refleks membaca huruf Korea.
               </p>
-            </div>
-            
-            {/* User Stat Badge */}
-            <div className="bg-white border border-gray-100 shadow-sm p-4 rounded-3xl flex items-center gap-4 w-full sm:w-auto shrink-0">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-md">
-                <FaTrophy className="w-5 h-5" />
-              </div>
-              <div className="text-left">
-                <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider">Total Skor</p>
-                <p className="text-lg font-black text-gray-900 leading-none mt-0.5">{totalXP} <span className="text-xs font-semibold text-amber-600">XP</span></p>
-              </div>
             </div>
           </div>
 
