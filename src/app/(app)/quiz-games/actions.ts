@@ -47,6 +47,7 @@ export async function saveGameScore(data: GameScoreData) {
   revalidatePath('/quiz-games');
   revalidatePath('/quiz-games/tebak-hangul');
   revalidatePath('/quiz-games/typing-challenge');
+  revalidatePath('/quiz-games/hangul-survival');
 
   return { success: true };
 }
@@ -140,6 +141,7 @@ export async function syncLegacyScores(legacyData: LegacySyncData) {
   revalidatePath('/quiz-games');
   revalidatePath('/quiz-games/tebak-hangul');
   revalidatePath('/quiz-games/typing-challenge');
+  revalidatePath('/quiz-games/hangul-survival');
 
   return { success: true, synced: true };
 }

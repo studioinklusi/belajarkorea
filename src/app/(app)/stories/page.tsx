@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { FaBookOpen, FaLock, FaCircleCheck, FaGraduationCap, FaLayerGroup } from 'react-icons/fa6';
+import { FaBookOpen, FaLock, FaCircleCheck, FaGraduationCap, FaLayerGroup, FaCircleInfo, FaHandPointer } from 'react-icons/fa6';
 
 export const metadata = {
   title: 'Membaca Cerita - Tsuha.id',
@@ -65,7 +65,15 @@ export default async function StoriesPage({ searchParams }: { searchParams: Sear
     userProgress?.filter(p => p.is_completed).map(p => p.story_id) || []
   );
 
-  // 5. Sort & Filter Stories
+  // 5. Fetch Flashcard Count for the user
+  const { count: flashcardCount } = await supabase
+    .from('user_flashcards')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id);
+
+  const totalFlashcards = flashcardCount ?? 0;
+
+  // 6. Sort & Filter Stories
   let displayStories = stories ? [...stories] : [];
   
   // Sort: beginner -> intermediate -> advanced, then by created_at desc
@@ -96,12 +104,33 @@ export default async function StoriesPage({ searchParams }: { searchParams: Sear
               Ketuk kata untuk melihat terjemahan instan dan tambahkan ke koleksi flashcard pribadimu!
             </p>
           </div>
-          <Link
-            href="/flashcards"
-            className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-full font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
-          >
-            <FaGraduationCap className="w-5 h-5" /> Review Flashcards
-          </Link>
+          {totalFlashcards > 0 ? (
+            <Link
+              href="/flashcards"
+              className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-full font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 relative"
+            >
+              <FaGraduationCap className="w-5 h-5" /> Review Flashcards
+              <span className="ml-1 bg-white/25 text-white text-[11px] font-black px-2 py-0.5 rounded-full">
+                {totalFlashcards}
+              </span>
+            </Link>
+          ) : (
+            <div className="w-full sm:w-auto bg-violet-50 border border-violet-200/60 rounded-2xl p-4 sm:max-w-xs">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <FaHandPointer className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-violet-800 leading-relaxed">
+                    Ketuk kata Korea di cerita untuk menyimpannya sebagai flashcard.
+                  </p>
+                  <p className="text-[10px] text-violet-500 font-semibold mt-1">
+                    Flashcard akan otomatis tersedia untuk di-review! ✨
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Level Filters */}
