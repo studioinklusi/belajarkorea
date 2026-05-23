@@ -1588,7 +1588,7 @@ export default function HangulSurvivalClient({
               return (
                 <div
                   key={enemy.id}
-                  className={`absolute -translate-x-1/2 flex flex-col items-center z-20 transition-all duration-300 ${
+                  className={`absolute -translate-x-1/2 flex flex-col items-center z-20 transition-[bottom] duration-300 ${
                     isPlaying ? 'bottom-2 sm:bottom-6' : 'bottom-16'
                   } space-y-1.5 sm:space-y-3`}
                   style={{ left: `${enemy.x}%` }}
