@@ -243,7 +243,22 @@ const beginnerWords: WordItem[] = [
   { word: '숲', romanization: 'sup', translation: 'Hutan' },
   { word: '강', romanization: 'gang', translation: 'Sungai' },
   { word: '산', romanization: 'san', translation: 'Gunung' },
-  { word: '새', romanization: 'sae', translation: 'Burung' }
+  { word: '새', romanization: 'sae', translation: 'Burung' },
+  { word: '곰', romanization: 'gom', translation: 'Beruang' },
+  { word: '밤', romanization: 'bam', translation: 'Malam / Kastanye' },
+  { word: '낮', romanization: 'nat', translation: 'Siang' },
+  { word: '비', romanization: 'bi', translation: 'Hujan' },
+  { word: '소', romanization: 'so', translation: 'Sapi' },
+  { word: '말', romanization: 'mal', translation: 'Kuda / Bahasa' },
+  { word: '개', romanization: 'gae', translation: 'Anjing' },
+  { word: '풀', romanization: 'pul', translation: 'Rumput / Lem' },
+  { word: '돌', romanization: 'dol', translation: 'Batu' },
+  { word: '옷', romanization: 'ot', translation: 'Baju' },
+  { word: '잠', romanization: 'jam', translation: 'Tidur' },
+  { word: '공', romanization: 'gong', translation: 'Bola' },
+  { word: '차', romanization: 'cha', translation: 'Mobil / Teh' },
+  { word: '길', romanization: 'gil', translation: 'Jalan' },
+  { word: '문', romanization: 'mun', translation: 'Pintu' }
 ];
 
 const vocabularyWords: WordItem[] = [
@@ -263,7 +278,33 @@ const vocabularyWords: WordItem[] = [
   { word: '노래', romanization: 'norae', translation: 'Lagu' },
   { word: '영화', romanization: 'yeonghwa', translation: 'Film' },
   { word: '사과', romanization: 'sagwa', translation: 'Apel' },
-  { word: '가족', romanization: 'gajok', translation: 'Keluarga' }
+  { word: '가족', romanization: 'gajok', translation: 'Keluarga' },
+  { word: '주스', romanization: 'juseu', translation: 'Jus' },
+  { word: '의자', romanization: 'uija', translation: 'Kursi' },
+  { word: '책상', romanization: 'chaeksang', translation: 'Meja tulis' },
+  { word: '바나나', romanization: 'banana', translation: 'Pisang' },
+  { word: '컴퓨터', romanization: 'keompyuteo', translation: 'Komputer' },
+  { word: '자동차', romanization: 'jadongcha', translation: 'Mobil' },
+  { word: '비행기', romanization: 'bihaenggi', translation: 'Pesawat terbang' },
+  { word: '자전거', romanization: 'jajeongeeo', translation: 'Sepeda' },
+  { word: '지하철', romanization: 'jihacheol', translation: 'Kereta bawah tanah' },
+  { word: '버스', romanization: 'beoseu', translation: 'Bus' },
+  { word: '모자', romanization: 'moja', translation: 'Topi' },
+  { word: '구두', romanization: 'gudu', translation: 'Sepatu' },
+  { word: '안경', romanization: 'angyeong', translation: 'Kacamata' },
+  { word: '시계', romanization: 'sigye', translation: 'Jam / Arloji' },
+  { word: '지갑', romanization: 'jigab', translation: 'Dompet' },
+  { word: '가방', romanization: 'gabang', translation: 'Tas' },
+  { word: '전화기', romanization: 'jeonhwagi', translation: 'Telepon' },
+  { word: '사진', romanization: 'sajin', translation: 'Foto' },
+  { word: '우산', romanization: 'usan', translation: 'Payung' },
+  { word: '수박', romanization: 'subak', translation: 'Semangka' },
+  { word: '시장', romanization: 'sijang', translation: 'Pasar' },
+  { word: '주말', romanization: 'jumal', translation: 'Akhir pekan' },
+  { word: '아침', romanization: 'achim', translation: 'Pagi / Sarapan' },
+  { word: '저녁', romanization: 'jeonyeok', translation: 'Sore / Malam' },
+  { word: '휴식', romanization: 'hyusik', translation: 'Istirahat' },
+  { word: '여행', romanization: 'yeohaeng', translation: 'Perjalanan' }
 ];
 
 const sentenceWords: WordItem[] = [
@@ -276,7 +317,18 @@ const sentenceWords: WordItem[] = [
   { word: '만나서 반가워요', romanization: 'mannaso bangawoyo', translation: 'Senang bertemu denganmu' },
   { word: '한국어를 공부해요', romanization: 'hangugoreul gongbuhaeyo', translation: 'Belajar bahasa Korea' },
   { word: '어디에 가요', romanization: 'eodie gayo', translation: 'Pergi ke mana?' },
-  { word: '지금 몇 시예요', romanization: 'jigeum myeot siyeyo', translation: 'Sekarang jam berapa?' }
+  { word: '지금 몇 시예요', romanization: 'jigeum myeot siyeyo', translation: 'Sekarang jam berapa?' },
+  { word: '배가 고파요', romanization: 'baega gopayo', translation: 'Saya lapar' },
+  { word: '물을 주세요', romanization: 'mureul juseyo', translation: 'Tolong beri air' },
+  { word: '이거 얼마예요', romanization: 'igeo olmayeyo', translation: 'Ini berapa harganya?' },
+  { word: '잘 먹겠습니다', romanization: 'jal meokgessseumnida', translation: 'Selamat makan' },
+  { word: '안녕히 계세요', romanization: 'annyeonghi gyeseyo', translation: 'Selamat tinggal' },
+  { word: '도와주세요', romanization: 'dowajuseyo', translation: 'Tolong bantu saya' },
+  { word: '축하합니다', romanization: 'chukhahabnida', translation: 'Selamat' },
+  { word: '죄송합니다', romanization: 'joesonghabnida', translation: 'Mohon maaf' },
+  { word: '괜찮습니다', romanization: 'gwaenchanhseumnida', translation: 'Tidak apa-apa' },
+  { word: '진짜 맛있어요', romanization: 'jinjja masisseoyo', translation: 'Benar-benar enak' },
+  { word: '또 만나요', romanization: 'tto mannayo', translation: 'Sampai jumpa lagi' }
 ];
 
 const enemyTemplates = [
@@ -529,6 +581,7 @@ export default function HangulSurvivalClient({
   const timerRef = useRef<number>(0);
   const enemiesRef = useRef<ActiveEnemy[]>([]);
   const wordsClearedRef = useRef<number>(0);
+  const sessionDeckRef = useRef<WordItem[]>([]);
 
   useEffect(() => {
     enemiesRef.current = enemies;
@@ -743,6 +796,25 @@ export default function HangulSurvivalClient({
           setLogs([]);
           setBossHp(100);
           setWordsCleared(0);
+          
+          // Initialize and shuffle session deck
+          if (selectedMode) {
+            let pool: WordItem[] = [];
+            if (selectedMode.id === 'beginner') pool = [...beginnerWords];
+            else if (selectedMode.id === 'vocab') pool = [...vocabularyWords];
+            else if (selectedMode.id === 'sentence') pool = [...sentenceWords];
+            else if (selectedMode.id === 'speed' || selectedMode.id === 'boss') {
+              pool = [...beginnerWords, ...vocabularyWords];
+            }
+            
+            // Fisher-Yates Shuffle
+            for (let i = pool.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+            sessionDeckRef.current = pool;
+          }
+
           lastSpawnTimeRef.current = Date.now();
           triggerFocus();
           return 3;
@@ -751,7 +823,7 @@ export default function HangulSurvivalClient({
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [gameState]);
+  }, [gameState, selectedMode]);
 
   // Main gameplay loop
   useEffect(() => {
@@ -801,14 +873,45 @@ export default function HangulSurvivalClient({
         hasEnoughSpace &&
         now - lastSpawnTimeRef.current > spawnSpeed / currentDifficultyMultiplier
       ) {
-        // Decide pool
-        let pool = beginnerWords;
-        if (selectedMode.id === 'vocab') pool = vocabularyWords;
-        else if (selectedMode.id === 'sentence') pool = sentenceWords;
-        else if (selectedMode.id === 'speed') pool = [...beginnerWords, ...vocabularyWords];
-        else if (selectedMode.id === 'boss') pool = [...beginnerWords, ...vocabularyWords];
+        // Get the next word from the pre-shuffled session deck
+        let wordObj: WordItem | undefined;
+        
+        // Find the first word in the deck that is not currently active on screen
+        const activeWords = enemiesRef.current.map((e) => e.word);
+        const nextValidIndex = sessionDeckRef.current.findIndex((w) => !activeWords.includes(w.word));
+        
+        if (nextValidIndex !== -1) {
+          wordObj = sessionDeckRef.current.splice(nextValidIndex, 1)[0];
+        } else if (sessionDeckRef.current.length > 0) {
+          wordObj = sessionDeckRef.current.shift();
+        }
 
-        const wordObj = pool[Math.floor(Math.random() * pool.length)];
+        // Reshuffle fallback if deck ran out
+        if (!wordObj) {
+          let pool: WordItem[] = [];
+          if (selectedMode.id === 'beginner') pool = [...beginnerWords];
+          else if (selectedMode.id === 'vocab') pool = [...vocabularyWords];
+          else if (selectedMode.id === 'sentence') pool = [...sentenceWords];
+          else if (selectedMode.id === 'speed' || selectedMode.id === 'boss') {
+            pool = [...beginnerWords, ...vocabularyWords];
+          }
+          
+          let filtered = pool.filter((w) => !activeWords.includes(w.word));
+          if (filtered.length === 0) filtered = pool;
+          
+          for (let i = filtered.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+          }
+          
+          sessionDeckRef.current = filtered;
+          wordObj = sessionDeckRef.current.shift();
+        }
+
+        if (!wordObj) {
+          wordObj = beginnerWords[0];
+        }
+
         const template = enemyTemplates[Math.floor(Math.random() * enemyTemplates.length)];
 
         const speedMultiplierMap: Record<string, number> = {
