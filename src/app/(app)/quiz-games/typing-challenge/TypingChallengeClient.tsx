@@ -217,18 +217,6 @@ const gameModes: ModeConfig[] = [
     defaultTimer: 30,
     hasLives: false,
     xpPerWord: 10
-  },
-  {
-    id: 'survival',
-    name: 'Survival Mode',
-    description: '3 Nyawa. Batas waktu 7 detik per kata!',
-    iconBg: 'bg-rose-100 text-rose-600 border border-rose-200/50',
-    textColor: 'text-rose-600',
-    gradient: 'from-rose-500 to-red-500',
-    defaultTimer: 999, // infinite total timer, controlled by lives
-    wordTimer: 7,
-    hasLives: true,
-    xpPerWord: 12
   }
 ];
 
