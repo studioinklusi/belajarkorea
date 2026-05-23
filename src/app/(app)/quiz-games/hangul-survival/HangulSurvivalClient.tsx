@@ -1441,6 +1441,11 @@ export default function HangulSurvivalClient({
               setTimeout(() => setBossState('idle'), 500);
             }
           }
+          setWordsCleared((prev) => {
+            const next = prev + 1;
+            wordsClearedRef.current = next;
+            return next;
+          });
         } else if (selectedMode) {
           // Increment words cleared for normal modes
           setWordsCleared((prev) => {
