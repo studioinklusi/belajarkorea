@@ -1214,9 +1214,12 @@ export default function HangulSurvivalClient({
       {/* SCREEN 3: ACTIVE GAMEPLAY */}
       {/* ------------------------------------------------------------- */}
       {gameState === 'playing' && selectedMode && (
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* TOP SECTION: HUD BAR */}
+          {/* LEFT COLUMN: HUD + PLAYING ARENA */}
+          <div className="lg:col-span-7 xl:col-span-8 space-y-6">
+            
+            {/* TOP SECTION: HUD BAR */}
           <div className="bg-white border border-gray-100 rounded-2xl px-5 py-4 shadow-sm flex flex-wrap gap-4 justify-between items-center relative overflow-hidden">
             <div className="flex items-center gap-3">
               <button
@@ -1405,9 +1408,14 @@ export default function HangulSurvivalClient({
               );
             })}
           </div>
+          
+          </div>
 
-          {/* BOTTOM SECTION: TYPING AREA */}
-          <div className="max-w-md mx-auto relative bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+          {/* RIGHT COLUMN: TYPING INPUT + KEYBOARD HELPER */}
+          <div className="lg:col-span-5 xl:col-span-4 space-y-6">
+            
+            {/* TYPING AREA */}
+            <div className="w-full max-w-md mx-auto relative bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
             <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wide block mb-3 text-center">
               {activeWordIdx !== -1 
                 ? `Ketik Hangul Kata Target: "${enemies[activeWordIdx]?.word}"` 
@@ -1455,11 +1463,11 @@ export default function HangulSurvivalClient({
 
           {/* VIRTUAL KEYBOARD LAYOUT HELPER */}
           {showVirtualKeyboard && (
-            <div className="border-t border-gray-50 pt-5 max-w-xl mx-auto animate-in fade-in duration-300">
+            <div className="w-full max-w-xl mx-auto animate-in fade-in duration-300">
               <div className="bg-gray-50 border border-gray-100 rounded-3xl p-3 sm:p-5 space-y-1.5 shadow-inner">
                 {/* Row layout render */}
                 {[1, 2, 3].map((rowNum) => (
-                  <div key={rowNum} className="flex justify-center gap-1 sm:gap-1.5">
+                  <div key={rowNum} className="flex justify-center gap-1 sm:gap-1.5 lg:gap-1 xl:gap-1.5">
                     {keyboardLayout
                       .filter((k) => k.row === rowNum)
                       .map((k) => {
@@ -1470,7 +1478,7 @@ export default function HangulSurvivalClient({
                           <button
                             key={k.eng}
                             onClick={() => handleVirtualKeyClick(isShiftRequired && k.koShift ? k.koShift : k.ko)}
-                            className={`h-10 w-8 sm:h-12 sm:w-11 rounded-xl flex flex-col justify-between p-1 border text-center transition-all cursor-pointer ${
+                            className={`h-10 w-8 sm:h-12 sm:w-11 lg:h-11 lg:w-9 xl:h-12 xl:w-11 rounded-xl flex flex-col justify-between p-1 border text-center transition-all cursor-pointer ${
                               isTargetHighlight
                                 ? 'bg-indigo-500 text-white border-indigo-600 scale-105 animate-pulse shadow-md'
                                 : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 shadow-xs text-xs font-semibold'
@@ -1501,7 +1509,7 @@ export default function HangulSurvivalClient({
                   </div>
                   <button
                     onClick={() => handleVirtualKeyClick(' ')}
-                    className={`h-9 w-32 sm:w-44 rounded-xl flex items-center justify-center border text-[9px] font-bold transition-all cursor-pointer ${
+                    className={`h-9 w-32 sm:w-44 lg:w-36 xl:w-44 rounded-xl flex items-center justify-center border text-[9px] font-bold transition-all cursor-pointer ${
                       nextJamo === ' '
                         ? 'bg-indigo-500 text-white border-indigo-600 animate-pulse shadow'
                         : 'bg-white text-gray-300 border-gray-200 hover:bg-gray-50'
@@ -1513,6 +1521,8 @@ export default function HangulSurvivalClient({
               </div>
             </div>
           )}
+
+          </div>
 
         </div>
       )}
