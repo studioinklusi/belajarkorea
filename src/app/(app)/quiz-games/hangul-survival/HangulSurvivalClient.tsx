@@ -506,6 +506,43 @@ export default function HangulSurvivalClient({
     }
   }, [userId, hasScoresInDb]);
 
+  // Inject custom CSS animations once on mount for high performance and zero styled-jsx overhead
+  useEffect(() => {
+    const styleEl = document.createElement('style');
+    styleEl.innerHTML = `
+      @keyframes shake {
+        0%, 100% { transform: translate(0, 0) rotate(0deg); }
+        10%, 30%, 50%, 70%, 90% { transform: translate(-4px, 2px) rotate(-1deg); }
+        20%, 40%, 60%, 80% { transform: translate(4px, -2px) rotate(1deg); }
+      }
+      .animate-shake {
+        animation: shake 0.4s ease-in-out;
+      }
+      @keyframes floating {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+      }
+      .animate-float {
+        animation: floating 3s ease-in-out infinite;
+      }
+      @keyframes dangerFlash {
+        0%, 100% { background-color: transparent; }
+        50% { background-color: rgba(239, 68, 68, 0.15); }
+      }
+      .danger-pulse {
+        animation: dangerFlash 1.2s infinite;
+      }
+      @keyframes particleAnim {
+        0% { transform: translate(-50%, -50%) translate(0, 0) scale(1); opacity: 1; }
+        100% { transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(0.3); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(styleEl);
+    return () => {
+      document.head.removeChild(styleEl);
+    };
+  }, []);
+
   // Handle countdown triggers
   useEffect(() => {
     if (gameState !== 'countdown') return;
@@ -614,18 +651,7 @@ export default function HangulSurvivalClient({
         return updated.filter((enemy) => !enemy.isDefeated);
       });
 
-      // 3. Particles physics updates
-      setParticles((prev) =>
-        prev
-          .map((p) => ({
-            ...p,
-            x: p.x + p.vx,
-            y: p.y + p.vy,
-            alpha: p.alpha - 0.02,
-            vy: p.vy + 0.1 // gravity
-          }))
-          .filter((p) => p.alpha > 0)
-      );
+      // 3. Particles physics updates (Disabled: Particles are now purely GPU CSS-animated)
 
       // 4. Update visual log durations
       setLogs((prev) => prev.slice(0, 4));
@@ -684,23 +710,28 @@ export default function HangulSurvivalClient({
   // Spawn visual feedback particle explosions
   const spawnExplosion = (xPercent: number, yPercent: number, color: string, emoji?: string) => {
     const newParticles: Particle[] = [];
-    const count = emoji ? 3 : 15;
+    const count = emoji ? 3 : 8; // Reduced particle count for performance
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = 2 + Math.random() * 5;
+      const speed = 1.5 + Math.random() * 3.5;
       newParticles.push({
         id: Math.random().toString(),
         x: xPercent,
         y: yPercent,
-        vx: Math.cos(angle) * speed * 0.4,
-        vy: Math.sin(angle) * speed * 0.4 - 2, // initial upward force
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 2, // initial upward force
         color: color,
         emoji: i === 0 ? emoji : undefined,
-        size: emoji ? 20 : 6 + Math.random() * 8,
+        size: emoji ? 20 : 5 + Math.random() * 5,
         alpha: 1
       });
     }
     setParticles((prev) => [...prev, ...newParticles]);
+
+    // Clean up particles from state after CSS animation finishes (650ms)
+    setTimeout(() => {
+      setParticles((prev) => prev.filter((p) => !newParticles.some((np) => np.id === p.id)));
+    }, 650);
   };
 
   // Add floating combat text logs
@@ -1074,41 +1105,8 @@ export default function HangulSurvivalClient({
     <div className={`max-w-5xl mx-auto pt-8 px-4 font-sans select-none relative ${screenShake ? 'animate-shake' : ''}`}>
       
       {/* ------------------------------------------------------------- */}
-      {/* STYLES FOR ANIMATIONS */}
+      {/* STYLES FOR ANIMATIONS (Injected dynamically on mount) */}
       {/* ------------------------------------------------------------- */}
-      <style jsx global>{`
-        @keyframes shake {
-          0%, 100% { transform: translate(0, 0) rotate(0deg); }
-          10%, 30%, 50%, 70%, 90% { transform: translate(-4px, 2px) rotate(-1deg); }
-          20%, 40%, 60%, 80% { transform: translate(4px, -2px) rotate(1deg); }
-        }
-        .animate-shake {
-          animation: shake 0.4s ease-in-out;
-        }
-        @keyframes floating {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
-        }
-        .animate-float {
-          animation: floating 3s ease-in-out infinite;
-        }
-        @keyframes laserBeam {
-          0% { transform: scaleX(0); opacity: 1; }
-          40% { transform: scaleX(1); opacity: 1; }
-          100% { transform: scaleX(1); opacity: 0; }
-        }
-        .laser-beam {
-          animation: laserBeam 0.5s ease-out forwards;
-          transform-origin: left;
-        }
-        @keyframes dangerFlash {
-          0%, 100% { background-color: transparent; }
-          50% { background-color: rgba(239, 68, 68, 0.15); }
-        }
-        .danger-pulse {
-          animation: dangerFlash 1.2s infinite;
-        }
-      `}</style>
 
       {/* AUDIO MUTE TOGGLE */}
       {gameState !== 'menu' && (
@@ -1307,7 +1305,7 @@ export default function HangulSurvivalClient({
               </div>
             )}
 
-            {/* Particle explosions mapping */}
+            {/* Particle explosions mapping (CSS-animated for high performance) */}
             {particles.map((p) => (
               <div
                 key={p.id}
@@ -1318,10 +1316,13 @@ export default function HangulSurvivalClient({
                   width: `${p.size}px`,
                   height: `${p.size}px`,
                   borderRadius: p.emoji ? '0' : '50%',
-                  opacity: p.alpha,
                   fontSize: p.emoji ? `${p.size}px` : 'inherit',
-                  transform: 'translate(-50%, -50%)'
-                }}
+                  transform: 'translate(-50%, -50%)',
+                  animation: 'particleAnim 0.6s ease-out forwards',
+                  // Pass velocity values as CSS variables for custom translation
+                  '--tx': `${p.vx * 12}px`,
+                  '--ty': `${p.vy * 12}px`
+                } as any}
               >
                 {p.emoji || ''}
               </div>
