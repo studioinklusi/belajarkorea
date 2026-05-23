@@ -298,6 +298,7 @@ interface ModeConfig {
   xpPerWord: number;
   spawnSpeedMs: number;
   initialSpeed: number; // speed across screen in seconds
+  targetWords?: number; // target words to clear to win
 }
 
 const gameModes: ModeConfig[] = [
@@ -311,7 +312,8 @@ const gameModes: ModeConfig[] = [
     gradient: 'from-pink-500 to-rose-500',
     xpPerWord: 5,
     spawnSpeedMs: 5000,
-    initialSpeed: 9.0
+    initialSpeed: 9.0,
+    targetWords: 15
   },
   {
     id: 'vocab',
@@ -323,7 +325,8 @@ const gameModes: ModeConfig[] = [
     gradient: 'from-amber-500 to-orange-500',
     xpPerWord: 10,
     spawnSpeedMs: 4000,
-    initialSpeed: 7.5
+    initialSpeed: 7.5,
+    targetWords: 20
   },
   {
     id: 'sentence',
@@ -335,7 +338,8 @@ const gameModes: ModeConfig[] = [
     gradient: 'from-violet-500 to-fuchsia-500',
     xpPerWord: 20,
     spawnSpeedMs: 5500,
-    initialSpeed: 10.0
+    initialSpeed: 10.0,
+    targetWords: 10
   },
   {
     id: 'speed',
@@ -347,7 +351,8 @@ const gameModes: ModeConfig[] = [
     gradient: 'from-sky-500 to-blue-500',
     xpPerWord: 15,
     spawnSpeedMs: 2500,
-    initialSpeed: 5.0
+    initialSpeed: 5.0,
+    targetWords: 25
   },
   {
     id: 'boss',
@@ -474,6 +479,7 @@ export default function HangulSurvivalClient({
   // Gameplay values
   const [hp, setHp] = useState<number>(100);
   const [score, setScore] = useState<number>(0);
+  const [wordsCleared, setWordsCleared] = useState<number>(0);
   const [combo, setCombo] = useState<number>(0);
   const [maxCombo, setMaxCombo] = useState<number>(0);
   const [timer, setTimer] = useState<number>(0);
@@ -514,10 +520,15 @@ export default function HangulSurvivalClient({
   const lastSpawnTimeRef = useRef<number>(0);
   const timerRef = useRef<number>(0);
   const enemiesRef = useRef<ActiveEnemy[]>([]);
+  const wordsClearedRef = useRef<number>(0);
 
   useEffect(() => {
     enemiesRef.current = enemies;
   }, [enemies]);
+
+  useEffect(() => {
+    wordsClearedRef.current = wordsCleared;
+  }, [wordsCleared]);
 
   // Immersive Mode: Hide global site navigation when playing on mobile
   useEffect(() => {
@@ -723,6 +734,7 @@ export default function HangulSurvivalClient({
           setParticles([]);
           setLogs([]);
           setBossHp(100);
+          setWordsCleared(0);
           lastSpawnTimeRef.current = Date.now();
           triggerFocus();
           return 3;
@@ -772,7 +784,10 @@ export default function HangulSurvivalClient({
       const minGap = selectedMode.id === 'sentence' ? 35 : 25; // minimum % distance between centers
       const hasEnoughSpace = !lastEnemy || lastEnemy.x <= (100 - minGap);
 
+      const isTargetReached = selectedMode.id !== 'boss' && selectedMode.targetWords && wordsClearedRef.current >= selectedMode.targetWords;
+
       if (
+        !isTargetReached &&
         enemiesRef.current.length < maxEnemies &&
         hasEnoughSpace &&
         now - lastSpawnTimeRef.current > spawnSpeed / currentDifficultyMultiplier
@@ -1048,6 +1063,18 @@ export default function HangulSurvivalClient({
             return nextHp;
           });
           setTimeout(() => setBossState('idle'), 500);
+        } else if (selectedMode) {
+          // Increment words cleared for normal modes
+          setWordsCleared((prev) => {
+            const next = prev + 1;
+            if (selectedMode.targetWords && next >= selectedMode.targetWords) {
+              setTimeout(() => {
+                playSound('victory');
+                setGameState('result');
+              }, 600);
+            }
+            return next;
+          });
         }
 
         // Metrics calculations
@@ -1369,8 +1396,8 @@ export default function HangulSurvivalClient({
                     {mode.description}
                   </p>
                   <div className="flex gap-4 mt-3 text-[10px] font-bold text-gray-500 uppercase tracking-wide">
-                    <span>⏱️ Kecepatan awal: {mode.initialSpeed}s</span>
-                    <span>🧟 Survival Mode</span>
+                    <span>⏱️ Kecepatan: {mode.initialSpeed}s</span>
+                    <span>{mode.id === 'boss' ? '👿 Boss Battle' : `🎯 Target: ${mode.targetWords} Kata`}</span>
                   </div>
                 </div>
               </button>
@@ -1455,6 +1482,14 @@ export default function HangulSurvivalClient({
                   <span className="text-[8px] sm:text-[9px] text-gray-400 font-black uppercase">Skor</span>
                   <p className="text-xs sm:text-base font-black text-gray-800 leading-none mt-0.5">{score}</p>
                 </div>
+                {selectedMode.id !== 'boss' && selectedMode.targetWords && (
+                  <div className="text-right">
+                    <span className="text-[8px] sm:text-[9px] text-gray-400 font-black uppercase">Target</span>
+                    <p className="text-xs sm:text-base font-black text-indigo-600 leading-none mt-0.5">
+                      {wordsCleared} / {selectedMode.targetWords}
+                    </p>
+                  </div>
+                )}
                 <div className="text-right">
                   <span className="text-[8px] sm:text-[9px] text-gray-400 font-black uppercase">Waktu</span>
                   <p className="text-xs sm:text-base font-black text-gray-800 leading-none mt-0.5">{timer}s</p>
@@ -1795,11 +1830,17 @@ export default function HangulSurvivalClient({
             {/* Evaluation messages */}
             <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-6">
               <p className="text-xs font-bold text-gray-500 leading-relaxed">
-                {score >= 200 
-                  ? 'Luar biasa! Refleks memori jari-jarimu mengetik Hangul sangat terlatih. Kamu adalah master survival!' 
-                  : score >= 100
-                  ? 'Bagus sekali! Kecepatan mengetikmu sudah mumpuni untuk bertahan hidup dari rintangan menengah.'
-                  : 'Terus berlatih! Biasakan letak tuts Hangul agar refleks menghindar dan bertahanmu semakin tajam.'}
+                {hp > 0 ? (
+                  selectedMode.id === 'boss'
+                    ? 'Luar biasa! Kamu berhasil mengalahkan Raja Slime Raksasa dan memenangkan Boss Battle! 👾🏆'
+                    : `Selamat! Kamu berhasil menuntaskan tantangan ${selectedMode.name} dengan mengalahkan semua target rintangan! 🎉`
+                ) : (
+                  score >= 200 
+                    ? 'Luar biasa! Refleks memori jari-jarimu mengetik Hangul sangat terlatih. Kamu adalah master survival!' 
+                    : score >= 100
+                    ? 'Bagus sekali! Kecepatan mengetikmu sudah mumpuni untuk bertahan hidup dari rintangan menengah.'
+                    : 'Terus berlatih! Biasakan letak tuts Hangul agar refleks menghindar dan bertahanmu semakin tajam.'
+                )}
               </p>
             </div>
 
