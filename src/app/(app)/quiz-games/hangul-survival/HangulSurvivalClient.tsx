@@ -1552,6 +1552,7 @@ export default function HangulSurvivalClient({
               type="text"
               value={inputVal}
               onChange={handleInputChange}
+              inputMode={showVirtualKeyboard ? 'none' : 'text'}
               className={`w-full py-4 px-6 border bg-[#FAFAFA] rounded-2xl font-sans text-xl font-bold text-center tracking-widest text-gray-800 focus:outline-none focus:bg-white transition-all shadow-inner border-gray-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100/50`}
               placeholder="Mulai mengetik Hangul..."
               autoComplete="off"
