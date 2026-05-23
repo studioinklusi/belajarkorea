@@ -309,26 +309,25 @@ const vocabularyWords: WordItem[] = [
 
 const sentenceWords: WordItem[] = [
   { word: '안녕하세요', romanization: 'annyeonghaseyo', translation: 'Halo / Apa kabar' },
-  { word: '감사합니다', romanization: 'gamsahabnida', translation: 'Terima kasih' },
   { word: '사랑해요', romanization: 'saranghaeyo', translation: 'Aku mencintaimu' },
-  { word: '날씨가 좋아요', romanization: 'nalssiga johayo', translation: 'Cuacanya bagus' },
-  { word: '밥을 먹었어요', romanization: 'babeul meogeosseoyo', translation: 'Sudah makan nasi' },
-  { word: '이름이 뭐예요', romanization: 'ireumi mwoyeyo', translation: 'Siapa namamu?' },
-  { word: '만나서 반가워요', romanization: 'mannaso bangawoyo', translation: 'Senang bertemu denganmu' },
-  { word: '한국어를 공부해요', romanization: 'hangugoreul gongbuhaeyo', translation: 'Belajar bahasa Korea' },
-  { word: '어디에 가요', romanization: 'eodie gayo', translation: 'Pergi ke mana?' },
-  { word: '지금 몇 시예요', romanization: 'jigeum myeot siyeyo', translation: 'Sekarang jam berapa?' },
-  { word: '배가 고파요', romanization: 'baega gopayo', translation: 'Saya lapar' },
-  { word: '물을 주세요', romanization: 'mureul juseyo', translation: 'Tolong beri air' },
-  { word: '이거 얼마예요', romanization: 'igeo olmayeyo', translation: 'Ini berapa harganya?' },
-  { word: '잘 먹겠습니다', romanization: 'jal meokgessseumnida', translation: 'Selamat makan' },
-  { word: '안녕히 계세요', romanization: 'annyeonghi gyeseyo', translation: 'Selamat tinggal' },
-  { word: '도와주세요', romanization: 'dowajuseyo', translation: 'Tolong bantu saya' },
-  { word: '축하합니다', romanization: 'chukhahabnida', translation: 'Selamat' },
-  { word: '죄송합니다', romanization: 'joesonghabnida', translation: 'Mohon maaf' },
-  { word: '괜찮습니다', romanization: 'gwaenchanhseumnida', translation: 'Tidak apa-apa' },
-  { word: '진짜 맛있어요', romanization: 'jinjja masisseoyo', translation: 'Benar-benar enak' },
-  { word: '또 만나요', romanization: 'tto mannayo', translation: 'Sampai jumpa lagi' }
+  { word: '고마워요', romanization: 'gomawoyo', translation: 'Terima kasih' },
+  { word: '괜찮아요', romanization: 'gwaenchanayo', translation: 'Tidak apa-apa' },
+  { word: '반가워요', romanization: 'bangawoyo', translation: 'Senang bertemu' },
+  { word: '잘 가요', romanization: 'jal gayo', translation: 'Selamat jalan' },
+  { word: '잘 있어', romanization: 'jal isseo', translation: 'Selamat tinggal' },
+  { word: '축하해요', romanization: 'chukhahaeyo', translation: 'Selamat' },
+  { word: '미안해요', romanization: 'mianhaeyo', translation: 'Maaf' },
+  { word: '좋아해요', romanization: 'johahaeyo', translation: 'Menyukai' },
+  { word: '맛있어요', romanization: 'masisseoyo', translation: 'Enak / Lezat' },
+  { word: '배고파요', romanization: 'baegopayo', translation: 'Lapar' },
+  { word: '재미있어요', romanization: 'jaemiisseyo', translation: 'Menarik / Seru' },
+  { word: '어디예요', romanization: 'eodiyeyo', translation: 'Di mana?' },
+  { word: '이거예요', romanization: 'igeoyeyo', translation: 'Ini dia' },
+  { word: '화이팅', romanization: 'hwaiting', translation: 'Semangat!' },
+  { word: '물 주세요', romanization: 'mul juseyo', translation: 'Tolong air' },
+  { word: '밥 먹자', romanization: 'bab meokja', translation: 'Ayo makan' },
+  { word: '날씨 좋다', romanization: 'nalssi johda', translation: 'Cuaca bagus' },
+  { word: '보고 싶어', romanization: 'bogo sipeo', translation: 'Kangen / Rindu' }
 ];
 
 const enemyTemplates = [
@@ -389,8 +388,8 @@ const gameModes: ModeConfig[] = [
     textColor: 'text-violet-600',
     gradient: 'from-violet-500 to-fuchsia-500',
     xpPerWord: 20,
-    spawnSpeedMs: 5500,
-    initialSpeed: 10.0,
+    spawnSpeedMs: 7500,
+    initialSpeed: 14.0,
     targetWords: 10
   },
   {
