@@ -62,6 +62,7 @@ export default function ReaderClient({ story, userId, initialCompleted }: Reader
   const [isCompleted, setIsCompleted] = useState<boolean>(initialCompleted);
   const [isCompletingProgress, setIsCompletingProgress] = useState<boolean>(false);
   const [showCelebration, setShowCelebration] = useState<boolean>(false);
+  const [isMobilePanelOpen, setIsMobilePanelOpen] = useState<boolean>(false);
 
   const tokens = (story.content_tokens as Token[]) || [];
 
@@ -88,6 +89,7 @@ export default function ReaderClient({ story, userId, initialCompleted }: Reader
     setSelectedWord(clickedWord);
     setTranslation(null);
     setTranslationError(null);
+    setIsMobilePanelOpen(true);
 
     // Reconstruct sentence surrounding the clicked word
     let startIndex = index;
@@ -235,8 +237,159 @@ export default function ReaderClient({ story, userId, initialCompleted }: Reader
     ? savedFlashcards.has(`${translation.word_ko}|${translation.context_sentence_ko}`)
     : false;
 
+  // Helper to render Study Panel contents (to avoid duplicate code on mobile vs desktop)
+  const renderStudyPanelContent = () => {
+    return (
+      <>
+        {/* Case 1: No word selected */}
+        {!selectedWord && (
+          <div className="text-center py-10 flex-1 flex flex-col items-center justify-center">
+            <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mb-4 text-amber-500 shadow-xs">
+              <FaBookOpen className="w-8 h-8" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Panduan Membaca</h3>
+            <ul className="text-left text-sm text-gray-500 space-y-2.5 max-w-xs font-medium">
+              <li className="flex gap-2">
+                <span className="text-amber-500 font-bold">1.</span>
+                <span>Baca teks Hangul di sebelah kiri secara perlahan.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-amber-500 font-bold">2.</span>
+                <span>Ketuk kata Korea yang asing untuk memanggil translator AI.</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-amber-500 font-bold">3.</span>
+                <span>Simpan kata sebagai flashcard menggunakan tombol "+ Simpan".</span>
+              </li>
+            </ul>
+          </div>
+        )}
+
+        {/* Case 2: Loading Translation */}
+        {isLoadingTranslation && (
+          <div className="text-center py-20 flex-1 flex flex-col items-center justify-center">
+            <FaSpinner className="animate-spin text-4xl text-amber-500 mb-4" />
+            <p className="text-sm text-gray-500 font-bold">AI sedang menganalisis tata bahasa...</p>
+          </div>
+        )}
+
+        {/* Case 3: Error loading */}
+        {translationError && (
+          <div className="text-center py-10 flex-1 flex flex-col items-center justify-center text-red-500">
+            <p className="text-sm font-bold mb-4">{translationError}</p>
+            <button 
+              onClick={() => handleWordClick(selectedWord!, selectedWordIndex!)}
+              className="px-4 py-2 bg-red-50 hover:bg-red-100 rounded-full text-xs font-black transition-colors"
+            >
+              Coba Lagi
+            </button>
+          </div>
+        )}
+
+        {/* Case 4: Translation Loaded */}
+        {translation && !isLoadingTranslation && (
+          <div className="flex-1 flex flex-col justify-between">
+            {/* Header Information */}
+            <div>
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <div>
+                  <h2 className="text-3xl font-black text-gray-900 tracking-tight">
+                    {translation.word_ko}
+                  </h2>
+                  <span className="text-xs text-gray-400 font-bold">
+                    [{translation.romanization}]
+                  </span>
+                </div>
+                
+                <button
+                  onClick={() => playAudio(translation.word_ko)}
+                  className="p-3 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-2xl shadow-xs transition-colors flex items-center justify-center"
+                  title="Dengarkan pengucapan"
+                >
+                  <FaVolumeHigh className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Word Specs */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-1 bg-amber-100 text-amber-800 text-[10px] font-black uppercase rounded-md tracking-wider">
+                    {translation.part_of_speech}
+                  </span>
+                  <span className="text-xs text-gray-500 font-bold">
+                    Kamus: <span className="font-extrabold text-gray-800">{translation.word_base_ko}</span>
+                  </span>
+                </div>
+
+                {/* Word Definition */}
+                <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                  <p className="text-sm font-black text-gray-500 uppercase tracking-wider mb-1">Terjemahan Kata</p>
+                  <p className="text-lg font-bold text-gray-900">{translation.translation_id}</p>
+                </div>
+
+                {/* Context Specific Explanation */}
+                <div>
+                  <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Tata Bahasa / Analisis</p>
+                  <p className="text-sm text-gray-600 leading-relaxed font-semibold">
+                    {translation.explanation}
+                  </p>
+                </div>
+
+                {/* Sentence Context */}
+                <div className="border-t border-gray-50 pt-4">
+                  <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Kalimat Contoh</p>
+                  <div className="text-base font-bold text-gray-800 leading-relaxed mb-1">
+                    {translation.context_sentence_ko.split(translation.word_ko).map((part, i, arr) => (
+                      <span key={i}>
+                        {part}
+                        {i < arr.length - 1 && (
+                          <span className="bg-yellow-100 text-yellow-900 px-0.5 rounded">{translation.word_ko}</span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-500 font-semibold italic">
+                    "{translation.context_sentence_id}"
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Add to Flashcard Action */}
+            <div className="pt-6 border-t border-gray-100 mt-6 shrink-0">
+              {isCurrentCardSaved ? (
+                <button
+                  disabled
+                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-green-50 border border-green-200 text-green-700 font-bold rounded-full text-sm cursor-not-allowed"
+                >
+                  <FaCheck /> Sudah Tersimpan di Flashcard
+                </button>
+              ) : (
+                <button
+                  onClick={handleAddToFlashcard}
+                  disabled={isSavingFlashcard}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-full text-sm shadow-md hover:shadow-lg transition-all"
+                >
+                  {isSavingFlashcard ? (
+                    <>
+                      <FaSpinner className="animate-spin" /> Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <FaPlus /> Simpan ke Flashcard
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-gray-900 pb-16 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#FDFBF7] text-gray-900 pb-16 flex flex-col font-sans relative">
       {/* Top Sticky Bar */}
       <header className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-orange-100 z-30 shrink-0">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -337,155 +490,68 @@ export default function ReaderClient({ story, userId, initialCompleted }: Reader
           </div>
         </div>
 
-        {/* Right Side: Translation Popover & Study Panel */}
-        <div className="lg:col-span-1 sticky top-24 space-y-6">
+        {/* Right Side: Translation Popover & Study Panel (Desktop only) */}
+        <div className="hidden lg:block lg:col-span-1 sticky top-24 space-y-6">
           <div className="bg-white rounded-3xl p-6 border border-orange-100 shadow-sm min-h-[300px] flex flex-col justify-between">
-            {/* Case 1: No word selected */}
-            {!selectedWord && (
-              <div className="text-center py-10 flex-1 flex flex-col items-center justify-center">
-                <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mb-4 text-amber-500 shadow-xs">
-                  <FaBookOpen className="w-8 h-8" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Panduan Membaca</h3>
-                <ul className="text-left text-sm text-gray-500 space-y-2.5 max-w-xs font-medium">
-                  <li className="flex gap-2">
-                    <span className="text-amber-500 font-bold">1.</span>
-                    <span>Baca teks Hangul di sebelah kiri secara perlahan.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-amber-500 font-bold">2.</span>
-                    <span>Ketuk kata Korea yang asing untuk memanggil translator AI.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-amber-500 font-bold">3.</span>
-                    <span>Simpan kata sebagai flashcard menggunakan tombol "+ Simpan".</span>
-                  </li>
-                </ul>
-              </div>
-            )}
-
-            {/* Case 2: Loading Translation */}
-            {isLoadingTranslation && (
-              <div className="text-center py-20 flex-1 flex flex-col items-center justify-center">
-                <FaSpinner className="animate-spin text-4xl text-amber-500 mb-4" />
-                <p className="text-sm text-gray-500 font-bold">AI sedang menganalisis tata bahasa...</p>
-              </div>
-            )}
-
-            {/* Case 3: Error loading */}
-            {translationError && (
-              <div className="text-center py-10 flex-1 flex flex-col items-center justify-center text-red-500">
-                <p className="text-sm font-bold mb-4">{translationError}</p>
-                <button 
-                  onClick={() => handleWordClick(selectedWord!, selectedWordIndex!)}
-                  className="px-4 py-2 bg-red-50 hover:bg-red-100 rounded-full text-xs font-black transition-colors"
-                >
-                  Coba Lagi
-                </button>
-              </div>
-            )}
-
-            {/* Case 4: Translation Loaded */}
-            {translation && !isLoadingTranslation && (
-              <div className="flex-1 flex flex-col justify-between">
-                {/* Header Information */}
-                <div>
-                  <div className="flex items-center justify-between gap-4 mb-4">
-                    <div>
-                      <h2 className="text-3xl font-black text-gray-900 tracking-tight">
-                        {translation.word_ko}
-                      </h2>
-                      <span className="text-xs text-gray-400 font-bold">
-                        [{translation.romanization}]
-                      </span>
-                    </div>
-                    
-                    <button
-                      onClick={() => playAudio(translation.word_ko)}
-                      className="p-3 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-2xl shadow-xs transition-colors flex items-center justify-center"
-                      title="Dengarkan pengucapan"
-                    >
-                      <FaVolumeHigh className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* Word Specs */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 bg-amber-100 text-amber-800 text-[10px] font-black uppercase rounded-md tracking-wider">
-                        {translation.part_of_speech}
-                      </span>
-                      <span className="text-xs text-gray-500 font-bold">
-                        Kamus: <span className="font-extrabold text-gray-800">{translation.word_base_ko}</span>
-                      </span>
-                    </div>
-
-                    {/* Word Definition */}
-                    <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
-                      <p className="text-sm font-black text-gray-500 uppercase tracking-wider mb-1">Terjemahan Kata</p>
-                      <p className="text-lg font-bold text-gray-900">{translation.translation_id}</p>
-                    </div>
-
-                    {/* Context Specific Explanation */}
-                    <div>
-                      <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-1">Tata Bahasa / Analisis</p>
-                      <p className="text-sm text-gray-600 leading-relaxed font-semibold">
-                        {translation.explanation}
-                      </p>
-                    </div>
-
-                    {/* Sentence Context */}
-                    <div className="border-t border-gray-50 pt-4">
-                      <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Kalimat Contoh</p>
-                      <div className="text-base font-bold text-gray-800 leading-relaxed mb-1">
-                        {translation.context_sentence_ko.split(translation.word_ko).map((part, i, arr) => (
-                          <span key={i}>
-                            {part}
-                            {i < arr.length - 1 && (
-                              <span className="bg-yellow-100 text-yellow-900 px-0.5 rounded">{translation.word_ko}</span>
-                            )}
-                          </span>
-                        ))}
-                      </div>
-                      <p className="text-sm text-gray-500 font-semibold italic">
-                        "{translation.context_sentence_id}"
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bottom Add to Flashcard Action */}
-                <div className="pt-6 border-t border-gray-100 mt-6 shrink-0">
-                  {isCurrentCardSaved ? (
-                    <button
-                      disabled
-                      className="w-full flex items-center justify-center gap-2 py-3.5 bg-green-50 border border-green-200 text-green-700 font-bold rounded-full text-sm cursor-not-allowed"
-                    >
-                      <FaCheck /> Sudah Tersimpan di Flashcard
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleAddToFlashcard}
-                      disabled={isSavingFlashcard}
-                      className="w-full flex items-center justify-center gap-2 py-3.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-full text-sm shadow-md hover:shadow-lg transition-all"
-                    >
-                      {isSavingFlashcard ? (
-                        <>
-                          <FaSpinner className="animate-spin" /> Menyimpan...
-                        </>
-                      ) : (
-                        <>
-                          <FaPlus /> Simpan ke Flashcard
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
+            {renderStudyPanelContent()}
           </div>
         </div>
       </div>
+
+      {/* Floating Guide Button for Mobile (lg:hidden, positioned above mobile bottom nav) */}
+      <button
+        onClick={() => {
+          setSelectedWord(null);
+          setSelectedWordIndex(null);
+          setTranslation(null);
+          setIsMobilePanelOpen(true);
+        }}
+        className="fixed bottom-20 right-6 lg:hidden z-30 w-14 h-14 bg-gradient-to-tr from-amber-500 to-orange-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-orange-500/25 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-orange-400/50"
+        title="Panduan Membaca"
+      >
+        <FaBookOpen className="w-5 h-5" />
+      </button>
+
+      {/* Mobile Bottom Sheet Panel (lg:hidden) */}
+      {isMobilePanelOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden flex flex-col justify-end">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/45 backdrop-blur-xs transition-opacity" 
+            onClick={() => {
+              setIsMobilePanelOpen(false);
+              setSelectedWord(null);
+              setSelectedWordIndex(null);
+              setTranslation(null);
+            }}
+          />
+          {/* Bottom Sheet Card */}
+          <div className="relative bg-white rounded-t-[2rem] border-t border-orange-100 p-6 pb-10 shadow-2xl z-50 max-h-[80vh] overflow-y-auto animate-in slide-in-from-bottom duration-300 flex flex-col">
+            {/* Drag Handle indicator */}
+            <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-5 shrink-0" />
+            
+            {/* Close Button (X icon) */}
+            <button
+              onClick={() => {
+                setIsMobilePanelOpen(false);
+                setSelectedWord(null);
+                setSelectedWordIndex(null);
+                setTranslation(null);
+              }}
+              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-650 rounded-full hover:bg-gray-100 transition-colors"
+              title="Tutup"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            <div className="flex-1 overflow-y-auto pr-1">
+              {renderStudyPanelContent()}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Celebration Overlay Modal */}
       {showCelebration && (

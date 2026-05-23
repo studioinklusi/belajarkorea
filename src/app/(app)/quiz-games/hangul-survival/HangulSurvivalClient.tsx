@@ -355,7 +355,7 @@ interface ModeConfig {
 const gameModes: ModeConfig[] = [
   {
     id: 'beginner',
-    name: 'Beginner Survival',
+    name: 'Basic Survival',
     description: 'Mengetik suku kata dasar dengan musuh bergerak lambat.',
     icon: '🌱',
     iconBg: 'bg-pink-100 text-pink-600 border border-pink-200/50',
@@ -1808,7 +1808,7 @@ export default function HangulSurvivalClient({
           </div>
 
           {/* Modes Selection Grid */}
-          <h2 className="text-lg font-black text-gray-800 mb-4 px-1">Pilih Tingkat Survival:</h2>
+          <h2 className="text-lg font-black text-gray-800 mb-4 px-1">Pilih Kategori Survival:</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {gameModes.map((mode) => (
               <button
@@ -1831,9 +1831,9 @@ export default function HangulSurvivalClient({
                   <p className="text-xs font-semibold text-gray-400 mt-1 leading-relaxed">
                     {mode.description}
                   </p>
-                  <div className="flex gap-4 mt-3 text-[10px] font-bold text-gray-500 uppercase tracking-wide">
-                    <span>⏱️ Kecepatan: {mode.initialSpeed}s</span>
-                    <span>{mode.id === 'boss' ? '👿 Boss Battle' : `🎯 Target: ${mode.targetWords * 2} Kata (Frenzy)`}</span>
+                  <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-4 mt-3 text-[10px] font-bold text-gray-500 uppercase tracking-wide">
+                    <span className="whitespace-nowrap">⏱️ Kecepatan: {mode.initialSpeed}s</span>
+                    <span className="whitespace-nowrap">{mode.id === 'boss' ? '👿 Boss Battle' : `🎯 Target: ${mode.targetWords * 2} Kata (Frenzy)`}</span>
                   </div>
                 </div>
               </button>

@@ -171,6 +171,7 @@ interface ModeConfig {
   hasLives: boolean;
   xpPerWord: number;
   doubleXP?: boolean;
+  isUntimed?: boolean;
 }
 
 const gameModes: ModeConfig[] = [
@@ -183,7 +184,8 @@ const gameModes: ModeConfig[] = [
     gradient: 'from-pink-500 to-rose-500',
     defaultTimer: 60,
     hasLives: false,
-    xpPerWord: 5
+    xpPerWord: 5,
+    isUntimed: true
   },
   {
     id: 'vocab',
@@ -194,7 +196,8 @@ const gameModes: ModeConfig[] = [
     gradient: 'from-amber-500 to-orange-500',
     defaultTimer: 60,
     hasLives: false,
-    xpPerWord: 8
+    xpPerWord: 8,
+    isUntimed: true
   },
   {
     id: 'sentence',
@@ -205,18 +208,8 @@ const gameModes: ModeConfig[] = [
     gradient: 'from-violet-500 to-fuchsia-500',
     defaultTimer: 90,
     hasLives: false,
-    xpPerWord: 15
-  },
-  {
-    id: 'speed',
-    name: 'Speed Challenge',
-    description: 'Kejar waktu! Tambahan +2s tiap kata benar',
-    iconBg: 'bg-sky-100 text-sky-600 border border-sky-200/50',
-    textColor: 'text-sky-600',
-    gradient: 'from-sky-500 to-blue-500',
-    defaultTimer: 30,
-    hasLives: false,
-    xpPerWord: 10
+    xpPerWord: 15,
+    isUntimed: true
   }
 ];
 
@@ -494,15 +487,19 @@ export default function TypingChallengeClient({
     const timerInterval = setInterval(() => {
       // Manage total timer left
       if (selectedMode.id !== 'survival') {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(timerInterval);
-            finishGame();
-            return 0;
-          }
-          return prev - 1;
-        });
-        setTimeSpent((prev) => prev + 1);
+        if (selectedMode.isUntimed) {
+          setTimeSpent((prev) => prev + 1);
+        } else {
+          setTimeLeft((prev) => {
+            if (prev <= 1) {
+              clearInterval(timerInterval);
+              finishGame();
+              return 0;
+            }
+            return prev - 1;
+          });
+          setTimeSpent((prev) => prev + 1);
+        }
       } else {
         // Survival mode is word timer governed
         setWordTimeLeft((prev) => {
@@ -561,8 +558,6 @@ export default function TypingChallengeClient({
       selectedWordsList = [...vocabularyWords].sort(() => Math.random() - 0.5);
     } else if (mode.id === 'sentence') {
       selectedWordsList = [...sentenceWords].sort(() => Math.random() - 0.5);
-    } else if (mode.id === 'speed') {
-      selectedWordsList = [...beginnerWords, ...vocabularyWords].sort(() => Math.random() - 0.5);
     } else if (mode.id === 'survival') {
       selectedWordsList = [...beginnerWords, ...vocabularyWords].sort(() => Math.random() - 0.5);
     }
@@ -671,10 +666,7 @@ export default function TypingChallengeClient({
         setScore((prev) => prev + 1);
         setCorrectKeypresses((prev) => prev + targetJamos.length);
         
-        // Mode specific bonuses
-        if (selectedMode?.id === 'speed') {
-          setTimeLeft((prev) => Math.min(prev + 2, 30));
-        }
+
 
         // Advance or Finish
         setTimeout(() => {
@@ -963,7 +955,6 @@ export default function TypingChallengeClient({
                   {mode.id === 'beginner' && '🌱'}
                   {mode.id === 'vocab' && '📖'}
                   {mode.id === 'sentence' && '✍️'}
-                  {mode.id === 'speed' && '⚡'}
                   {mode.id === 'survival' && '❤️'}
 
                 </div>
@@ -981,10 +972,10 @@ export default function TypingChallengeClient({
                   <p className="text-xs font-semibold text-gray-400 mt-1 leading-relaxed">
                     {mode.description}
                   </p>
-                  <div className="flex gap-4 mt-3 text-[10px] font-bold text-gray-500 uppercase tracking-wide">
-                    <span>⏱️ {mode.id === 'survival' ? '7s / kata' : `${mode.defaultTimer}s`}</span>
-                    <span>⭐ +{mode.xpPerWord} XP / kata</span>
-                    <span>{mode.hasLives ? '❤️ 3 Nyawa' : '🧘 Tanpa Batas Nyawa'}</span>
+                  <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-4 mt-3 text-[10px] font-bold text-gray-500 uppercase tracking-wide">
+                    <span className="whitespace-nowrap">⏱️ {mode.id === 'survival' ? '7s / kata' : (mode.isUntimed ? 'Latihan' : `${mode.defaultTimer}s`)}</span>
+                    <span className="whitespace-nowrap">⭐ +{mode.xpPerWord} XP / kata</span>
+                    <span className="whitespace-nowrap">{mode.hasLives ? '❤️ 3 Nyawa' : '🧘 Tanpa Batas Nyawa'}</span>
                   </div>
                 </div>
               </button>
@@ -1041,6 +1032,14 @@ export default function TypingChallengeClient({
                   </div>
                   <span className="text-[10px] font-black text-red-600 mt-1">{wordTimeLeft} detik tersisa</span>
                 </div>
+              ) : selectedMode.isUntimed ? (
+                // Untimed mode: Show Selesai button
+                <button
+                  onClick={() => finishGame()}
+                  className="px-4 py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-black shadow-xs transition-all hover:scale-105 active:scale-95 cursor-pointer flex items-center justify-center gap-1 mx-auto"
+                >
+                  Selesai Sesi
+                </button>
               ) : (
                 // Total timed countdown
                 <div className="w-full bg-gray-50 rounded-2xl py-1 px-3 border border-gray-100 flex items-center justify-center gap-1.5">
