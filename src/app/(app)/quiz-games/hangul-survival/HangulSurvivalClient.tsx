@@ -513,6 +513,11 @@ export default function HangulSurvivalClient({
   const gameLoopRef = useRef<number | null>(null);
   const lastSpawnTimeRef = useRef<number>(0);
   const timerRef = useRef<number>(0);
+  const enemiesCountRef = useRef<number>(0);
+
+  useEffect(() => {
+    enemiesCountRef.current = enemies.length;
+  }, [enemies]);
 
   // Play synthesized audio
   const playSound = (type: 'type' | 'correct' | 'wrong' | 'hit' | 'combo' | 'gameover' | 'victory') => {
@@ -725,8 +730,20 @@ export default function HangulSurvivalClient({
       const currentDifficultyMultiplier = Math.min(1.8, 1 + timerRef.current / 45); // speed increases over time
 
       // 1. Spawning logic
+      const maxEnemiesMap: Record<string, number> = {
+        beginner: 2,
+        vocab: 3,
+        sentence: 2,
+        speed: 4,
+        boss: 1
+      };
+      const maxEnemies = maxEnemiesMap[selectedMode.id] || 3;
+
       const spawnSpeed = selectedMode.id === 'speed' ? 2200 : selectedMode.spawnSpeedMs;
-      if (now - lastSpawnTimeRef.current > spawnSpeed / currentDifficultyMultiplier) {
+      if (
+        enemiesCountRef.current < maxEnemies &&
+        now - lastSpawnTimeRef.current > spawnSpeed / currentDifficultyMultiplier
+      ) {
         // Decide pool
         let pool = beginnerWords;
         if (selectedMode.id === 'vocab') pool = vocabularyWords;
@@ -737,6 +754,16 @@ export default function HangulSurvivalClient({
         const wordObj = pool[Math.floor(Math.random() * pool.length)];
         const template = enemyTemplates[Math.floor(Math.random() * enemyTemplates.length)];
 
+        const speedMultiplierMap: Record<string, number> = {
+          beginner: 0.035,
+          vocab: 0.04,
+          sentence: 0.03,
+          speed: 0.055,
+          boss: 0.035
+        };
+        const baseSpeedMultiplier = speedMultiplierMap[selectedMode.id] || 0.04;
+        const speed = 1.5 * currentDifficultyMultiplier * baseSpeedMultiplier;
+
         const newEnemy: ActiveEnemy = {
           id: Math.random().toString(),
           word: wordObj.word,
@@ -746,16 +773,12 @@ export default function HangulSurvivalClient({
           color: template.color,
           action: template.action,
           x: 100, // starts at right
-          speed: (1.5 + Math.random() * 0.8) * currentDifficultyMultiplier * 0.08, // speed per frame
+          speed: speed, // speed per frame
           isDefeated: false,
           isAttacking: false
         };
 
-        setEnemies((prev) => {
-          // In boss mode, only spawn one main boss target at a time if the user is attacking
-          if (selectedMode.id === 'boss' && prev.length >= 1) return prev;
-          return [...prev, newEnemy];
-        });
+        setEnemies((prev) => [...prev, newEnemy]);
         lastSpawnTimeRef.current = now;
       }
 
