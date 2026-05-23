@@ -915,6 +915,7 @@ export default function HangulSurvivalClient({
           setFloatingDamages([]);
           lastSpecialAttackTimeRef.current = 0;
           setWordsCleared(0);
+          wordsClearedRef.current = 0;
           
           // Initialize and shuffle session deck
           if (selectedMode) {
@@ -1248,9 +1249,9 @@ export default function HangulSurvivalClient({
     setGameState('countdown');
   };
 
-  const finishGame = (forcedHp?: number) => {
+  const finishGame = (forcedHp?: number, isVictory?: boolean) => {
     setGameState('result');
-    playSound('gameover');
+    playSound(isVictory ? 'victory' : 'gameover');
     
     // Calculate final metrics
     const finalHp = forcedHp !== undefined ? forcedHp : hp;
@@ -1370,8 +1371,7 @@ export default function HangulSurvivalClient({
 
               if (nextHp <= 0) {
                 setTimeout(() => {
-                  playSound('victory');
-                  setGameState('result');
+                  finishGame(undefined, true);
                 }, 600);
                 return 0;
               }
@@ -1397,8 +1397,7 @@ export default function HangulSurvivalClient({
 
               if (nextHp <= 0) {
                 setTimeout(() => {
-                  playSound('victory');
-                  setGameState('result');
+                  finishGame(undefined, true);
                 }, 600);
                 return 0;
               }
@@ -1429,8 +1428,7 @@ export default function HangulSurvivalClient({
 
                 if (nextHp <= 0) {
                   setTimeout(() => {
-                    playSound('victory');
-                    setGameState('result');
+                    finishGame(undefined, true);
                   }, 600);
                   return 0;
                 }
@@ -1443,6 +1441,7 @@ export default function HangulSurvivalClient({
           // Increment words cleared for normal modes
           setWordsCleared((prev) => {
             const next = prev + 1;
+            wordsClearedRef.current = next; // keep ref in sync immediately
             const victoryTarget = selectedMode.targetWords ? selectedMode.targetWords * 2 : 0;
             
             if (selectedMode.targetWords && next === selectedMode.targetWords) {
@@ -1456,8 +1455,7 @@ export default function HangulSurvivalClient({
 
             if (selectedMode.targetWords && next >= victoryTarget) {
               setTimeout(() => {
-                playSound('victory');
-                setGameState('result');
+                finishGame(undefined, true);
               }, 600);
             }
             return next;
