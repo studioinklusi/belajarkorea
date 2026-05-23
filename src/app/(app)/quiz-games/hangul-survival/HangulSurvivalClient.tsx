@@ -519,6 +519,33 @@ export default function HangulSurvivalClient({
     enemiesRef.current = enemies;
   }, [enemies]);
 
+  // Immersive Mode: Hide global site navigation when playing on mobile
+  useEffect(() => {
+    if (gameState === 'playing') {
+      const styleEl = document.createElement('style');
+      styleEl.setAttribute('id', 'immersive-nav-hide-style');
+      styleEl.innerHTML = `
+        @media (max-width: 1024px) {
+          nav.sticky,
+          header,
+          footer,
+          .fixed.bottom-0.z-50 {
+            display: none !important;
+          }
+          /* Remove padding bottom and standard margins from main content wrappers */
+          main, .min-h-screen, body {
+            padding-bottom: 0px !important;
+          }
+        }
+      `;
+      document.head.appendChild(styleEl);
+      return () => {
+        const el = document.getElementById('immersive-nav-hide-style');
+        if (el) document.head.removeChild(el);
+      };
+    }
+  }, [gameState]);
+
   // Play synthesized audio
   const playSound = (type: 'type' | 'correct' | 'wrong' | 'hit' | 'combo' | 'gameover' | 'victory') => {
     if (isMuted || typeof window === 'undefined') return;
@@ -1254,8 +1281,12 @@ export default function HangulSurvivalClient({
     ? Math.round(score * selectedMode.xpPerWord * (accuracy / 100))
     : 0;
 
+  const isPlaying = gameState === 'playing';
+
   return (
-    <div className={`max-w-5xl mx-auto pt-8 px-4 font-sans select-none relative ${screenShake ? 'animate-shake' : ''}`}>
+    <div className={`max-w-5xl mx-auto font-sans select-none relative transition-all duration-300 ${
+      isPlaying ? 'pt-2 px-2 sm:pt-4 sm:px-4 pb-4' : 'pt-8 px-4 pb-16'
+    } ${screenShake ? 'animate-shake' : ''}`}>
       
       {/* ------------------------------------------------------------- */}
       {/* STYLES FOR ANIMATIONS (Injected dynamically on mount) */}
@@ -1371,60 +1402,66 @@ export default function HangulSurvivalClient({
           <div className="lg:col-span-7 xl:col-span-8 space-y-6">
             
             {/* TOP SECTION: HUD BAR */}
-          <div className="bg-white border border-gray-100 rounded-2xl px-5 py-4 shadow-sm flex flex-wrap gap-4 justify-between items-center relative overflow-hidden">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setGameState('menu')}
-                className="p-2 text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
-                title="Keluar"
-              >
-                <FaArrowLeft className="w-4 h-4" />
-              </button>
-              <div>
-                <span className="text-[9px] text-gray-400 font-black uppercase">Survival Mode</span>
-                <h4 className="text-xs font-black text-gray-800 leading-none">{selectedMode.name}</h4>
+            <div className={`bg-white border border-gray-100 rounded-2xl shadow-sm flex flex-wrap justify-between items-center relative overflow-hidden transition-all duration-300 ${
+              isPlaying ? 'px-3 py-1.5 sm:py-2 gap-2 text-xs mb-3' : 'px-5 py-4 gap-4 mb-6'
+            }`}>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setGameState('menu')}
+                  className="p-2 text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
+                  title="Keluar"
+                >
+                  <FaArrowLeft className="w-4 h-4" />
+                </button>
+                <div>
+                  {!isPlaying && <span className="text-[9px] text-gray-400 font-black uppercase">Survival Mode</span>}
+                  <h4 className="text-xs font-black text-gray-800 leading-none">{selectedMode.name}</h4>
+                </div>
               </div>
-            </div>
 
-            {/* HP Bar */}
-            <div className="flex-1 max-w-[140px] sm:max-w-[220px] mx-2 text-center">
-              <div className="flex items-center justify-between text-[10px] font-black text-gray-400 mb-1">
-                <span>HP KARAKTER</span>
-                <span className={hp <= 30 ? 'text-red-500 animate-pulse' : 'text-gray-600'}>{hp}/100</span>
+              {/* HP Bar */}
+              <div className="flex-1 max-w-[120px] sm:max-w-[220px] mx-1 sm:mx-2 text-center">
+                {!isPlaying && (
+                  <div className="flex items-center justify-between text-[10px] font-black text-gray-400 mb-1">
+                    <span>HP KARAKTER</span>
+                    <span className={hp <= 30 ? 'text-red-500 animate-pulse' : 'text-gray-600'}>{hp}/100</span>
+                  </div>
+                )}
+                <div className="w-full bg-gray-100 rounded-full h-2.5 sm:h-3 border border-gray-200/50 overflow-hidden">
+                  <div 
+                    className={`h-full transition-all duration-300 ${
+                      hp <= 30 ? 'bg-red-500' : 'bg-gradient-to-r from-emerald-400 to-green-500'
+                    }`}
+                    style={{ width: `${hp}%` }}
+                  />
+                </div>
               </div>
-              <div className="w-full bg-gray-100 rounded-full h-3 border border-gray-200/50 overflow-hidden">
-                <div 
-                  className={`h-full transition-all duration-300 ${
-                    hp <= 30 ? 'bg-red-500' : 'bg-gradient-to-r from-emerald-400 to-green-500'
-                  }`}
-                  style={{ width: `${hp}%` }}
-                />
-              </div>
-            </div>
 
-            {/* Score & Combo */}
-            <div className="flex items-center gap-4">
-              {combo > 1 && (
-                <span className="bg-indigo-50 text-indigo-600 text-xs font-black px-2.5 py-1 rounded-full animate-bounce">
-                  🔥 {combo} Combo
-                </span>
-              )}
-              <div className="text-right">
-                <span className="text-[9px] text-gray-400 font-black uppercase">Skor Survival</span>
-                <p className="text-base font-black text-gray-800 leading-none mt-0.5">{score}</p>
-              </div>
-              <div className="text-right">
-                <span className="text-[9px] text-gray-400 font-black uppercase">Waktu</span>
-                <p className="text-base font-black text-gray-800 leading-none mt-0.5">{timer}s</p>
+              {/* Score & Combo */}
+              <div className="flex items-center gap-2 sm:gap-4">
+                {combo > 1 && (
+                  <span className="bg-indigo-50 text-indigo-600 text-[10px] sm:text-xs font-black px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full animate-bounce">
+                    🔥 {combo}
+                  </span>
+                )}
+                <div className="text-right">
+                  <span className="text-[8px] sm:text-[9px] text-gray-400 font-black uppercase">Skor</span>
+                  <p className="text-xs sm:text-base font-black text-gray-800 leading-none mt-0.5">{score}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-[8px] sm:text-[9px] text-gray-400 font-black uppercase">Waktu</span>
+                  <p className="text-xs sm:text-base font-black text-gray-800 leading-none mt-0.5">{timer}s</p>
+                </div>
               </div>
             </div>
-          </div>
 
           {/* MIDDLE SECTION: GAMEPLAY ARENA */}
           <div 
             ref={arenaRef}
-            className={`relative overflow-hidden w-full h-[220px] sm:h-[300px] md:h-[350px] rounded-3xl bg-gradient-to-b from-sky-200 via-sky-100 to-amber-50 border border-sky-300 shadow-inner z-10 ${
+            className={`relative overflow-hidden w-full rounded-3xl bg-gradient-to-b from-sky-200 via-sky-100 to-amber-50 border border-sky-300 shadow-inner z-10 transition-all duration-300 ${
               showDangerWarning ? 'danger-pulse' : ''
+            } ${
+              showVirtualKeyboard ? 'h-[160px] sm:h-[240px] md:h-[350px]' : 'h-[145px] sm:h-[220px] md:h-[350px]'
             }`}
           >
             {/* Background Cute Clouds */}
@@ -1566,11 +1603,13 @@ export default function HangulSurvivalClient({
           </div>
 
           {/* RIGHT COLUMN: TYPING INPUT + KEYBOARD HELPER */}
-          <div className="lg:col-span-5 xl:col-span-4 space-y-6">
+          <div className={`lg:col-span-5 xl:col-span-4 transition-all duration-300 ${isPlaying ? 'space-y-3' : 'space-y-6'}`}>
             
             {/* TYPING AREA */}
-            <div className="w-full max-w-md mx-auto relative bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
-            <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wide block mb-3 text-center">
+            <div className={`w-full max-w-md mx-auto relative bg-white border border-gray-100 rounded-3xl shadow-sm transition-all duration-300 ${
+              isPlaying ? 'p-3 sm:p-5' : 'p-6'
+            }`}>
+            <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wide block mb-2 text-center leading-none">
               {activeWordIdx !== -1 
                 ? `Ketik Hangul Kata Target: "${enemies[activeWordIdx]?.word}"` 
                 : 'Menunggu target musuh...'}
@@ -1582,7 +1621,9 @@ export default function HangulSurvivalClient({
               value={inputVal}
               onChange={handleInputChange}
               inputMode={showVirtualKeyboard ? 'none' : 'text'}
-              className={`w-full py-4 px-6 border bg-[#FAFAFA] rounded-2xl font-sans text-xl font-bold text-center tracking-widest text-gray-800 focus:outline-none focus:bg-white transition-all shadow-inner border-gray-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100/50`}
+              className={`w-full border bg-[#FAFAFA] rounded-2xl font-sans font-bold text-center tracking-widest text-gray-800 focus:outline-none focus:bg-white transition-all shadow-inner border-gray-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100/50 ${
+                isPlaying ? 'py-2.5 px-4 text-base sm:text-xl' : 'py-4 px-6 text-xl'
+              }`}
               placeholder="Mulai mengetik Hangul..."
               autoComplete="off"
               autoCorrect="off"
