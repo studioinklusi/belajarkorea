@@ -513,10 +513,10 @@ export default function HangulSurvivalClient({
   const gameLoopRef = useRef<number | null>(null);
   const lastSpawnTimeRef = useRef<number>(0);
   const timerRef = useRef<number>(0);
-  const enemiesCountRef = useRef<number>(0);
+  const enemiesRef = useRef<ActiveEnemy[]>([]);
 
   useEffect(() => {
-    enemiesCountRef.current = enemies.length;
+    enemiesRef.current = enemies;
   }, [enemies]);
 
   // Play synthesized audio
@@ -740,8 +740,14 @@ export default function HangulSurvivalClient({
       const maxEnemies = maxEnemiesMap[selectedMode.id] || 3;
 
       const spawnSpeed = selectedMode.id === 'speed' ? 2200 : selectedMode.spawnSpeedMs;
+      
+      const lastEnemy = enemiesRef.current[enemiesRef.current.length - 1];
+      const minGap = selectedMode.id === 'sentence' ? 35 : 25; // minimum % distance between centers
+      const hasEnoughSpace = !lastEnemy || lastEnemy.x <= (100 - minGap);
+
       if (
-        enemiesCountRef.current < maxEnemies &&
+        enemiesRef.current.length < maxEnemies &&
+        hasEnoughSpace &&
         now - lastSpawnTimeRef.current > spawnSpeed / currentDifficultyMultiplier
       ) {
         // Decide pool
