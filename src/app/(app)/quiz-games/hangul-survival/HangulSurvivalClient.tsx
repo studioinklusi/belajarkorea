@@ -533,7 +533,7 @@ export default function HangulSurvivalClient({
             display: none !important;
           }
           /* Remove padding bottom and standard margins from main content wrappers */
-          main, .min-h-screen, body {
+          main, .min-h-screen, body, .pb-20 {
             padding-bottom: 0px !important;
           }
         }
@@ -1203,7 +1203,7 @@ export default function HangulSurvivalClient({
     if (isHit) transformClass = 'translate-x-12 scale-x-90 scale-y-110';
 
     return (
-      <div className={`relative transition-all duration-200 w-36 h-36 sm:w-44 sm:h-44 z-20 ${transformClass}`}>
+      <div className={`relative transition-all duration-200 sm:w-44 sm:h-44 z-20 ${transformClass} ${isPlaying ? 'w-24 h-24' : 'w-36 h-36'}`}>
         <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-lg">
           {/* Shadow */}
           <ellipse cx="50" cy="90" rx="42" ry="8" fill="rgba(0,0,0,0.15)" />
@@ -1396,10 +1396,10 @@ export default function HangulSurvivalClient({
       {/* SCREEN 3: ACTIVE GAMEPLAY */}
       {/* ------------------------------------------------------------- */}
       {gameState === 'playing' && selectedMode && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-6 items-start">
           
           {/* LEFT COLUMN: HUD + PLAYING ARENA */}
-          <div className="lg:col-span-7 xl:col-span-8 space-y-6">
+          <div className="lg:col-span-7 xl:col-span-8 space-y-3 sm:space-y-6">
             
             {/* TOP SECTION: HUD BAR */}
             <div className={`bg-white border border-gray-100 rounded-2xl shadow-sm flex flex-wrap justify-between items-center relative overflow-hidden transition-all duration-300 ${
@@ -1468,7 +1468,11 @@ export default function HangulSurvivalClient({
             className={`relative overflow-hidden w-full rounded-3xl bg-gradient-to-b from-sky-200 via-sky-100 to-amber-50 border border-sky-300 shadow-inner z-10 transition-all duration-300 ${
               showDangerWarning ? 'danger-pulse' : ''
             } ${
-              showVirtualKeyboard ? 'h-[160px] sm:h-[240px] md:h-[350px]' : 'h-[145px] sm:h-[220px] md:h-[350px]'
+              isPlaying
+                ? showVirtualKeyboard 
+                  ? 'h-[170px] sm:h-[240px] md:h-[350px]' 
+                  : 'h-[155px] sm:h-[220px] md:h-[350px]'
+                : 'h-[220px] sm:h-[280px] md:h-[350px]'
             }`}
           >
             {/* Background Cute Clouds */}
@@ -1491,13 +1495,17 @@ export default function HangulSurvivalClient({
             ))}
 
             {/* Character placement */}
-            <div className="absolute bottom-6 left-[8%] sm:left-[12%]">
+            <div className={`absolute left-[8%] sm:left-[12%] transition-all duration-300 ${
+              isPlaying ? 'bottom-2' : 'bottom-6'
+            }`}>
               {renderChibiPlayer()}
             </div>
 
             {/* Boss Battle placement */}
             {selectedMode.id === 'boss' && (
-              <div className="absolute bottom-8 right-[8%] sm:right-[12%]">
+              <div className={`absolute right-[8%] sm:right-[12%] transition-all duration-300 ${
+                isPlaying ? 'bottom-2' : 'bottom-8'
+              }`}>
                 {renderBoss()}
               </div>
             )}
@@ -1545,22 +1553,13 @@ export default function HangulSurvivalClient({
               return (
                 <div
                   key={enemy.id}
-                  className="absolute bottom-16 -translate-x-1/2 flex flex-col items-center z-20"
+                  className={`absolute -translate-x-1/2 flex flex-col items-center z-20 transition-all duration-300 ${
+                    isPlaying ? 'bottom-2 sm:bottom-6' : 'bottom-16'
+                  } space-y-1.5 sm:space-y-3`}
                   style={{ left: `${enemy.x}%` }}
                 >
-                  {/* Danger border if object is very close */}
-                  <div 
-                    className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${enemy.color} text-white flex items-center justify-center text-3xl shadow-md border-2 ${
-                      isActiveTarget 
-                        ? 'border-indigo-400 ring-4 ring-indigo-200/50 scale-110 animate-pulse' 
-                        : 'border-white'
-                    } ${enemy.x <= 35 ? 'animate-bounce border-red-500' : ''}`}
-                  >
-                    {enemy.emoji}
-                  </div>
-
-                  {/* Bubble Word card above target */}
-                  <div className={`mt-3 px-3 py-2 rounded-2xl border bg-white shadow-lg flex flex-col items-center gap-0.5 text-center min-w-[70px] ${
+                  {/* Bubble Word card (Top) */}
+                  <div className={`px-2 py-1 sm:px-3 sm:py-2 rounded-xl sm:rounded-2xl border bg-white shadow-lg flex flex-col items-center gap-0.5 text-center min-w-[60px] sm:min-w-[70px] ${
                     isActiveTarget ? 'ring-2 ring-indigo-400 scale-105 border-indigo-200' : 'border-gray-100'
                   }`}>
                     {/* Hangul text highlight styling */}
@@ -1586,7 +1585,7 @@ export default function HangulSurvivalClient({
                         }
 
                         return (
-                          <span key={index} className={`text-base font-sans leading-none ${charClass}`}>
+                          <span key={index} className={`text-xs sm:text-base font-sans leading-none ${charClass}`}>
                             {char}
                           </span>
                         );
@@ -1594,8 +1593,19 @@ export default function HangulSurvivalClient({
                     </div>
 
                     {/* Hint details */}
-                    <span className="text-[9px] text-gray-400 italic leading-none">{enemy.romanization}</span>
-                    <span className="text-[8px] text-indigo-500 font-bold leading-none mt-0.5">{enemy.translation}</span>
+                    <span className="text-[8px] sm:text-[9px] text-gray-400 italic leading-none">{enemy.romanization}</span>
+                    <span className="text-[7px] sm:text-[8px] text-indigo-500 font-bold leading-none mt-0.5">{enemy.translation}</span>
+                  </div>
+
+                  {/* Danger border (Bottom) */}
+                  <div 
+                    className={`w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br ${enemy.color} text-white flex items-center justify-center text-xl sm:text-3xl shadow-md border-2 ${
+                      isActiveTarget 
+                        ? 'border-indigo-400 ring-4 ring-indigo-200/50 scale-105 sm:scale-110 animate-pulse' 
+                        : 'border-white'
+                    } ${enemy.x <= 35 ? 'animate-bounce border-red-500' : ''}`}
+                  >
+                    {enemy.emoji}
                   </div>
 
                   {/* Warning line beneath active danger target */}
@@ -1646,7 +1656,7 @@ export default function HangulSurvivalClient({
             )}
 
             {/* Mobile Keyboard helper toggle */}
-            <div className="flex justify-between items-center mt-4">
+            <div className="flex justify-between items-center mt-2.5 sm:mt-4">
               <button
                 onClick={() => setShowVirtualKeyboard(!showVirtualKeyboard)}
                 className="text-xs font-black text-indigo-600 hover:text-indigo-700 flex items-center gap-1 cursor-pointer"
