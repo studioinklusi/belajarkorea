@@ -308,26 +308,26 @@ const vocabularyWords: WordItem[] = [
 ];
 
 const sentenceWords: WordItem[] = [
-  { word: '안녕하세요', romanization: 'annyeonghaseyo', translation: 'Halo / Apa kabar' },
-  { word: '사랑해요', romanization: 'saranghaeyo', translation: 'Aku mencintaimu' },
-  { word: '고마워요', romanization: 'gomawoyo', translation: 'Terima kasih' },
-  { word: '괜찮아요', romanization: 'gwaenchanayo', translation: 'Tidak apa-apa' },
-  { word: '반가워요', romanization: 'bangawoyo', translation: 'Senang bertemu' },
+  { word: '밥 먹자', romanization: 'bab meokja', translation: 'Ayo makan' },
+  { word: '물 주세요', romanization: 'mul juseyo', translation: 'Tolong air' },
+  { word: '날씨 좋다', romanization: 'nalssi johda', translation: 'Cuaca bagus' },
+  { word: '보고 싶어', romanization: 'bogo sipeo', translation: 'Kangen / Rindu' },
+  { word: '어디 가요', romanization: 'eodi gayo', translation: 'Pergi ke mana?' },
   { word: '잘 가요', romanization: 'jal gayo', translation: 'Selamat jalan' },
   { word: '잘 있어', romanization: 'jal isseo', translation: 'Selamat tinggal' },
-  { word: '축하해요', romanization: 'chukhahaeyo', translation: 'Selamat' },
-  { word: '미안해요', romanization: 'mianhaeyo', translation: 'Maaf' },
-  { word: '좋아해요', romanization: 'johahaeyo', translation: 'Menyukai' },
-  { word: '맛있어요', romanization: 'masisseoyo', translation: 'Enak / Lezat' },
-  { word: '배고파요', romanization: 'baegopayo', translation: 'Lapar' },
-  { word: '재미있어요', romanization: 'jaemiisseyo', translation: 'Menarik / Seru' },
-  { word: '어디예요', romanization: 'eodiyeyo', translation: 'Di mana?' },
-  { word: '이거예요', romanization: 'igeoyeyo', translation: 'Ini dia' },
-  { word: '화이팅', romanization: 'hwaiting', translation: 'Semangat!' },
-  { word: '물 주세요', romanization: 'mul juseyo', translation: 'Tolong air' },
-  { word: '밥 먹자', romanization: 'bab meokja', translation: 'Ayo makan' },
-  { word: '날씨 좋다', romanization: 'nalssi johda', translation: 'Cuaca bagus' },
-  { word: '보고 싶어', romanization: 'bogo sipeo', translation: 'Kangen / Rindu' }
+  { word: '이게 뭐야', romanization: 'ige mwoya', translation: 'Ini apa?' },
+  { word: '집에 가요', romanization: 'jibe gayo', translation: 'Pulang ke rumah' },
+  { word: '공부를 해요', romanization: 'gongbureul haeyo', translation: 'Belajar' },
+  { word: '영화를 봐요', romanization: 'yeonghwareul bwayo', translation: 'Menonton film' },
+  { word: '커피 마셔요', romanization: 'keopi masyeoyo', translation: 'Minum kopi' },
+  { word: '빵 먹어요', romanization: 'ppang meogeoyo', translation: 'Makan roti' },
+  { word: '사과 먹어요', romanization: 'sagwa meogeoyo', translation: 'Makan apel' },
+  { word: '노래 해요', romanization: 'norae haeyo', translation: 'Menyanyi' },
+  { word: '지금 가요', romanization: 'jigeum gayo', translation: 'Pergi sekarang' },
+  { word: '오늘 만나요', romanization: 'oneul mannayo', translation: 'Ketemu hari ini' },
+  { word: '내일 봐요', romanization: 'naeil bwayo', translation: 'Sampai jumpa besok' },
+  { word: '같이 가요', romanization: 'gachi gayo', translation: 'Pergi bersama' },
+  { word: '비가 와요', romanization: 'biga wayo', translation: 'Hujan turun' }
 ];
 
 const enemyTemplates = [
