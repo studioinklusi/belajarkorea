@@ -482,6 +482,8 @@ interface ActiveEnemy {
   speed: number; // % progress per frame
   isDefeated: boolean;
   isAttacking: boolean;
+  isShieldBreaker?: boolean;
+  isSpecialAttack?: boolean;
 }
 
 interface Particle {
@@ -567,7 +569,15 @@ export default function HangulSurvivalClient({
 
   // Boss Battle Stats
   const [bossHp, setBossHp] = useState<number>(100);
-  const [bossState, setBossState] = useState<'idle' | 'attack' | 'hit'>('idle');
+  const bossHpRef = useRef<number>(100);
+  const [bossState, setBossState] = useState<'idle' | 'attack' | 'hit' | 'charging'>('idle');
+  const [bossShieldActive, setBossShieldActive] = useState<boolean>(false);
+  const bossShieldActiveRef = useRef<boolean>(false);
+  const [bossSpecialActive, setBossSpecialActive] = useState<boolean>(false);
+  const bossSpecialActiveRef = useRef<boolean>(false);
+  const [bossSpecialTimer, setBossSpecialTimer] = useState<number>(5);
+  const bossSpecialTimerRef = useRef<number>(5);
+  const [floatingDamages, setFloatingDamages] = useState<Array<{ id: string; text: string; isCrit?: boolean; isImmune?: boolean; isStun?: boolean; x: number; y: number }>>([]);
 
   // Interactive settings
   const [countdownVal, setCountdownVal] = useState<number>(3);
@@ -582,6 +592,26 @@ export default function HangulSurvivalClient({
   const enemiesRef = useRef<ActiveEnemy[]>([]);
   const wordsClearedRef = useRef<number>(0);
   const sessionDeckRef = useRef<WordItem[]>([]);
+  const lastSpecialAttackTimeRef = useRef<number>(0);
+
+  // Floating Damage popup helper
+  const spawnFloatingDamage = (
+    text: string,
+    x: number,
+    y: number,
+    options?: { isCrit?: boolean; isImmune?: boolean; isStun?: boolean }
+  ) => {
+    const id = Math.random().toString();
+    setFloatingDamages((prev) => [
+      ...prev,
+      { id, text, x, y, isCrit: options?.isCrit, isImmune: options?.isImmune, isStun: options?.isStun }
+    ]);
+    
+    // Automatically remove after 1.5 seconds
+    setTimeout(() => {
+      setFloatingDamages((prev) => prev.filter((d) => d.id !== id));
+    }, 1500);
+  };
 
   useEffect(() => {
     enemiesRef.current = enemies;
@@ -767,12 +797,89 @@ export default function HangulSurvivalClient({
         0% { transform: translate(-50%, -50%) translate(0, 0) scale(1); opacity: 1; }
         100% { transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(0.3); opacity: 0; }
       }
+      @keyframes floatUpAndFade {
+        0% { transform: translate(-50%, -50%) translateY(0) scale(0.8); opacity: 0; }
+        15% { transform: translate(-50%, -50%) translateY(-10px) scale(1.1); opacity: 1; }
+        100% { transform: translate(-50%, -50%) translateY(-50px) scale(1.0); opacity: 0; }
+      }
+      @keyframes intenseVibrate {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        20% { transform: translate(-2px, 2px) scale(1.02); }
+        40% { transform: translate(2px, -2px) scale(0.98); }
+        60% { transform: translate(-2px, -2px) scale(1.01); }
+        80% { transform: translate(2px, 2px) scale(0.99); }
+      }
+      .animate-vibrate {
+        animation: intenseVibrate 0.15s linear infinite;
+      }
     `;
     document.head.appendChild(styleEl);
     return () => {
       document.head.removeChild(styleEl);
     };
   }, []);
+
+  // Boss Battle helpers
+  const triggerBossSpecialAttack = () => {
+    playSound('combo');
+    setBossSpecialActive(true);
+    bossSpecialActiveRef.current = true;
+    setBossSpecialTimer(5);
+    bossSpecialTimerRef.current = 5;
+    setBossState('charging');
+    setScreenShake(true);
+    setTimeout(() => setScreenShake(false), 500);
+
+    const pool = [...sentenceWords];
+    const wordObj = pool[Math.floor(Math.random() * pool.length)] || sentenceWords[0];
+
+    const specialEnemy: ActiveEnemy = {
+      id: 'boss-special-attack',
+      word: wordObj.word,
+      romanization: wordObj.word === '만나서 반가워요' ? 'mannaso bangawoyo' : wordObj.romanization,
+      translation: wordObj.translation,
+      emoji: '🔥',
+      color: 'from-yellow-500 to-red-600',
+      action: 'attack',
+      x: 75,
+      speed: 0,
+      isDefeated: false,
+      isAttacking: false,
+      isSpecialAttack: true
+    };
+
+    setEnemies((prev) => {
+      const filtered = prev.filter((e) => e.id !== 'boss-special-attack');
+      return [...filtered, specialEnemy];
+    });
+    setActiveEnemyId('boss-special-attack');
+    setInputVal('');
+  };
+
+  const triggerBossSpecialAttackHit = () => {
+    playSound('hit');
+    setBossSpecialActive(false);
+    bossSpecialActiveRef.current = false;
+    setBossState('attack');
+    setTimeout(() => setBossState('idle'), 1000);
+
+    triggerPlayerHit(35);
+    addVisualLog('HANTAMAN RAJA! -35 HP 💥', 'wrong', 15, 30);
+    setScreenShake(true);
+    setTimeout(() => setScreenShake(false), 800);
+
+    setEnemies((prev) => prev.filter((e) => e.id !== 'boss-special-attack'));
+    setInputVal('');
+
+    lastSpecialAttackTimeRef.current = timerRef.current;
+  };
+
+  const triggerBossShield = () => {
+    playSound('combo');
+    setBossShieldActive(true);
+    bossShieldActiveRef.current = true;
+    addVisualLog('Boss Mengaktifkan Perisai! 🛡️', 'wrong', 15, 30);
+  };
 
   // Handle countdown triggers
   useEffect(() => {
@@ -795,6 +902,16 @@ export default function HangulSurvivalClient({
           setParticles([]);
           setLogs([]);
           setBossHp(100);
+          bossHpRef.current = 100;
+          setBossState('idle');
+          setBossShieldActive(false);
+          bossShieldActiveRef.current = false;
+          setBossSpecialActive(false);
+          bossSpecialActiveRef.current = false;
+          setBossSpecialTimer(5);
+          bossSpecialTimerRef.current = 5;
+          setFloatingDamages([]);
+          lastSpecialAttackTimeRef.current = 0;
           setWordsCleared(0);
           
           // Initialize and shuffle session deck
@@ -803,8 +920,10 @@ export default function HangulSurvivalClient({
             if (selectedMode.id === 'beginner') pool = [...beginnerWords];
             else if (selectedMode.id === 'vocab') pool = [...vocabularyWords];
             else if (selectedMode.id === 'sentence') pool = [...sentenceWords];
-            else if (selectedMode.id === 'speed' || selectedMode.id === 'boss') {
+            else if (selectedMode.id === 'speed') {
               pool = [...beginnerWords, ...vocabularyWords];
+            } else if (selectedMode.id === 'boss') {
+              pool = [...beginnerWords]; // Boss Mode starts with Phase 1 word pool
             }
             
             // Fisher-Yates Shuffle
@@ -839,6 +958,27 @@ export default function HangulSurvivalClient({
       setTimer((prev) => {
         const next = prev + 1;
         timerRef.current = next;
+
+        if (selectedMode.id === 'boss' && gameState === 'playing') {
+          // If special attack is active, count down the timer
+          if (bossSpecialActiveRef.current) {
+            setBossSpecialTimer((t) => {
+              const nextT = t - 1;
+              bossSpecialTimerRef.current = nextT;
+              if (nextT <= 0) {
+                triggerBossSpecialAttackHit();
+                return 5;
+              }
+              return nextT;
+            });
+          } else if (!bossShieldActiveRef.current) {
+            // Check if it has been 25 seconds since last special attack
+            const timeSinceLast = next - lastSpecialAttackTimeRef.current;
+            if (timeSinceLast >= 25) {
+              triggerBossSpecialAttack();
+            }
+          }
+        }
         return next;
       });
       setTimeSpent((prev) => prev + 1);
@@ -846,6 +986,7 @@ export default function HangulSurvivalClient({
 
     const updateFrame = () => {
       const now = Date.now();
+      const bossPhase = bossHpRef.current > 70 ? 1 : bossHpRef.current > 30 ? 2 : 3;
       const isFrenzy = selectedMode.id !== 'boss' && selectedMode.targetWords && wordsClearedRef.current >= selectedMode.targetWords;
       const currentDifficultyMultiplier = Math.min(1.8, 1 + timerRef.current / 45) * (isFrenzy ? 1.5 : 1.0); // speed increases over time
 
@@ -855,7 +996,7 @@ export default function HangulSurvivalClient({
         vocab: 3,
         sentence: 2,
         speed: 4,
-        boss: 1
+        boss: bossPhase === 1 ? 1 : bossPhase === 2 ? 2 : 3
       };
       const maxEnemies = maxEnemiesMap[selectedMode.id] || 3;
 
@@ -867,79 +1008,110 @@ export default function HangulSurvivalClient({
 
       const isTargetReached = selectedMode.id !== 'boss' && selectedMode.targetWords && wordsClearedRef.current >= selectedMode.targetWords * 2;
 
-      if (
-        !isTargetReached &&
+      // Force spawn shield breaker if boss shield is active but no shield breaker on screen
+      const hasShieldBreaker = enemiesRef.current.some(e => e.isShieldBreaker);
+      const shouldSpawnShieldBreaker = selectedMode.id === 'boss' && bossShieldActiveRef.current && !hasShieldBreaker;
+
+      const canSpawn = !isTargetReached && !bossSpecialActiveRef.current && (
         enemiesRef.current.length < maxEnemies &&
         hasEnoughSpace &&
         now - lastSpawnTimeRef.current > spawnSpeed / currentDifficultyMultiplier
-      ) {
-        // Get the next word from the pre-shuffled session deck
+      );
+
+      if (canSpawn || shouldSpawnShieldBreaker) {
         let wordObj: WordItem | undefined;
-        
-        // Find the first word in the deck that is not currently active on screen
-        const activeWords = enemiesRef.current.map((e) => e.word);
-        const nextValidIndex = sessionDeckRef.current.findIndex((w) => !activeWords.includes(w.word));
-        
-        if (nextValidIndex !== -1) {
-          wordObj = sessionDeckRef.current.splice(nextValidIndex, 1)[0];
-        } else if (sessionDeckRef.current.length > 0) {
-          wordObj = sessionDeckRef.current.shift();
-        }
+        let newEnemy: ActiveEnemy;
 
-        // Reshuffle fallback if deck ran out
-        if (!wordObj) {
-          let pool: WordItem[] = [];
-          if (selectedMode.id === 'beginner') pool = [...beginnerWords];
-          else if (selectedMode.id === 'vocab') pool = [...vocabularyWords];
-          else if (selectedMode.id === 'sentence') pool = [...sentenceWords];
-          else if (selectedMode.id === 'speed' || selectedMode.id === 'boss') {
-            pool = [...beginnerWords, ...vocabularyWords];
+        if (shouldSpawnShieldBreaker) {
+          const pool = [...vocabularyWords];
+          const wordObjLocal = pool[Math.floor(Math.random() * pool.length)] || vocabularyWords[0];
+          
+          newEnemy = {
+            id: 'boss-shield-breaker',
+            word: wordObjLocal.word,
+            romanization: wordObjLocal.word === '만나서 반가워요' ? 'mannaso bangawoyo' : wordObjLocal.romanization,
+            translation: wordObjLocal.translation,
+            emoji: '🛡️',
+            color: 'from-blue-500 to-indigo-600',
+            action: 'block',
+            x: 100,
+            speed: 0.7 * currentDifficultyMultiplier * 0.04, // slower movement
+            isDefeated: false,
+            isAttacking: false,
+            isShieldBreaker: true
+          };
+          setEnemies((prev) => [...prev, newEnemy]);
+          lastSpawnTimeRef.current = now;
+        } else {
+          // Get the next word from the pre-shuffled session deck
+          const activeWords = enemiesRef.current.map((e) => e.word);
+          const nextValidIndex = sessionDeckRef.current.findIndex((w) => !activeWords.includes(w.word));
+          
+          if (nextValidIndex !== -1) {
+            wordObj = sessionDeckRef.current.splice(nextValidIndex, 1)[0];
+          } else if (sessionDeckRef.current.length > 0) {
+            wordObj = sessionDeckRef.current.shift();
           }
-          
-          let filtered = pool.filter((w) => !activeWords.includes(w.word));
-          if (filtered.length === 0) filtered = pool;
-          
-          for (let i = filtered.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+
+          // Reshuffle fallback if deck ran out
+          if (!wordObj) {
+            let pool: WordItem[] = [];
+            if (selectedMode.id === 'beginner') pool = [...beginnerWords];
+            else if (selectedMode.id === 'vocab') pool = [...vocabularyWords];
+            else if (selectedMode.id === 'sentence') pool = [...sentenceWords];
+            else if (selectedMode.id === 'speed') {
+              pool = [...beginnerWords, ...vocabularyWords];
+            } else if (selectedMode.id === 'boss') {
+              if (bossPhase === 1) pool = [...beginnerWords];
+              else if (bossPhase === 2) pool = [...vocabularyWords];
+              else pool = [...sentenceWords];
+            }
+            
+            let filtered = pool.filter((w) => !activeWords.includes(w.word));
+            if (filtered.length === 0) filtered = pool;
+            
+            for (let i = filtered.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+            }
+            
+            sessionDeckRef.current = filtered;
+            wordObj = sessionDeckRef.current.shift();
           }
-          
-          sessionDeckRef.current = filtered;
-          wordObj = sessionDeckRef.current.shift();
+
+          if (!wordObj) {
+            wordObj = beginnerWords[0];
+          }
+
+          const template = enemyTemplates[Math.floor(Math.random() * enemyTemplates.length)];
+
+          const speedMultiplierMap: Record<string, number> = {
+            beginner: 0.035,
+            vocab: 0.04,
+            sentence: 0.03,
+            speed: 0.055,
+            boss: bossPhase === 1 ? 0.032 : bossPhase === 2 ? 0.042 : 0.052
+          };
+          const baseSpeedMultiplier = speedMultiplierMap[selectedMode.id] || 0.04;
+          const speed = 1.5 * currentDifficultyMultiplier * baseSpeedMultiplier;
+
+          newEnemy = {
+            id: Math.random().toString(),
+            word: wordObj.word,
+            romanization: wordObj.word === '만나서 반가워요' ? 'mannaso bangawoyo' : wordObj.romanization,
+            translation: wordObj.translation,
+            emoji: template.emoji,
+            color: template.color,
+            action: template.action,
+            x: 100, // starts at right
+            speed: speed, // speed per frame
+            isDefeated: false,
+            isAttacking: false
+          };
+
+          setEnemies((prev) => [...prev, newEnemy]);
+          lastSpawnTimeRef.current = now;
         }
-
-        if (!wordObj) {
-          wordObj = beginnerWords[0];
-        }
-
-        const template = enemyTemplates[Math.floor(Math.random() * enemyTemplates.length)];
-
-        const speedMultiplierMap: Record<string, number> = {
-          beginner: 0.035,
-          vocab: 0.04,
-          sentence: 0.03,
-          speed: 0.055,
-          boss: 0.035
-        };
-        const baseSpeedMultiplier = speedMultiplierMap[selectedMode.id] || 0.04;
-        const speed = 1.5 * currentDifficultyMultiplier * baseSpeedMultiplier;
-
-        const newEnemy: ActiveEnemy = {
-          id: Math.random().toString(),
-          word: wordObj.word,
-          romanization: wordObj.romanization,
-          translation: wordObj.translation,
-          emoji: template.emoji,
-          color: template.color,
-          action: template.action,
-          x: 100, // starts at right
-          speed: speed, // speed per frame
-          isDefeated: false,
-          isAttacking: false
-        };
-
-        setEnemies((prev) => [...prev, newEnemy]);
-        lastSpawnTimeRef.current = now;
       }
 
       // 2. Entity update logic
@@ -948,7 +1120,9 @@ export default function HangulSurvivalClient({
         const updated = prevEnemies.map((enemy) => {
           if (enemy.isDefeated) return enemy;
           
-          let newX = enemy.x - enemy.speed;
+          // During boss special attack, regular enemies slow down to 5% speed
+          const speedFactor = bossSpecialActiveRef.current ? 0.05 : 1.0;
+          let newX = enemy.x - enemy.speed * speedFactor;
           
           // Collision with player (reached around 15%)
           if (newX <= 15) {
@@ -1163,19 +1337,96 @@ export default function HangulSurvivalClient({
 
         // Update boss state if in boss battle
         if (selectedMode?.id === 'boss') {
-          setBossState('hit');
-          setBossHp((prev) => {
-            const nextHp = prev - 8;
-            if (nextHp <= 0) {
-              setTimeout(() => {
-                playSound('victory');
-                setGameState('result');
-              }, 600);
-              return 0;
+          if (targetEnemy.isSpecialAttack) {
+            // Cancel special attack
+            setBossSpecialActive(false);
+            bossSpecialActiveRef.current = false;
+            setBossState('hit');
+            setTimeout(() => setBossState('idle'), 1500); // longer stun
+
+            // Damage the boss heavily
+            setBossHp((prev) => {
+              const nextHp = Math.max(0, prev - 15);
+              bossHpRef.current = nextHp;
+              spawnFloatingDamage('DISELA! -15 HP ⚡', 75, 35, { isStun: true });
+              
+              // Trigger shield at 70% and 30% HP
+              if (prev >= 70 && nextHp < 70) {
+                setTimeout(() => triggerBossShield(), 1000);
+              } else if (prev >= 30 && nextHp < 30) {
+                setTimeout(() => triggerBossShield(), 1000);
+              }
+
+              if (nextHp <= 0) {
+                setTimeout(() => {
+                  playSound('victory');
+                  setGameState('result');
+                }, 600);
+                return 0;
+              }
+              return nextHp;
+            });
+            
+            addVisualLog('Serangan Gagah! ⚡', 'correct', 25, 35);
+            lastSpecialAttackTimeRef.current = timerRef.current;
+          } else if (targetEnemy.isShieldBreaker) {
+            setBossShieldActive(false);
+            bossShieldActiveRef.current = false;
+            setBossHp((prev) => {
+              const nextHp = Math.max(0, prev - 4);
+              bossHpRef.current = nextHp;
+              spawnFloatingDamage('PERISAI HANCUR! -4 HP 🛡️💥', 75, 45, { isStun: true });
+              
+              if (prev >= 70 && nextHp < 70) {
+                setTimeout(() => triggerBossShield(), 1000);
+              } else if (prev >= 30 && nextHp < 30) {
+                setTimeout(() => triggerBossShield(), 1000);
+              }
+
+              if (nextHp <= 0) {
+                setTimeout(() => {
+                  playSound('victory');
+                  setGameState('result');
+                }, 600);
+                return 0;
+              }
+              return nextHp;
+            });
+            addVisualLog('Perisai Hancur! 🛡️💥', 'correct', 25, 35);
+            playSound('correct');
+          } else {
+            // Normal hit
+            if (bossShieldActiveRef.current) {
+              spawnFloatingDamage('KEBAL! 🛡️', 75, 45, { isImmune: true });
+              playSound('wrong');
+            } else {
+              setBossState('hit');
+              setBossHp((prev) => {
+                const isCrit = combo >= 10 && combo % 5 === 0;
+                const dmg = isCrit ? 16 : 8;
+                const nextHp = Math.max(0, prev - dmg);
+                bossHpRef.current = nextHp;
+                spawnFloatingDamage(isCrit ? `KRITIKAL! -${dmg} HP 🔥` : `-${dmg} HP`, 75, 45, { isCrit });
+                
+                // Trigger shield at 70% and 30% HP
+                if (prev >= 70 && nextHp < 70) {
+                  setTimeout(() => triggerBossShield(), 1000);
+                } else if (prev >= 30 && nextHp < 30) {
+                  setTimeout(() => triggerBossShield(), 1000);
+                }
+
+                if (nextHp <= 0) {
+                  setTimeout(() => {
+                    playSound('victory');
+                    setGameState('result');
+                  }, 600);
+                  return 0;
+                }
+                return nextHp;
+              });
+              setTimeout(() => setBossState('idle'), 500);
             }
-            return nextHp;
-          });
-          setTimeout(() => setBossState('idle'), 500);
+          }
         } else if (selectedMode) {
           // Increment words cleared for normal modes
           setWordsCleared((prev) => {
@@ -1351,17 +1602,39 @@ export default function HangulSurvivalClient({
   // Render Boss Monster SVG
   const renderBoss = () => {
     const isHit = bossState === 'hit';
+    const isCharging = bossState === 'charging';
+    const bossPhase = bossHp > 70 ? 1 : bossHp > 30 ? 2 : 3;
+
+    let slimeColor = '#B3E5FC'; // Phase 1 Sky Blue
+    let slimeStroke = '#03A9F4';
+    if (bossPhase === 2) {
+      slimeColor = '#FFE082'; // Phase 2 Amber Yellow
+      slimeStroke = '#FFB300';
+    } else if (bossPhase === 3) {
+      slimeColor = '#FF8A80'; // Phase 3 Crimson Red
+      slimeStroke = '#FF5252';
+    }
+
+    if (isHit) {
+      slimeColor = '#FF8FAB'; // Hit Pink
+      slimeStroke = '#E91E63';
+    }
+
     let transformClass = 'translate-y-0 scale-100';
     if (isHit) transformClass = 'translate-x-12 scale-x-90 scale-y-110';
 
+    let animClass = 'animate-float';
+    if (isCharging) animClass = 'animate-vibrate';
+    else if (bossPhase === 3) animClass = 'animate-vibrate';
+
     return (
-      <div className={`relative transition-all duration-200 sm:w-44 sm:h-44 z-20 ${transformClass} ${isPlaying ? 'w-24 h-24' : 'w-36 h-36'}`}>
+      <div className={`relative transition-all duration-200 sm:w-44 sm:h-44 z-20 ${transformClass} ${isPlaying ? 'w-24 h-24' : 'w-36 h-36'} ${animClass}`}>
         <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-lg">
           {/* Shadow */}
           <ellipse cx="50" cy="90" rx="42" ry="8" fill="rgba(0,0,0,0.15)" />
 
           {/* Slime body */}
-          <path d="M15 80 C10 60, 10 30, 50 15 C90 30, 90 60, 85 80 C80 88, 20 88, 15 80 Z" fill={isHit ? '#FF8FAB' : '#B3E5FC'} stroke={isHit ? '#E91E63' : '#03A9F4'} strokeWidth="3" />
+          <path d="M15 80 C10 60, 10 30, 50 15 C90 30, 90 60, 85 80 C80 88, 20 88, 15 80 Z" fill={slimeColor} stroke={slimeStroke} strokeWidth="3" />
 
           {/* Cute crowns */}
           <path d="M40 16 L50 2 L60 16 Z" fill="#FFD700" stroke="#FFA000" strokeWidth="1.5" />
@@ -1372,6 +1645,26 @@ export default function HangulSurvivalClient({
             <>
               <path d="M30 38 L42 46 M42 38 L30 46" stroke="#37474F" strokeWidth="3.5" strokeLinecap="round" />
               <path d="M58 38 L70 46 M70 38 L58 46" stroke="#37474F" strokeWidth="3.5" strokeLinecap="round" />
+            </>
+          ) : bossPhase === 2 ? (
+            <>
+              {/* Angry eyebrows/eyes for Phase 2 */}
+              <path d="M28 34 L42 39" stroke="#37474F" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M72 34 L58 39" stroke="#37474F" strokeWidth="2.5" strokeLinecap="round" />
+              <circle cx="38" cy="44" r="4.5" fill="#37474F" />
+              <circle cx="62" cy="44" r="4.5" fill="#37474F" />
+              <circle cx="36" cy="42" r="1.2" fill="white" />
+              <circle cx="60" cy="42" r="1.2" fill="white" />
+            </>
+          ) : bossPhase === 3 ? (
+            <>
+              {/* Furious eyes for Phase 3 */}
+              <path d="M26 32 L44 38" stroke="#D50000" strokeWidth="3.5" strokeLinecap="round" />
+              <path d="M74 32 L56 38" stroke="#D50000" strokeWidth="3.5" strokeLinecap="round" />
+              <circle cx="38" cy="44" r="5" fill="#D50000" />
+              <circle cx="62" cy="44" r="5" fill="#D50000" />
+              <circle cx="36" cy="42" r="1.5" fill="white" />
+              <circle cx="60" cy="42" r="1.5" fill="white" />
             </>
           ) : (
             <>
@@ -1385,6 +1678,8 @@ export default function HangulSurvivalClient({
           {/* Mouth */}
           {isHit ? (
             <ellipse cx="50" cy="58" rx="8" ry="4" fill="#880E4F" />
+          ) : bossPhase === 3 ? (
+            <ellipse cx="50" cy="58" rx="7" ry="5" fill="#37474F" />
           ) : (
             <path d="M45 54 Q50 62 55 54" stroke="#37474F" strokeWidth="2.5" fill="none" strokeLinecap="round" />
           )}
@@ -1394,13 +1689,17 @@ export default function HangulSurvivalClient({
           <circle cx="72" cy="50" r="4.5" fill="#FFCDD2" opacity="0.8" />
         </svg>
 
-        {/* HP Bar floating above Boss */}
-        <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-28 bg-gray-200 h-2.5 rounded-full overflow-hidden border border-gray-300">
-          <div 
-            className="bg-red-500 h-full transition-all duration-300"
-            style={{ width: `${bossHp}%` }}
-          />
-        </div>
+        {/* Shield bubble overlay */}
+        {bossShieldActive && (
+          <div className="absolute inset-[-15px] sm:inset-[-20px] rounded-full border-4 border-cyan-400 bg-cyan-300/10 shadow-[0_0_15px_rgba(34,211,238,0.6)] animate-pulse pointer-events-none z-30" />
+        )}
+
+        {/* Golden fireball above boss when charging */}
+        {isCharging && (
+          <div className="absolute -top-12 sm:-top-16 left-1/2 -translate-x-1/2 w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-yellow-300 to-amber-500 rounded-full animate-ping pointer-events-none shadow-[0_0_20px_rgba(245,158,11,0.8)] z-30 flex items-center justify-center text-lg sm:text-2xl">
+            🔥
+          </div>
+        )}
       </div>
     );
   };
@@ -1645,6 +1944,72 @@ export default function HangulSurvivalClient({
             <div className="absolute top-8 left-12 text-5xl opacity-20 select-none pointer-events-none animate-float">☁️</div>
             <div className="absolute top-16 right-20 text-6xl opacity-15 select-none pointer-events-none animate-float" style={{ animationDelay: '1.5s' }}>☁️</div>
 
+            {/* Grand Boss Health Bar at top-center of Arena */}
+            {selectedMode.id === 'boss' && isPlaying && (
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[85%] max-w-[360px] bg-gray-900/80 border border-gray-700 backdrop-blur-sm rounded-full py-1.5 px-3 flex flex-col gap-0.5 items-center shadow-lg z-25">
+                <div className="flex justify-between items-center w-full text-[9px] font-black text-gray-200 uppercase tracking-wide">
+                  <span className="flex items-center gap-1">
+                    👑 RAJA SLIME RAKSASA <span className={`text-[8px] px-1 py-0.2 bg-red-600 rounded text-white ${bossHp <= 30 ? 'animate-pulse' : ''}`}>{bossHp <= 30 ? 'AMUK 💢' : bossHp <= 70 ? 'MARAH 👿' : 'NORMAL 👾'}</span>
+                  </span>
+                  <span className="font-sans font-extrabold">{bossHp}% HP</span>
+                </div>
+                <div className="w-full bg-gray-950 rounded-full h-2 overflow-hidden border border-gray-800">
+                  <div 
+                    className={`h-full transition-all duration-300 ${
+                      bossHp <= 30 
+                        ? 'bg-gradient-to-r from-red-600 to-rose-500 animate-pulse' 
+                        : bossHp <= 70
+                          ? 'bg-gradient-to-r from-amber-500 to-orange-500'
+                          : 'bg-gradient-to-r from-purple-500 to-indigo-500'
+                    }`}
+                    style={{ width: `${bossHp}%` }}
+                  />
+                </div>
+                {/* Shield indicator on health bar */}
+                {bossShieldActive && (
+                  <div className="text-[7px] text-cyan-400 font-extrabold uppercase animate-pulse flex items-center gap-1 mt-0.5 leading-none">
+                    <span>🛡️ PERISAI AKTIF - HANCURKAN MUSUH PELINDUNG</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Boss Special Attack Alert Banner */}
+            {selectedMode.id === 'boss' && isPlaying && bossSpecialActive && (
+              <div className="absolute top-12 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-red-600/95 text-white font-extrabold text-[10px] sm:text-xs shadow-md animate-pulse z-25 border border-red-500 flex items-center gap-1.5 min-w-[200px] justify-center">
+                <span>⚠️ SERANGAN DAHSYAT DALAM {bossSpecialTimer}S</span>
+                <div className="w-16 h-2 bg-red-950 rounded-full overflow-hidden border border-red-500/50">
+                  <div 
+                    className="bg-yellow-400 h-full transition-all duration-1000"
+                    style={{ width: `${(bossSpecialTimer / 5) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Floating Damage Texts */}
+            {floatingDamages.map((fd) => {
+              let textClass = 'text-green-500 font-extrabold text-sm';
+              if (fd.isCrit) textClass = 'text-amber-500 text-lg font-black tracking-wider animate-bounce';
+              else if (fd.isImmune) textClass = 'text-gray-400 text-xs font-bold';
+              else if (fd.isStun) textClass = 'text-red-500 text-base font-black animate-pulse';
+
+              return (
+                <div
+                  key={fd.id}
+                  className={`absolute pointer-events-none select-none z-30 ${textClass}`}
+                  style={{
+                    left: `${fd.x}%`,
+                    top: `${fd.y}%`,
+                    transform: 'translate(-50%, -50%)',
+                    animation: 'floatUpAndFade 1.5s forwards'
+                  }}
+                >
+                  {fd.text}
+                </div>
+              );
+            })}
+
             {/* Frenzy Mode Speed Up Banner Overlay */}
             {showFrenzyBanner && (
               <div className="absolute inset-0 bg-red-500/10 backdrop-blur-[0.5px] z-25 flex flex-col items-center justify-center animate-pulse pointer-events-none">
@@ -1740,7 +2105,13 @@ export default function HangulSurvivalClient({
                 >
                   {/* Bubble Word card (Top) */}
                   <div className={`px-2 py-1 sm:px-3 sm:py-2 rounded-xl sm:rounded-2xl border bg-white shadow-lg flex flex-col items-center gap-0.5 text-center min-w-[60px] sm:min-w-[70px] ${
-                    isActiveTarget ? 'ring-2 ring-indigo-400 scale-105 border-indigo-200' : 'border-gray-100'
+                    isActiveTarget 
+                      ? enemy.isSpecialAttack
+                        ? 'ring-4 ring-amber-500 scale-110 border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.5)] animate-pulse'
+                        : enemy.isShieldBreaker
+                          ? 'ring-4 ring-cyan-400 scale-105 border-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.5)]'
+                          : 'ring-2 ring-indigo-400 scale-105 border-indigo-200'
+                      : 'border-gray-100'
                   }`}>
                     {/* Hangul text highlight styling */}
                     <div className="flex justify-center items-center tracking-wide">
@@ -1781,9 +2152,13 @@ export default function HangulSurvivalClient({
                   <div 
                     className={`w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br ${enemy.color} text-white flex items-center justify-center text-xl sm:text-3xl shadow-md border-2 ${
                       isActiveTarget 
-                        ? 'border-indigo-400 ring-4 ring-indigo-200/50 scale-105 sm:scale-110 animate-pulse' 
+                        ? enemy.isSpecialAttack
+                          ? 'border-amber-500 ring-4 ring-amber-300 scale-110 sm:scale-125'
+                          : enemy.isShieldBreaker
+                            ? 'border-cyan-400 ring-4 ring-cyan-200 scale-105 sm:scale-115'
+                            : 'border-indigo-400 ring-4 ring-indigo-200/50 scale-105 sm:scale-110 animate-pulse' 
                         : 'border-white'
-                    } ${enemy.x <= 35 ? 'animate-bounce border-red-500' : ''}`}
+                    } ${enemy.x <= 35 && !enemy.isSpecialAttack ? 'animate-bounce border-red-500' : ''}`}
                   >
                     {enemy.emoji}
                   </div>
@@ -1808,7 +2183,11 @@ export default function HangulSurvivalClient({
             }`}>
             <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wide block mb-2 text-center leading-none">
               {activeWordIdx !== -1 
-                ? `Ketik Hangul Kata Target: "${enemies[activeWordIdx]?.word}"` 
+                ? enemies[activeWordIdx]?.isSpecialAttack
+                  ? `🔥 INTENSIF: KETIK UNTUK MENGGAGALKAN BOSS: "${enemies[activeWordIdx]?.word}"`
+                  : enemies[activeWordIdx]?.isShieldBreaker
+                    ? `🛡️ TARGET UTAMA: HANCURKAN PERISAI: "${enemies[activeWordIdx]?.word}"`
+                    : `Ketik Hangul Kata Target: "${enemies[activeWordIdx]?.word}"` 
                 : 'Menunggu target musuh...'}
             </span>
 
