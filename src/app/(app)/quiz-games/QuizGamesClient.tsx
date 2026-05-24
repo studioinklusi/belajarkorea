@@ -17,6 +17,7 @@ interface QuizGamesClientProps {
   initialMaxWpm: number;
   initialMaxSurvivalScore: number;
   hasScoresInDb: boolean;
+  isSubscribed: boolean;
 }
 
 export default function QuizGamesClient({ 
@@ -27,11 +28,14 @@ export default function QuizGamesClient({
   initialMaxWpm,
   initialMaxSurvivalScore,
   hasScoresInDb,
+  isSubscribed,
 }: QuizGamesClientProps) {
   const [totalXP, setTotalXP] = useState<number>(initialTotalXP);
   const [maxHighScore, setMaxHighScore] = useState<number>(initialMaxHighScore);
   const [maxWpm, setMaxWpm] = useState<number>(initialMaxWpm);
   const [maxSurvivalScore, setMaxSurvivalScore] = useState<number>(initialMaxSurvivalScore);
+  const [showPremiumModal, setShowPremiumModal] = useState<boolean>(false);
+  const [selectedGameName, setSelectedGameName] = useState<string>('');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -233,9 +237,15 @@ export default function QuizGamesClient({
                 <FaPuzzlePiece className="w-5 h-5" />
               </div>
 
-              {maxHighScore > 0 && (
+              {maxHighScore > 0 && isSubscribed && (
                 <span className="bg-green-50 border border-green-200/50 text-green-700 text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-full flex items-center gap-1 shadow-xs">
                   🏆 Skor Tertinggi: {maxHighScore}%
+                </span>
+              )}
+
+              {!isSubscribed && (
+                <span className="bg-amber-50 border border-amber-200/50 text-amber-800 text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-xs">
+                  <FaLock className="w-2.5 h-2.5" /> Premium
                 </span>
               )}
             </div>
@@ -251,12 +261,24 @@ export default function QuizGamesClient({
             </p>
           </div>
 
-          <Link
-            href="/quiz-games/tebak-hangul"
-            className="relative z-10 w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-lg active:scale-98 cursor-pointer border border-transparent"
-          >
-            Main Sekarang <FaArrowRight />
-          </Link>
+          {isSubscribed ? (
+            <Link
+              href="/quiz-games/tebak-hangul"
+              className="relative z-10 w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-lg active:scale-98 cursor-pointer border border-transparent"
+            >
+              Main Sekarang <FaArrowRight />
+            </Link>
+          ) : (
+            <button
+              onClick={() => {
+                setSelectedGameName('Tebak Hangul');
+                setShowPremiumModal(true);
+              }}
+              className="relative z-10 w-full py-4 bg-gradient-to-r from-amber-500/80 to-orange-500/80 text-white font-extrabold rounded-2xl flex items-center justify-center gap-2 shadow-sm hover:shadow-lg active:scale-98 cursor-pointer border border-transparent"
+            >
+              Buka Akses Premium <FaLock className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         {/* CARD 2: TYPING CHALLENGE (ACTIVE) */}
@@ -269,9 +291,15 @@ export default function QuizGamesClient({
                 <FaKeyboard className="w-5 h-5 animate-pulse" />
               </div>
 
-              {maxWpm > 0 && (
+              {maxWpm > 0 && isSubscribed && (
                 <span className="bg-green-50 border border-green-200/50 text-green-700 text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-full flex items-center gap-1 shadow-xs">
                   🏆 Terbaik: {maxWpm} WPM
+                </span>
+              )}
+
+              {!isSubscribed && (
+                <span className="bg-pink-50 border border-pink-200/50 text-pink-800 text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-xs">
+                  <FaLock className="w-2.5 h-2.5" /> Premium
                 </span>
               )}
             </div>
@@ -287,12 +315,24 @@ export default function QuizGamesClient({
             </p>
           </div>
 
-          <Link
-            href="/quiz-games/typing-challenge"
-            className="relative z-10 w-full py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-extrabold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-lg active:scale-98 cursor-pointer border border-transparent"
-          >
-            Main Sekarang <FaArrowRight />
-          </Link>
+          {isSubscribed ? (
+            <Link
+              href="/quiz-games/typing-challenge"
+              className="relative z-10 w-full py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-extrabold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-lg active:scale-98 cursor-pointer border border-transparent"
+            >
+              Main Sekarang <FaArrowRight />
+            </Link>
+          ) : (
+            <button
+              onClick={() => {
+                setSelectedGameName('Typing Challenge');
+                setShowPremiumModal(true);
+              }}
+              className="relative z-10 w-full py-4 bg-gradient-to-r from-pink-500/80 to-rose-500/80 text-white font-extrabold rounded-2xl flex items-center justify-center gap-2 shadow-sm hover:shadow-lg active:scale-98 cursor-pointer border border-transparent"
+            >
+              Buka Akses Premium <FaLock className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         {/* CARD 3: VOCABULARY QUIZ (COMING SOON) */}
@@ -398,6 +438,47 @@ export default function QuizGamesClient({
         </div>
 
       </div>
+
+      {/* Premium Upgrade Modal */}
+      {showPremiumModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full border border-gray-100 shadow-2xl p-6 relative overflow-hidden text-center animate-in zoom-in-95 duration-200">
+            {/* Background glow decoration */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-gradient-to-b from-amber-400/20 to-orange-500/0 rounded-full blur-2xl pointer-events-none"></div>
+            
+            {/* Premium Icon Badge */}
+            <div className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-amber-400 to-orange-500 text-white flex items-center justify-center text-3xl shadow-lg mb-6 relative z-10">
+              <FaLock className="w-8 h-8" />
+            </div>
+
+            <h3 className="text-2xl font-black text-gray-900 leading-tight">
+              Akses Premium Diperlukan 👑
+            </h3>
+            <p className="text-xs text-amber-600 font-extrabold uppercase tracking-widest mt-1.5">
+              Fitur Premium Terkunci
+            </p>
+            
+            <p className="text-sm text-gray-500 font-medium leading-relaxed mt-4 mb-6 px-2">
+              Game <span className="text-gray-900 font-bold">{selectedGameName}</span> dirancang khusus untuk membantu mempercepat proses belajar Anda secara mendalam. Berlangganan sekarang untuk membuka semua kuis, materi, cerita, dan latihan premium Tsuha!
+            </p>
+
+            <div className="space-y-2.5 relative z-10">
+              <Link
+                href="/pricing"
+                className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer border border-transparent"
+              >
+                Lihat Paket Berlangganan <FaArrowRight />
+              </Link>
+              <button
+                onClick={() => setShowPremiumModal(false)}
+                className="w-full py-3.5 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-800 font-bold rounded-2xl border border-gray-200 transition-all cursor-pointer"
+              >
+                Kembali Nanti
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

@@ -17,9 +17,24 @@ export default async function TebakHangulPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name')
+    .select('full_name, role')
     .eq('id', user.id)
     .single();
+
+  const isAdmin = profile?.role === 'super_admin' || profile?.role === 'content_admin';
+
+  // Check subscription
+  const { data: activeSubs } = await supabase
+    .from('v_active_subscriptions')
+    .select('package_slug')
+    .eq('user_id', user.id)
+    .eq('computed_status', 'active');
+
+  const isSubscribed = (activeSubs && activeSubs.length > 0) || isAdmin;
+
+  if (!isSubscribed) {
+    redirect('/quiz-games');
+  }
 
   // Retrieve user game scores from Supabase
   const { data: scoresData, error: scoresError } = await supabase
