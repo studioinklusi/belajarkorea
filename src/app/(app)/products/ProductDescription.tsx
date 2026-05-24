@@ -11,18 +11,42 @@ export default function ProductDescription({ description }: { description: strin
   if (!description) return <div className="mb-4 flex-1" />
 
   const renderDescription = (text: string) => {
-    const urlRegex = /(https?:\/\/[^\s]+)/g
-    const parts = text.split(urlRegex)
+    // Regex untuk mendeteksi markdown link [Label](URL) ATAU raw URL
+    const combinedRegex = /(\[[^\]]+\]\(https?:\/\/[^\s)]+\)|https?:\/\/[^\s]+)/g
+    const parts = text.split(combinedRegex)
     
     return parts.map((part, index) => {
-      if (part.match(urlRegex)) {
+      // 1. Cek apakah bagian ini adalah Markdown Link: [Label](URL)
+      const mdMatch = part.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/)
+      if (mdMatch) {
+        const label = mdMatch[1]
+        const url = mdMatch[2]
+        
+        return (
+          <a
+            key={index}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 hover:bg-violet-100 text-violet-700 text-xs font-extrabold rounded-xl border border-violet-100 hover:border-violet-200 transition-all shadow-xs my-1 mr-2 cursor-pointer"
+          >
+            <svg className="w-3.5 h-3.5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+            </svg>
+            {label}
+          </a>
+        )
+      }
+      
+      // 2. Cek apakah bagian ini adalah Raw URL
+      const isRawUrl = part.match(/^https?:\/\/[^\s]+$/)
+      if (isRawUrl) {
         let displayName = part
         try {
           const urlObj = new URL(part)
-          // Tampilkan hostname + path awal agar tidak terlalu panjang
           displayName = urlObj.hostname + (urlObj.pathname !== '/' ? (urlObj.pathname.length > 20 ? urlObj.pathname.substring(0, 20) + '...' : urlObj.pathname) : '')
         } catch (e) {
-          // fallback jika parsing gagal
+          // fallback
         }
         
         return (
@@ -31,7 +55,7 @@ export default function ProductDescription({ description }: { description: strin
             href={part}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-violet-600 hover:text-violet-800 hover:underline font-bold inline-flex items-center gap-0.5 break-all"
+            className="text-violet-600 hover:text-violet-800 hover:underline font-bold inline-flex items-center gap-0.5 break-all cursor-pointer"
           >
             {displayName}
             <svg className="w-3 h-3 inline shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -40,6 +64,8 @@ export default function ProductDescription({ description }: { description: strin
           </a>
         )
       }
+      
+      // 3. Teks biasa
       return part
     })
   }
