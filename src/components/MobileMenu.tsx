@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { FaEllipsis, FaXmark, FaRightFromBracket, FaGear, FaTag, FaShieldHalved, FaDownload } from 'react-icons/fa6'
+import { FaEllipsis, FaXmark, FaRightFromBracket, FaGear, FaTag, FaShieldHalved, FaDownload, FaSpinner } from 'react-icons/fa6'
 
 interface MobileMenuProps {
   isLoggedIn: boolean
@@ -14,6 +14,7 @@ interface MobileMenuProps {
 
 export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAction, isLandingPage }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   return (
     <>
@@ -52,7 +53,7 @@ export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAct
               <Link 
                 href="/pricing" 
                 onClick={() => setIsOpen(false)} 
-                className="flex items-center gap-3 text-gray-700 hover:bg-violet-50 px-4 py-3 rounded-xl text-sm font-bold transition-colors"
+                className="flex items-center gap-3 text-gray-700 hover:bg-violet-50 active:bg-violet-100/70 active:scale-[0.98] px-4 py-3 rounded-xl text-sm font-bold transition-all"
               >
                 <FaTag className="w-4 h-4 text-violet-500" />
                 Berlangganan
@@ -62,7 +63,7 @@ export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAct
               <Link 
                 href="/products" 
                 onClick={() => setIsOpen(false)} 
-                className="flex items-center gap-3 text-gray-700 hover:bg-violet-50 px-4 py-3 rounded-xl text-sm font-bold transition-colors"
+                className="flex items-center gap-3 text-gray-700 hover:bg-violet-50 active:bg-violet-100/70 active:scale-[0.98] px-4 py-3 rounded-xl text-sm font-bold transition-all"
               >
                 <FaGear className="w-4 h-4 text-gray-400" />
                 Produk Digital
@@ -74,7 +75,7 @@ export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAct
                   setIsOpen(false)
                   window.dispatchEvent(new Event('trigger-pwa-install'))
                 }} 
-                className="flex items-center gap-3 text-violet-700 bg-violet-50 hover:bg-violet-100 px-4 py-3 rounded-xl text-sm font-bold transition-colors w-full text-left"
+                className="flex items-center gap-3 text-violet-700 bg-violet-50 hover:bg-violet-100 active:bg-violet-200/50 active:scale-[0.98] px-4 py-3 rounded-xl text-sm font-bold transition-all w-full text-left cursor-pointer"
               >
                 <FaDownload className="w-4 h-4 text-violet-600" />
                 Install Aplikasi
@@ -85,7 +86,7 @@ export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAct
                 <Link 
                   href="/admin" 
                   onClick={() => setIsOpen(false)} 
-                  className="flex items-center gap-3 text-gray-700 hover:bg-violet-50 px-4 py-3 rounded-xl text-sm font-bold transition-colors"
+                  className="flex items-center gap-3 text-gray-700 hover:bg-violet-50 active:bg-violet-100/70 active:scale-[0.98] px-4 py-3 rounded-xl text-sm font-bold transition-all"
                 >
                   <FaShieldHalved className="w-4 h-4 text-rose-500" />
                   Panel Admin
@@ -95,13 +96,27 @@ export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAct
               {/* Logout */}
               {isLoggedIn && (
                 <div className="mt-1 pt-2 border-t border-gray-100">
-                  <form action="/auth/signout" method="POST">
+                  <form 
+                    action="/auth/signout" 
+                    method="POST" 
+                    onSubmit={() => setIsLoggingOut(true)}
+                  >
                     <button 
                       type="submit" 
-                      className="w-full flex items-center gap-3 text-rose-600 hover:bg-rose-50 px-4 py-3 rounded-xl text-sm font-bold transition-colors"
+                      disabled={isLoggingOut}
+                      className="w-full flex items-center gap-3 text-rose-600 hover:bg-rose-50 active:bg-rose-100/50 active:scale-[0.98] px-4 py-3 rounded-xl text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
-                      <FaRightFromBracket className="w-4 h-4" />
-                      Keluar
+                      {isLoggingOut ? (
+                        <>
+                          <FaSpinner className="w-4 h-4 animate-spin text-rose-600" />
+                          Mengeluarkan...
+                        </>
+                      ) : (
+                        <>
+                          <FaRightFromBracket className="w-4 h-4" />
+                          Keluar
+                        </>
+                      )}
                     </button>
                   </form>
                 </div>
@@ -113,14 +128,14 @@ export default function MobileMenu({ isLoggedIn, isAdmin, activePage, signoutAct
                   <Link 
                     href="/login" 
                     onClick={() => setIsOpen(false)} 
-                    className="block text-center text-gray-600 hover:bg-gray-50 px-4 py-3 rounded-xl text-sm font-bold transition-colors"
+                    className="block text-center text-gray-600 hover:bg-gray-50 active:bg-gray-100/70 active:scale-[0.98] px-4 py-3 rounded-xl text-sm font-bold transition-all"
                   >
                     Masuk
                   </Link>
                   <Link 
                     href="/register" 
                     onClick={() => setIsOpen(false)} 
-                    className="block text-center bg-violet-600 text-white px-4 py-3 rounded-xl text-sm font-bold shadow-md hover:bg-violet-700 transition-colors"
+                    className="block text-center bg-violet-600 text-white active:bg-violet-700 active:scale-[0.98] px-4 py-3 rounded-xl text-sm font-bold shadow-md hover:bg-violet-700 transition-all"
                   >
                     Mulai Belajar
                   </Link>

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { 
   FaHandSparkles, FaRobot, FaHouse, FaBookOpen, FaUser, FaBox, FaDownload,
   FaChevronDown, FaUserShield, FaArrowRightFromBracket, FaGraduationCap, FaLayerGroup,
-  FaXmark, FaGamepad, FaPuzzlePiece, FaCrown
+  FaXmark, FaGamepad, FaPuzzlePiece, FaCrown, FaSpinner
 } from 'react-icons/fa6'
 import MobileMenu from './MobileMenu'
 import LanguageSwitcher from './LanguageSwitcher'
@@ -30,6 +30,7 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
   const [isLearningOpen, setIsLearningOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isMobileLearningOpen, setIsMobileLearningOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -272,12 +273,26 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
                       <div className="border-t border-gray-50 my-2"></div>
 
                       <div className="px-2">
-                        <form action="/auth/signout" method="POST" className="w-full">
+                        <form 
+                          action="/auth/signout" 
+                          method="POST" 
+                          className="w-full"
+                          onSubmit={() => setIsLoggingOut(true)}
+                        >
                           <button
                             type="submit"
-                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-extrabold text-gray-600 hover:text-red-700 hover:bg-red-50/50 rounded-2xl transition-colors text-left cursor-pointer"
+                            disabled={isLoggingOut}
+                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-extrabold text-gray-600 hover:text-red-700 hover:bg-red-50/50 rounded-2xl transition-all active:scale-[0.98] text-left cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <FaArrowRightFromBracket className="w-4 h-4 text-red-500" /> Keluar
+                            {isLoggingOut ? (
+                              <>
+                                <FaSpinner className="w-4 h-4 text-red-500 animate-spin" /> Keluar...
+                              </>
+                            ) : (
+                              <>
+                                <FaArrowRightFromBracket className="w-4 h-4 text-red-500" /> Keluar
+                              </>
+                            )}
                           </button>
                         </form>
                       </div>
@@ -307,7 +322,7 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
           {/* 1. Beranda / Dashboard */}
           <Link 
             href={user ? "/dashboard" : "/"} 
-            className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
+            className={`flex flex-col items-center justify-center w-full h-full space-y-1 active:scale-95 transition-all duration-200 ${
               (user ? activePage === 'dashboard' : (!activePage && isLandingPage)) ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
             }`}
           >
@@ -319,7 +334,7 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
           {user ? (
             <button 
               onClick={() => setIsMobileLearningOpen(true)}
-              className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
+              className={`flex flex-col items-center justify-center w-full h-full space-y-1 active:scale-95 transition-all duration-200 ${
               ['courses', 'stories', 'flashcards', 'quiz-games'].includes(activePage) ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
             }`}
           >
@@ -329,7 +344,7 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
           ) : (
             <Link 
               href="/courses" 
-              className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
+              className={`flex flex-col items-center justify-center w-full h-full space-y-1 active:scale-95 transition-all duration-200 ${
                 activePage === 'courses' ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
@@ -342,7 +357,7 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
           {user ? (
             <Link 
               href="/ai-buddy" 
-              className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
+              className={`flex flex-col items-center justify-center w-full h-full space-y-1 active:scale-95 transition-all duration-200 ${
                 activePage === 'ai-buddy' ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
@@ -355,7 +370,7 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
           ) : (
             <Link 
               href="/products" 
-              className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
+              className={`flex flex-col items-center justify-center w-full h-full space-y-1 active:scale-95 transition-all duration-200 ${
                 activePage === 'products' ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
@@ -368,7 +383,7 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
           {user ? (
             <Link 
               href="/profile" 
-              className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
+              className={`flex flex-col items-center justify-center w-full h-full space-y-1 active:scale-95 transition-all duration-200 ${
                 activePage === 'profile' ? 'text-violet-600' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
@@ -385,7 +400,7 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
           ) : (
             <Link 
               href="/login" 
-              className="flex flex-col items-center justify-center w-full h-full space-y-1 text-gray-400 hover:text-gray-600"
+              className="flex flex-col items-center justify-center w-full h-full space-y-1 text-gray-400 hover:text-gray-600 active:scale-95 transition-all duration-200"
             >
               <FaUser className="w-5 h-5" />
               <span className="text-[10px] font-bold">Masuk</span>
@@ -426,10 +441,10 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
             <div className="flex flex-col gap-2 px-4 pb-6 mt-3 max-h-[70vh] overflow-y-auto">
               <Link 
                 href="/courses" 
-                className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all border ${
+                className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all border active:scale-[0.98] ${
                   activePage === 'courses' 
-                    ? 'bg-violet-50/70 border-violet-100' 
-                    : 'hover:bg-gray-50 border-transparent'
+                    ? 'bg-violet-50/70 border-violet-100 active:bg-violet-100/50' 
+                    : 'hover:bg-gray-50 border-transparent active:bg-gray-100'
                 }`}
               >
                 <div className="w-11 h-11 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center font-bold shrink-0">
@@ -443,10 +458,10 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
 
               <Link 
                 href="/stories" 
-                className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all border ${
+                className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all border active:scale-[0.98] ${
                   activePage === 'stories' 
-                    ? 'bg-orange-50/70 border-orange-100' 
-                    : 'hover:bg-gray-50 border-transparent'
+                    ? 'bg-orange-50/70 border-orange-100 active:bg-orange-100/50' 
+                    : 'hover:bg-gray-50 border-transparent active:bg-gray-100'
                 }`}
               >
                 <div className="w-11 h-11 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold shrink-0">
@@ -460,10 +475,10 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
 
               <Link 
                 href="/flashcards" 
-                className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all border ${
+                className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all border active:scale-[0.98] ${
                   activePage === 'flashcards' 
-                    ? 'bg-emerald-50/70 border-emerald-100' 
-                    : 'hover:bg-gray-50 border-transparent'
+                    ? 'bg-emerald-50/70 border-emerald-100 active:bg-emerald-100/50' 
+                    : 'hover:bg-gray-50 border-transparent active:bg-gray-100'
                 }`}
               >
                 <div className="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold shrink-0">
@@ -477,10 +492,10 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
 
               <Link 
                 href="/ai-buddy" 
-                className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all border ${
+                className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all border active:scale-[0.98] ${
                   activePage === 'ai-buddy' 
-                    ? 'bg-fuchsia-50/70 border-fuchsia-100' 
-                    : 'hover:bg-gray-50 border-transparent'
+                    ? 'bg-fuchsia-50/70 border-fuchsia-100 active:bg-fuchsia-100/50' 
+                    : 'hover:bg-gray-50 border-transparent active:bg-gray-100'
                 }`}
               >
                 <div className="w-11 h-11 rounded-xl bg-fuchsia-100 text-fuchsia-600 flex items-center justify-center font-bold shrink-0">
@@ -494,10 +509,10 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
 
               <Link 
                 href="/quiz-games" 
-                className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all border ${
+                className={`flex items-center gap-4 p-3.5 rounded-2xl transition-all border active:scale-[0.98] ${
                   activePage === 'quiz-games' 
-                    ? 'bg-pink-50/70 border-pink-100' 
-                    : 'hover:bg-pink-50/30 border-transparent hover:scale-[1.01] transform duration-200'
+                    ? 'bg-pink-50/70 border-pink-100 active:bg-pink-100/50' 
+                    : 'hover:bg-pink-50/30 border-transparent active:bg-pink-50/70 hover:scale-[1.01] transform duration-200'
                 }`}
               >
                 <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-pink-100 via-amber-50 to-sky-100 text-pink-600 flex items-center justify-center font-bold shrink-0 shadow-xs border border-pink-200/30">

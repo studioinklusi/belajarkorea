@@ -1,11 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { FaBox, FaBook, FaUsers, FaChartLine, FaArrowLeft, FaRightFromBracket, FaGauge, FaCrown, FaBullhorn, FaTicket } from 'react-icons/fa6'
+import { FaBox, FaBook, FaUsers, FaChartLine, FaArrowLeft, FaRightFromBracket, FaGauge, FaCrown, FaBullhorn, FaTicket, FaSpinner } from 'react-icons/fa6'
 
 export default function AdminSidebar({ signoutAction }: { signoutAction: () => void }) {
   const pathname = usePathname()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const isActive = (path: string) => {
     if (path === '/admin') {
@@ -15,11 +17,11 @@ export default function AdminSidebar({ signoutAction }: { signoutAction: () => v
   }
 
   const getLinkClasses = (path: string) => {
-    const baseClasses = "group flex items-center px-3 py-3 rounded-xl text-sm font-bold transition-colors"
+    const baseClasses = "group flex items-center px-3 py-3 rounded-xl text-sm font-bold transition-all active:scale-[0.98]"
     if (isActive(path)) {
-      return `${baseClasses} bg-violet-50 text-violet-700`
+      return `${baseClasses} bg-violet-50 text-violet-700 active:bg-violet-100/70`
     }
-    return `${baseClasses} text-gray-600 hover:bg-violet-50 hover:text-violet-700`
+    return `${baseClasses} text-gray-600 hover:bg-violet-50 hover:text-violet-700 active:bg-violet-100/50`
   }
 
   const getIconClasses = (path: string) => {
@@ -79,14 +81,31 @@ export default function AdminSidebar({ signoutAction }: { signoutAction: () => v
       </nav>
       
       <div className="p-4 border-t border-gray-100 space-y-2 bg-gray-50/50">
-        <Link href="/dashboard" className="text-sm font-bold text-gray-600 hover:text-violet-600 flex items-center gap-2 p-3 rounded-xl hover:bg-white transition-colors">
+        <Link href="/dashboard" className="text-sm font-bold text-gray-600 hover:text-violet-600 flex items-center gap-2 p-3 rounded-xl hover:bg-white active:scale-[0.98] active:bg-violet-50 transition-all">
           <FaArrowLeft className="w-4 h-4" />
           Kembali ke App
         </Link>
-        <form action="/auth/signout" method="POST">
-          <button type="submit" className="w-full text-left text-sm font-bold text-rose-600 hover:bg-rose-50 flex items-center gap-2 p-3 rounded-xl transition-colors">
-            <FaRightFromBracket className="w-4 h-4" />
-            Keluar
+        <form 
+          action="/auth/signout" 
+          method="POST"
+          onSubmit={() => setIsLoggingOut(true)}
+        >
+          <button 
+            type="submit" 
+            disabled={isLoggingOut}
+            className="w-full text-left text-sm font-bold text-rose-600 hover:bg-rose-50 active:bg-rose-100/50 active:scale-[0.98] flex items-center gap-2 p-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            {isLoggingOut ? (
+              <>
+                <FaSpinner className="w-4 h-4 text-rose-500 animate-spin" />
+                Keluar...
+              </>
+            ) : (
+              <>
+                <FaRightFromBracket className="w-4 h-4 text-rose-500" />
+                Keluar
+              </>
+            )}
           </button>
         </form>
       </div>
