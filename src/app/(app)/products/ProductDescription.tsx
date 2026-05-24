@@ -28,12 +28,12 @@ export default function ProductDescription({ description }: { description: strin
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 hover:bg-violet-100 text-violet-700 text-xs font-extrabold rounded-xl border border-violet-100 hover:border-violet-200 transition-all shadow-xs my-1 mr-2 cursor-pointer"
+            className="inline-flex items-center max-w-full gap-1.5 px-3 py-1.5 bg-violet-50 hover:bg-violet-100 text-violet-700 text-xs font-extrabold rounded-xl border border-violet-100 hover:border-violet-200 transition-all shadow-xs my-0.5 mr-1.5 align-middle cursor-pointer"
           >
-            <svg className="w-3.5 h-3.5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <svg className="w-3.5 h-3.5 text-violet-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
             </svg>
-            {label}
+            <span className="truncate">{label}</span>
           </a>
         )
       }
@@ -55,10 +55,10 @@ export default function ProductDescription({ description }: { description: strin
             href={part}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-violet-600 hover:text-violet-800 hover:underline font-bold inline-flex items-center gap-0.5 break-all cursor-pointer"
+            className="inline-flex items-center max-w-full gap-1 px-2.5 py-1 bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-bold rounded-lg border border-gray-200 hover:border-gray-300 transition-all shadow-2xs my-0.5 mr-1.5 align-middle cursor-pointer"
           >
-            {displayName}
-            <svg className="w-3 h-3 inline shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <span className="truncate">{displayName}</span>
+            <svg className="w-3 h-3 text-gray-500 shrink-0 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
           </a>
