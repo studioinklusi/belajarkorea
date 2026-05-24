@@ -132,6 +132,22 @@ export default async function DashboardPage() {
   const isSubscribed = !!subscription
   const isAdmin = profile?.role === 'content_admin' || profile?.role === 'super_admin'
 
+  // 6. Ambil Produk Digital Pilihan untuk Rekomendasi Cross-selling
+  const { data: featuredProducts } = await supabase
+    .from('digital_products')
+    .select('id, title, description, price, thumbnail_url, product_type')
+    .eq('is_active', true)
+    .limit(3)
+
+  // Ambil daftar pembelian produk oleh user saat ini
+  const { data: purchasedProducts } = await supabase
+    .from('product_purchases')
+    .select('product_id')
+    .eq('user_id', user.id)
+
+  const purchasedIds = new Set(purchasedProducts?.map((p: any) => p.product_id) || [])
+  const recommendProducts = featuredProducts?.filter((p: any) => !purchasedIds.has(p.id)) || []
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900 pb-12">
             <main className="max-w-7xl mx-auto pt-10 px-4 sm:px-6 lg:px-8">
@@ -164,7 +180,7 @@ export default async function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Kolom Kiri: Status Langganan & Info */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-6 order-2 lg:order-1">
             
             {/* Subscription Card */}
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 relative overflow-hidden group">
@@ -249,17 +265,17 @@ export default async function DashboardPage() {
                 <FaBullseye className="text-rose-500 shrink-0" /> Target Harian
               </h3>
               <div className="space-y-4">
-                <div className="flex items-center gap-4 p-3 rounded-2xl transition-colors group border border-transparent">
-                  <div className={`relative flex items-center justify-center w-6 h-6 rounded-md border-2 transition-colors ${hasWatchedVideoToday ? 'border-green-500 bg-green-500 text-white' : 'border-gray-300 bg-white'}`}>
-                    {hasWatchedVideoToday && <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
+                <div className={`flex items-center gap-4 p-3.5 rounded-2xl border transition-all duration-300 ${hasWatchedVideoToday ? 'bg-green-50/40 border-green-100 text-green-800' : 'bg-gray-50/30 border-transparent text-gray-700'}`}>
+                  <div className={`relative flex items-center justify-center w-6 h-6 rounded-lg border-2 transition-all duration-300 shrink-0 ${hasWatchedVideoToday ? 'border-green-500 bg-green-500 text-white scale-110' : 'border-gray-300 bg-white'}`}>
+                    {hasWatchedVideoToday && <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
                   </div>
-                  <span className={`text-sm font-medium ${hasWatchedVideoToday ? 'text-green-700 line-through opacity-80' : 'text-gray-700'}`}>Tonton 1 materi video</span>
+                  <span className={`text-sm font-bold ${hasWatchedVideoToday ? 'line-through opacity-70' : ''}`}>Tonton 1 materi video</span>
                 </div>
-                <div className="flex items-center gap-4 p-3 rounded-2xl transition-colors group border border-transparent">
-                  <div className={`relative flex items-center justify-center w-6 h-6 rounded-md border-2 transition-colors ${hasPassedQuizToday ? 'border-green-500 bg-green-500 text-white' : 'border-gray-300 bg-white'}`}>
-                    {hasPassedQuizToday && <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
+                <div className={`flex items-center gap-4 p-3.5 rounded-2xl border transition-all duration-300 ${hasPassedQuizToday ? 'bg-green-50/40 border-green-100 text-green-800' : 'bg-gray-50/30 border-transparent text-gray-700'}`}>
+                  <div className={`relative flex items-center justify-center w-6 h-6 rounded-lg border-2 transition-all duration-300 shrink-0 ${hasPassedQuizToday ? 'border-green-500 bg-green-500 text-white scale-110' : 'border-gray-300 bg-white'}`}>
+                    {hasPassedQuizToday && <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>}
                   </div>
-                  <span className={`text-sm font-medium ${hasPassedQuizToday ? 'text-green-700 line-through opacity-80' : 'text-gray-700'}`}>Kerjakan kuis dengan skor 80+</span>
+                  <span className={`text-sm font-bold ${hasPassedQuizToday ? 'line-through opacity-70' : ''}`}>Kerjakan kuis dengan skor 80+</span>
                 </div>
               </div>
             </div>
@@ -303,8 +319,8 @@ export default async function DashboardPage() {
           </div>
 
           {/* Kolom Kanan: Progress Belajar */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 h-full">
+          <div className="lg:col-span-2 space-y-6 order-1 lg:order-2">
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8">
               <div className="flex justify-between items-start sm:items-center mb-8 gap-4">
                 <h3 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
                   <FaBookOpen className="text-violet-600 shrink-0" /> Lanjutkan Belajar
@@ -329,7 +345,8 @@ export default async function DashboardPage() {
                           {prog.completion_percentage >= 100 && (
                             <Link 
                               href={`/certificates/${courseSlugs[prog.course_id] || prog.course_id}`} 
-                              className="px-4 py-2.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-full text-sm font-bold hover:bg-amber-100 transition-colors flex items-center justify-center gap-2 flex-1 sm:flex-none whitespace-nowrap"
+                              className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2 flex-1 sm:flex-none shadow-md shadow-amber-200 animate-pulse duration-1000"
+                              style={{ animationDuration: '3s' }}
                             >
                               <FaAward className="w-4 h-4" /> Sertifikat
                             </Link>
@@ -338,7 +355,7 @@ export default async function DashboardPage() {
                             href={`/courses/${courseSlugs[prog.course_id] || prog.course_id}`} 
                             className="w-full sm:w-auto px-5 py-2.5 bg-gray-900 text-white rounded-full text-sm font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 flex-1 sm:flex-none"
                           >
-                            Lanjut <PlayCircleIcon className="w-5 h-5" />
+                            {prog.completion_percentage >= 100 ? 'Tinjau Ulang' : 'Lanjut'} <PlayCircleIcon className="w-5 h-5" />
                           </Link>
                         </div>
                       </div>
@@ -374,6 +391,54 @@ export default async function DashboardPage() {
                 </div>
               )}
             </div>
+
+            {/* Rekomendasi Produk Digital (Hanya tampil jika ada produk yang belum dibeli) */}
+            {recommendProducts && recommendProducts.length > 0 && (
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 animate-in fade-in slide-in-from-bottom-3 duration-300">
+                <div className="mb-6">
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <FaHandSparkles className="text-amber-500 shrink-0" /> Produk Digital Pilihan
+                  </h3>
+                  <p className="text-xs text-gray-400 font-semibold mt-1">E-Book & modul praktis untuk melengkapi belajarmu</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {recommendProducts.slice(0, 2).map((product: any) => {
+                    const typeBadge: Record<string, string> = {
+                      pdf: '📄 PDF / E-Book',
+                      template: '📋 Template',
+                      interactive: '🎮 Interaktif',
+                      other: '📦 Lainnya',
+                    }
+                    return (
+                      <div key={product.id} className="border border-gray-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-md hover:border-violet-200 transition-all bg-gray-50/50">
+                        <div>
+                          <div className="flex justify-between items-start gap-2 mb-3">
+                            <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 bg-violet-50 text-violet-700 rounded-md">
+                              {typeBadge[product.product_type] || 'Produk'}
+                            </span>
+                            <span className="text-xs font-black text-gray-900 bg-white border border-gray-100 px-2 py-0.5 rounded-md shadow-2xs">
+                              Rp {product.price.toLocaleString('id-ID')}
+                            </span>
+                          </div>
+                          <h4 className="text-sm font-extrabold text-gray-900 line-clamp-1">{product.title}</h4>
+                          <p className="text-xs text-gray-400 mt-1.5 line-clamp-2 leading-relaxed font-medium">{product.description}</p>
+                        </div>
+                        <div className="mt-5">
+                          <Link 
+                            href="/products" 
+                            className="block w-full text-center py-2.5 bg-white hover:bg-violet-50 text-violet-700 text-xs font-bold rounded-xl border border-violet-100 transition-all active:scale-[0.98] cursor-pointer"
+                          >
+                            Lihat Detail
+                          </Link>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
           </div>
 
         </div>
