@@ -335,40 +335,7 @@ export default function QuizGamesClient({
           )}
         </div>
 
-        {/* CARD 3: VOCABULARY QUIZ (COMING SOON) */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs flex flex-col justify-between group relative overflow-hidden opacity-80 border-dashed">
-          <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-br from-sky-50 to-blue-50/10 rounded-bl-full -mr-12 -mt-12 opacity-50 z-0"></div>
-          
-          <div className="relative z-10">
-            <div className="flex justify-between items-start">
-              <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-500 flex items-center justify-center font-bold text-lg shadow-xs border border-sky-100/50">
-                <FaLanguage className="w-5 h-5" />
-              </div>
-              <span className="bg-gray-100 border border-gray-200/50 text-gray-500 text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-full flex items-center gap-1">
-                <FaLock className="w-2.5 h-2.5" /> Segera Hadir
-              </span>
-            </div>
-
-            <h3 className="text-xl font-extrabold text-gray-400 mt-5">
-              Vocabulary Quiz
-            </h3>
-            <p className="text-[11px] text-sky-400 font-extrabold tracking-wide uppercase mt-0.5">
-              Kuis kosakata berbasis waktu
-            </p>
-            <p className="text-xs sm:text-sm text-gray-400 font-medium leading-relaxed mt-3 mb-8">
-              Uji pemahaman arti kosakata bahasa Korea dari berbagai tingkat materi (TOPIK I & II) dengan format kuis kilat pilihan ganda.
-            </p>
-          </div>
-
-          <button
-            disabled
-            className="w-full py-4 bg-gray-50 text-gray-400 font-bold rounded-2xl border border-gray-200 flex items-center justify-center gap-2 cursor-not-allowed"
-          >
-            Terkunci <FaLock className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* CARD 4: HANGUL SURVIVAL (ACTIVE) */}
+        {/* CARD 3: HANGUL SURVIVAL (ACTIVE) */}
         <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs hover:shadow-xl hover:scale-[1.01] transform transition-all duration-300 flex flex-col justify-between group relative overflow-hidden">
           <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-br from-indigo-100/40 to-violet-50/10 rounded-bl-full -mr-12 -mt-12 opacity-50 z-0"></div>
           
@@ -402,6 +369,39 @@ export default function QuizGamesClient({
           >
             Main Sekarang <FaArrowRight />
           </Link>
+        </div>
+
+        {/* CARD 4: VOCABULARY QUIZ (COMING SOON) */}
+        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs flex flex-col justify-between group relative overflow-hidden opacity-80 border-dashed">
+          <div className="absolute top-0 right-0 w-36 h-36 bg-gradient-to-br from-sky-50 to-blue-50/10 rounded-bl-full -mr-12 -mt-12 opacity-50 z-0"></div>
+          
+          <div className="relative z-10">
+            <div className="flex justify-between items-start">
+              <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-500 flex items-center justify-center font-bold text-lg shadow-xs border border-sky-100/50">
+                <FaLanguage className="w-5 h-5" />
+              </div>
+              <span className="bg-gray-100 border border-gray-200/50 text-gray-500 text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-full flex items-center gap-1">
+                <FaLock className="w-2.5 h-2.5" /> Segera Hadir
+              </span>
+            </div>
+
+            <h3 className="text-xl font-extrabold text-gray-400 mt-5">
+              Vocabulary Quiz
+            </h3>
+            <p className="text-[11px] text-sky-400 font-extrabold tracking-wide uppercase mt-0.5">
+              Kuis kosakata berbasis waktu
+            </p>
+            <p className="text-xs sm:text-sm text-gray-400 font-medium leading-relaxed mt-3 mb-8">
+              Uji pemahaman arti kosakata bahasa Korea dari berbagai tingkat materi (TOPIK I & II) dengan format kuis kilat pilihan ganda.
+            </p>
+          </div>
+
+          <button
+            disabled
+            className="w-full py-4 bg-gray-50 text-gray-400 font-bold rounded-2xl border border-gray-200 flex items-center justify-center gap-2 cursor-not-allowed"
+          >
+            Terkunci <FaLock className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         {/* CARD 5: MINI GAMES (COMING SOON) */}
