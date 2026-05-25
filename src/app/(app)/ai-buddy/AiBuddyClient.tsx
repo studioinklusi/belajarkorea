@@ -482,14 +482,14 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
       {/* ===== SIDEBAR DRAWER BACKDROP (Mobile only) ===== */}
       {showHistorySidebar && (
         <div 
-          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-35 md:hidden"
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm z-45 md:hidden animate-fade-in"
           onClick={() => setShowHistorySidebar(false)}
         />
       )}
 
       {/* ===== SIDEBAR RIWAYAT ===== */}
       <aside 
-        className={`fixed md:relative inset-y-0 left-0 w-80 bg-white border-r border-gray-100/80 z-40 flex flex-col h-full transform transition-transform duration-300 md:transform-none shrink-0 ${
+        className={`absolute md:relative inset-y-0 left-0 w-[280px] sm:w-80 bg-white border-r border-gray-100/80 z-50 flex flex-col h-full transform transition-transform duration-300 md:transform-none shrink-0 ${
           showHistorySidebar ? 'translate-x-0' : '-translate-x-full md:hidden'
         }`}
       >
