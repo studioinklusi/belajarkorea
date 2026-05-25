@@ -182,7 +182,7 @@ export default async function CertificatePage(props: {
           {isAdmin && (
             <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
               <FaCircleInfo /> 
-              Admin: Ganti gambar "public/cert-bg.png" untuk custom desain.
+              Admin: Ganti gambar "public/cert-bg.svg" untuk custom desain.
             </div>
           )}
           <PrintButton />
@@ -201,7 +201,7 @@ export default async function CertificatePage(props: {
           >
             {/* Background image as img tag for html2canvas compatibility */}
             <img 
-              src="/cert-bg.png" 
+              src="/cert-bg.svg" 
               alt="" 
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
               crossOrigin="anonymous"
