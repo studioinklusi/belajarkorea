@@ -87,6 +87,30 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
   const [showHistorySidebar, setShowHistorySidebar] = useState(false)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false)
   const [pendingNavigationUrl, setPendingNavigationUrl] = useState<string | null>(null)
+  const [pendingFormSubmit, setPendingFormSubmit] = useState<HTMLFormElement | null>(null)
+  const [isBackNavigation, setIsBackNavigation] = useState(false)
+
+  const hasUnsavedChanges = messages.length > 1 || input.trim() !== ''
+  const hasUnsavedChangesRef = useRef(hasUnsavedChanges)
+  const hasPushedStateRef = useRef(false)
+
+  // Sync ref with state
+  useEffect(() => {
+    hasUnsavedChangesRef.current = hasUnsavedChanges
+  }, [hasUnsavedChanges])
+
+  // Handle popstate setup (push dummy state when page becomes dirty)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    if (hasUnsavedChanges && !hasPushedStateRef.current) {
+      window.history.pushState({ noExitConfirm: true }, '', window.location.href)
+      hasPushedStateRef.current = true
+    } else if (!hasUnsavedChanges && hasPushedStateRef.current) {
+      // If changes are cleared, reset the state ref
+      hasPushedStateRef.current = false
+    }
+  }, [hasUnsavedChanges])
 
   // Translations for dynamic arrays
   const translateLevel = (id: string) => {
@@ -207,8 +231,7 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
   // Intercept anchor tag navigation clicks
   useEffect(() => {
     const handleAnchorClick = (e: MouseEvent) => {
-      // Only warn if user has sent at least one message (length > 1)
-      if (messages.length <= 1) return
+      if (!hasUnsavedChangesRef.current) return
 
       const target = e.target as HTMLElement
       const anchor = target.closest('a')
@@ -231,6 +254,7 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
           e.preventDefault()
           e.stopPropagation()
           setPendingNavigationUrl(urlString)
+          setIsBackNavigation(false)
           setShowExitConfirmation(true)
         }
       }
@@ -238,12 +262,59 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
 
     document.addEventListener('click', handleAnchorClick, true)
     return () => document.removeEventListener('click', handleAnchorClick, true)
-  }, [messages])
+  }, [])
+
+  // Intercept form submissions (e.g. logout form submit)
+  useEffect(() => {
+    const handleFormSubmit = (e: SubmitEvent) => {
+      if (!hasUnsavedChangesRef.current) return
+
+      const form = e.target as HTMLFormElement
+      const action = form.getAttribute('action')
+      
+      if (action && (action.startsWith('/auth/signout') || !action.startsWith('/ai-buddy'))) {
+        e.preventDefault()
+        e.stopPropagation()
+        setPendingFormSubmit(form)
+        setIsBackNavigation(false)
+        setShowExitConfirmation(true)
+      }
+    }
+
+    document.addEventListener('submit', handleFormSubmit, true)
+    return () => document.removeEventListener('submit', handleFormSubmit, true)
+  }, [])
+
+  // Intercept browser back/forward buttons
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handlePopState = (e: PopStateEvent) => {
+      if (!hasUnsavedChangesRef.current) {
+        if (hasPushedStateRef.current) {
+          hasPushedStateRef.current = false
+          window.history.back()
+        }
+        return
+      }
+
+      // Re-push state immediately to lock navigation and keep user on page
+      window.history.pushState({ noExitConfirm: true }, '', window.location.href)
+      
+      setIsBackNavigation(true)
+      setShowExitConfirmation(true)
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [])
 
   // Prevent refresh/page reload
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (messages.length > 1) {
+      if (hasUnsavedChangesRef.current) {
         e.preventDefault()
         e.returnValue = ''
         return ''
@@ -251,12 +322,21 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
     }
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [messages])
+  }, [])
 
   const handleConfirmExit = () => {
     setShowExitConfirmation(false)
+    
+    // Clear flag so we don't block the actual final navigation/exit
+    hasUnsavedChangesRef.current = false
+    hasPushedStateRef.current = false
+    
     if (pendingNavigationUrl) {
       router.push(pendingNavigationUrl)
+    } else if (pendingFormSubmit) {
+      pendingFormSubmit.submit()
+    } else if (isBackNavigation) {
+      window.history.go(-2)
     }
   }
 
@@ -829,6 +909,8 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
                 onClick={() => {
                   setShowExitConfirmation(false)
                   setPendingNavigationUrl(null)
+                  setPendingFormSubmit(null)
+                  setIsBackNavigation(false)
                 }}
                 className="flex-1 py-3 px-4 rounded-xl text-xs font-bold border border-gray-200 text-gray-700 hover:bg-gray-50 active:scale-[0.98] transition-all cursor-pointer"
               >
