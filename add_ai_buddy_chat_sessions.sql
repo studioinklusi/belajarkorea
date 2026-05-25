@@ -13,19 +13,23 @@ CREATE TABLE IF NOT EXISTS public.ai_buddy_sessions (
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.ai_buddy_sessions ENABLE ROW LEVEL SECURITY;
 
--- Allow users to manage their own sessions
+-- Allow users to manage their own sessions (Idempotent creation)
+DROP POLICY IF EXISTS "Users can select their own AI Buddy sessions" ON public.ai_buddy_sessions;
 CREATE POLICY "Users can select their own AI Buddy sessions"
   ON public.ai_buddy_sessions FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own AI Buddy sessions" ON public.ai_buddy_sessions;
 CREATE POLICY "Users can insert their own AI Buddy sessions"
   ON public.ai_buddy_sessions FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own AI Buddy sessions" ON public.ai_buddy_sessions;
 CREATE POLICY "Users can update their own AI Buddy sessions"
   ON public.ai_buddy_sessions FOR UPDATE
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own AI Buddy sessions" ON public.ai_buddy_sessions;
 CREATE POLICY "Users can delete their own AI Buddy sessions"
   ON public.ai_buddy_sessions FOR DELETE
   USING (auth.uid() = user_id);
