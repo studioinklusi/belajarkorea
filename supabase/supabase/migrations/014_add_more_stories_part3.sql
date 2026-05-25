@@ -294,7 +294,7 @@ INSERT INTO public.stories (
     'The Hangang River is a river that flows across the center of Seoul, and several beautiful Hangang parks are built along the river. On weekends, many Seoul citizens ride bicycles or spread mats on the grass to enjoy a picnic. Ramen cooked using an automatic machine at convenience stores is a popular menu item at Hangang Park. Ordering delivery food like chicken or pizza to be delivered right to your picnic mat is also a unique experience. At night, you can enjoy the gorgeous night view created by the Hangang bridges and buildings.',
     'intermediate',
     'travel',
-    'https://images.unsplash.com/photo-1541752171745-4190ee94c314?q=80&w=400&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=400&auto=format&fit=crop',
     TRUE,
     '[
   {"t": "한강은", "l": "한강"},

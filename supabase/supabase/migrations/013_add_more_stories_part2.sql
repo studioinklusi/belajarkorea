@@ -1150,7 +1150,7 @@ INSERT INTO public.stories (
     'As artificial intelligence technology emerges as a new game changer in the global industry, Korea is also accelerating the cultivation of the AI industry by concentrating its national capabilities. Korea possesses world-class semiconductor manufacturing technology and super-high-speed communication networks, giving it strong competitiveness in hardware and infrastructure. In particular, the development of next-generation AI semiconductors such as HBM and NPU is drawing attention in the global market as an essential technology for high-performance AI computing. However, in the software and algorithm sectors, there is a challenge to narrow the gap with global standards led by big tech companies. Korean companies are targeting niche markets by developing their own hyper-scale AI language models and introducing specialized services optimized for the context of Korean and Asian cultures. AI demonstration projects through convergence with other industries such as healthcare, finance, and manufacturing are also actively underway. For the continuous prosperity of the AI industry in the future, nurturing excellent R&D talent, expanding support for high-performance computing infrastructure, and establishing safety standards through the formation of AI ethics guidelines must be pushed forward in a multi-dimensional way.',
     'advanced',
     'technology',
-    'https://images.unsplash.com/photo-1677442136019-21780efad99a?q=80&w=400&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=400&auto=format&fit=crop',
     TRUE,
     '[
   {"t": "인공지능", "l": "인공지능"},
