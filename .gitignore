@@ -34,7 +34,7 @@ Thumbs.db
 *.psd
 public/aset baru/
 Gemini_Generated_Image*
-logo-01.*
+/logo-01.*
 
 # Debug logs
 npm-debug.log*
