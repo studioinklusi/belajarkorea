@@ -2,8 +2,14 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
-import { FaPaperPlane, FaArrowsRotate, FaMicrophone, FaMicrophoneSlash, FaVolumeHigh, FaRobot, FaChevronDown, FaSliders } from 'react-icons/fa6'
+import { 
+  FaPaperPlane, FaArrowsRotate, FaMicrophone, FaMicrophoneSlash, 
+  FaVolumeHigh, FaRobot, FaChevronDown, FaSliders, 
+  FaPlus, FaTrash, FaXmark, FaChevronLeft 
+} from 'react-icons/fa6'
+import { FaHistory } from 'react-icons/fa'
 import { useTranslation } from '@/lib/i18n'
+import { useRouter } from 'next/navigation'
 
 // === Types ===
 type KoreanLevel = 'beginner' | 'intermediate' | 'advanced'
@@ -11,6 +17,15 @@ type Persona = 'teman' | 'pacar' | 'profesional' | 'sunbae' | 'idol' | 'penjual'
 interface ChatMessage {
   role: 'user' | 'model'
   text: string
+}
+
+interface ChatSession {
+  id: string
+  title: string
+  messages: ChatMessage[]
+  level: KoreanLevel
+  persona: Persona
+  timestamp: number
 }
 
 // === Configuration ===
@@ -48,7 +63,10 @@ function getGreeting(level: KoreanLevel, persona: Persona): string {
   return greetings[persona]
 }
 
-export default function AiBuddyClient() {
+export default function AiBuddyClient({ userId }: { userId?: string }) {
+  const router = useRouter()
+  const storageKey = userId ? `ai_buddy_sessions_${userId}` : 'ai_buddy_sessions_guest'
+
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -62,6 +80,13 @@ export default function AiBuddyClient() {
   const recognitionRef = useRef<any>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Sessions and navigation warning states
+  const [sessions, setSessions] = useState<ChatSession[]>([])
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
+  const [showHistorySidebar, setShowHistorySidebar] = useState(false)
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false)
+  const [pendingNavigationUrl, setPendingNavigationUrl] = useState<string | null>(null)
 
   // Translations for dynamic arrays
   const translateLevel = (id: string) => {
@@ -97,17 +122,147 @@ export default function AiBuddyClient() {
     if (messages.length > 1) scrollToBottom()
   }, [messages, scrollToBottom])
 
-  // Initial greeting
+  // Set default showHistorySidebar to true on desktop
   useEffect(() => {
-    if (messages.length === 0) {
-      setMessages([{ role: 'model', text: getGreeting(selectedLevel, selectedPersona) }])
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      setShowHistorySidebar(true)
     }
-  }, [messages.length, selectedLevel, selectedPersona])
+  }, [])
+
+  // Load sessions from localStorage on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const stored = localStorage.getItem(storageKey)
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as ChatSession[]
+        if (parsed && parsed.length > 0) {
+          setSessions(parsed)
+          const sorted = [...parsed].sort((a, b) => b.timestamp - a.timestamp)
+          const latest = sorted[0]
+          setCurrentSessionId(latest.id)
+          setMessages(latest.messages)
+          setSelectedLevel(latest.level)
+          setSelectedPersona(latest.persona)
+          return
+        }
+      } catch (e) {
+        console.error('Error loading sessions:', e)
+      }
+    }
+    
+    // Fallback: Create first initial session
+    const initialId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9)
+    const defaultSession: ChatSession = {
+      id: initialId,
+      title: locale === 'en' ? 'New Chat' : 'Percakapan Baru',
+      messages: [{ role: 'model', text: getGreeting(selectedLevel, selectedPersona) }],
+      level: selectedLevel,
+      persona: selectedPersona,
+      timestamp: Date.now()
+    }
+    setSessions([defaultSession])
+    setCurrentSessionId(initialId)
+    setMessages(defaultSession.messages)
+    localStorage.setItem(storageKey, JSON.stringify([defaultSession]))
+  }, [storageKey, locale])
+
+  // Helper to update session content in localStorage and state
+  const updateSessionData = (
+    sessionId: string,
+    updatedMessages: ChatMessage[],
+    level: KoreanLevel,
+    persona: Persona
+  ) => {
+    setSessions(prevSessions => {
+      const updated = prevSessions.map(s => {
+        if (s.id === sessionId) {
+          let title = s.title
+          if (title === 'Percakapan Baru' || title === 'New Chat' || title.startsWith('Obrolan') || title.startsWith('Chat')) {
+            const firstUserMessage = updatedMessages.find(m => m.role === 'user')
+            if (firstUserMessage) {
+              title = firstUserMessage.text.substring(0, 30) + (firstUserMessage.text.length > 30 ? '...' : '')
+            } else {
+              const personaName = PERSONAS.find(p => p.id === persona)?.name || ''
+              const levelName = LEVELS.find(l => l.id === level)?.label || ''
+              title = locale === 'en' ? `Chat ${levelName} (${personaName})` : `Obrolan ${levelName} (${personaName})`
+            }
+          }
+          return {
+            ...s,
+            messages: updatedMessages,
+            level,
+            persona,
+            title,
+            timestamp: Date.now()
+          }
+        }
+        return s
+      })
+      localStorage.setItem(storageKey, JSON.stringify(updated))
+      return updated
+    })
+  }
+
+  // Intercept anchor tag navigation clicks
+  useEffect(() => {
+    const handleAnchorClick = (e: MouseEvent) => {
+      // Only warn if user has sent at least one message (length > 1)
+      if (messages.length <= 1) return
+
+      const target = e.target as HTMLElement
+      const anchor = target.closest('a')
+      
+      if (anchor && anchor.href) {
+        const urlString = anchor.href
+        if (anchor.target === '_blank' || urlString.startsWith('mailto:') || urlString.startsWith('tel:') || anchor.hasAttribute('download')) {
+          return
+        }
+
+        let targetUrl: URL
+        try {
+          targetUrl = new URL(urlString, window.location.href)
+        } catch {
+          return
+        }
+
+        const currentUrl = new URL(window.location.href)
+        if (targetUrl.origin === currentUrl.origin && !targetUrl.pathname.startsWith('/ai-buddy')) {
+          e.preventDefault()
+          e.stopPropagation()
+          setPendingNavigationUrl(urlString)
+          setShowExitConfirmation(true)
+        }
+      }
+    }
+
+    document.addEventListener('click', handleAnchorClick, true)
+    return () => document.removeEventListener('click', handleAnchorClick, true)
+  }, [messages])
+
+  // Prevent refresh/page reload
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (messages.length > 1) {
+        e.preventDefault()
+        e.returnValue = ''
+        return ''
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [messages])
+
+  const handleConfirmExit = () => {
+    setShowExitConfirmation(false)
+    if (pendingNavigationUrl) {
+      router.push(pendingNavigationUrl)
+    }
+  }
 
   // Speech Recognition Setup
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
       if (SpeechRecognition) {
         setHasSpeechSupport(true)
@@ -116,8 +271,7 @@ export default function AiBuddyClient() {
         recognition.interimResults = true
         recognition.lang = 'ko-KR'
         recognition.onstart = () => setIsListening(true)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        recognition.onresult = (event: unknown) => {
+        recognition.onresult = (event: any) => {
           let transcript = ''
           for (let i = 0; i < event.results.length; ++i) {
             transcript += event.results[i][0].transcript
@@ -134,15 +288,26 @@ export default function AiBuddyClient() {
   const handleLevelChange = (level: KoreanLevel) => {
     if (level === selectedLevel) return
     setSelectedLevel(level)
+    const newPersona = level !== 'advanced' ? 'teman' : selectedPersona
     if (level !== 'advanced') setSelectedPersona('teman')
-    setMessages([])
+    
+    const initialMessages = [{ role: 'model', text: getGreeting(level, newPersona) }] as ChatMessage[]
+    setMessages(initialMessages)
+    if (currentSessionId) {
+      updateSessionData(currentSessionId, initialMessages, level, newPersona)
+    }
   }
 
   const handlePersonaChange = (persona: Persona) => {
     if (persona === selectedPersona) return
     setSelectedPersona(persona)
     setShowPersonaDropdown(false)
-    setMessages([])
+    
+    const initialMessages = [{ role: 'model', text: getGreeting(selectedLevel, persona) }] as ChatMessage[]
+    setMessages(initialMessages)
+    if (currentSessionId) {
+      updateSessionData(currentSessionId, initialMessages, selectedLevel, persona)
+    }
   }
 
   const toggleListening = () => {
@@ -168,7 +333,6 @@ export default function AiBuddyClient() {
     if (!input.trim() || isLoading) return
     const userMessage = input.trim()
     
-    // Force clear input and reset height
     setInput('')
     if (textareaRef.current) {
       textareaRef.current.value = ''
@@ -178,6 +342,10 @@ export default function AiBuddyClient() {
     const newMessages: ChatMessage[] = [...messages, { role: 'user', text: userMessage }]
     setMessages(newMessages)
     setIsLoading(true)
+    
+    if (currentSessionId) {
+      updateSessionData(currentSessionId, newMessages, selectedLevel, selectedPersona)
+    }
 
     try {
       const res = await fetch('/api/ai-buddy', {
@@ -193,14 +361,27 @@ export default function AiBuddyClient() {
       const data = await res.json()
       if (data.error) {
         if (data.error === "LIMIT_REACHED") {
-          setMessages([...newMessages, { role: 'model', text: `🔒 **KUOTA HABIS**\n\n${data.message}\n\n[➡️ Klik di sini untuk Upgrade Paket](/pricing)` }])
+          const limitMessages: ChatMessage[] = [...newMessages, { role: 'model', text: `🔒 **KUOTA HABIS**\n\n${data.message}\n\n[➡️ Klik di sini untuk Upgrade Paket](/pricing)` }]
+          setMessages(limitMessages)
+          if (currentSessionId) {
+            updateSessionData(currentSessionId, limitMessages, selectedLevel, selectedPersona)
+          }
           return
         }
         throw new Error(data.error)
       }
-      setMessages([...newMessages, { role: 'model', text: data.response }])
+      
+      const successMessages: ChatMessage[] = [...newMessages, { role: 'model', text: data.response }]
+      setMessages(successMessages)
+      if (currentSessionId) {
+        updateSessionData(currentSessionId, successMessages, selectedLevel, selectedPersona)
+      }
     } catch {
-      setMessages([...newMessages, { role: 'model', text: '❌ Maaf, terjadi kesalahan. Ayo coba lagi!' }])
+      const errorMessages: ChatMessage[] = [...newMessages, { role: 'model', text: '❌ Maaf, terjadi kesalahan. Ayo coba lagi!' }]
+      setMessages(errorMessages)
+      if (currentSessionId) {
+        updateSessionData(currentSessionId, errorMessages, selectedLevel, selectedPersona)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -209,242 +390,460 @@ export default function AiBuddyClient() {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      if (e.nativeEvent.isComposing) return // Prevent sending when typing Korean characters with IME
+      if (e.nativeEvent.isComposing) return
       handleSend()
     }
   }
 
-  const handleReset = () => setMessages([])
+  const handleReset = () => {
+    const initialMessages = [{ role: 'model', text: getGreeting(selectedLevel, selectedPersona) }] as ChatMessage[]
+    setMessages(initialMessages)
+    if (currentSessionId) {
+      updateSessionData(currentSessionId, initialMessages, selectedLevel, selectedPersona)
+    }
+  }
+
+  // Session Handlers
+  const handleNewChat = () => {
+    const newId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9)
+    const initialGreeting = getGreeting(selectedLevel, selectedPersona)
+    const newSession: ChatSession = {
+      id: newId,
+      title: locale === 'en' ? 'New Chat' : 'Percakapan Baru',
+      messages: [{ role: 'model', text: initialGreeting }],
+      level: selectedLevel,
+      persona: selectedPersona,
+      timestamp: Date.now()
+    }
+    
+    setSessions(prev => {
+      const updated = [newSession, ...prev]
+      localStorage.setItem(storageKey, JSON.stringify(updated))
+      return updated
+    })
+    setCurrentSessionId(newId)
+    setMessages(newSession.messages)
+  }
+
+  const handleSwitchSession = (sessionId: string) => {
+    const session = sessions.find(s => s.id === sessionId)
+    if (!session) return
+    
+    setCurrentSessionId(session.id)
+    setMessages(session.messages)
+    setSelectedLevel(session.level)
+    setSelectedPersona(session.persona)
+    
+    // Close sidebar on mobile
+    if (window.innerWidth < 768) {
+      setShowHistorySidebar(false)
+    }
+  }
+
+  const handleDeleteSession = (sessionId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const updatedSessions = sessions.filter(s => s.id !== sessionId)
+    
+    setSessions(updatedSessions)
+    localStorage.setItem(storageKey, JSON.stringify(updatedSessions))
+    
+    if (currentSessionId === sessionId) {
+      if (updatedSessions.length > 0) {
+        const sorted = [...updatedSessions].sort((a, b) => b.timestamp - a.timestamp)
+        const latest = sorted[0]
+        setCurrentSessionId(latest.id)
+        setMessages(latest.messages)
+        setSelectedLevel(latest.level)
+        setSelectedPersona(latest.persona)
+      } else {
+        const newId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9)
+        const initialGreeting = getGreeting(selectedLevel, selectedPersona)
+        const defaultSession: ChatSession = {
+          id: newId,
+          title: locale === 'en' ? 'New Chat' : 'Percakapan Baru',
+          messages: [{ role: 'model', text: initialGreeting }],
+          level: selectedLevel,
+          persona: selectedPersona,
+          timestamp: Date.now()
+        }
+        setSessions([defaultSession])
+        setCurrentSessionId(newId)
+        setMessages(defaultSession.messages)
+        localStorage.setItem(storageKey, JSON.stringify([defaultSession]))
+      }
+    }
+  }
 
   const activePersona = PERSONAS.find(p => p.id === selectedPersona)!
 
   return (
-    <div className="flex flex-col chat-container-mobile bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900 overflow-hidden">
+    <div className="flex w-full chat-container-mobile bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900 overflow-hidden relative">
+      
+      {/* ===== SIDEBAR DRAWER BACKDROP (Mobile only) ===== */}
+      {showHistorySidebar && (
+        <div 
+          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-35 md:hidden"
+          onClick={() => setShowHistorySidebar(false)}
+        />
+      )}
 
-      {/* ===== HEADER & CONTROLS ===== */}
-      {/* ===== HEADER & CONTROLS ===== */}
-      <div className="bg-white/60 backdrop-blur-sm border-b border-gray-100/50 shrink-0 z-10">
-        <div className="max-w-3xl mx-auto w-full px-4 py-2.5 sm:px-6 sm:py-3 flex flex-col gap-3">
-          {/* Top Control Bar */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowSettings(!showSettings)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all border shadow-sm ${
-                  showSettings 
-                    ? 'bg-violet-100 text-violet-700 border-violet-200' 
-                    : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+      {/* ===== SIDEBAR RIWAYAT ===== */}
+      <aside 
+        className={`fixed md:relative inset-y-0 left-0 w-80 bg-white border-r border-gray-100/80 z-40 flex flex-col h-full transform transition-transform duration-300 md:transform-none shrink-0 ${
+          showHistorySidebar ? 'translate-x-0' : '-translate-x-full md:hidden'
+        }`}
+      >
+        {/* Sidebar Header */}
+        <div className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0">
+          <h2 className="font-extrabold text-sm text-gray-800 flex items-center gap-2">
+            <FaHistory className="w-4 h-4 text-violet-600 animate-pulse" />
+            <span>{locale === 'en' ? 'Chat History' : 'Riwayat Obrolan'}</span>
+          </h2>
+          <button 
+            onClick={() => setShowHistorySidebar(false)}
+            className="md:hidden w-8 h-8 rounded-full flex items-center justify-center bg-gray-50 text-gray-500 hover:bg-gray-100 cursor-pointer"
+          >
+            <FaXmark className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* New Chat Button */}
+        <div className="p-4 shrink-0">
+          <button 
+            onClick={handleNewChat}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 text-white font-bold text-sm shadow-md shadow-violet-200/50 hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer"
+          >
+            <FaPlus className="w-3.5 h-3.5" />
+            <span>{locale === 'en' ? 'New Chat' : 'Percakapan Baru'}</span>
+          </button>
+        </div>
+
+        {/* Sessions list */}
+        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2.5">
+          {sessions.map((session) => {
+            const isActive = session.id === currentSessionId
+            const dateStr = new Date(session.timestamp).toLocaleDateString(locale === 'en' ? 'en-US' : 'id-ID', {
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+            })
+            return (
+              <div
+                key={session.id}
+                onClick={() => handleSwitchSession(session.id)}
+                className={`group flex items-center justify-between p-3.5 rounded-2xl cursor-pointer transition-all border ${
+                  isActive
+                    ? 'bg-violet-50/70 border-violet-100 text-violet-700 shadow-sm shadow-violet-50'
+                    : 'bg-white border-gray-100 hover:bg-gray-50/80 text-gray-700'
                 }`}
               >
-                <FaSliders className="w-3.5 h-3.5" />
-                <span>{locale === 'en' ? 'AI Settings' : 'Pengaturan AI'}</span>
-                <FaChevronDown className={`w-3 h-3 transition-transform ${showSettings ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* Active Status Badge (only when collapsed) */}
-              {!showSettings && (
-                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold bg-gray-50 border border-gray-100 text-gray-500">
-                  <span>{LEVELS.find(l => l.id === selectedLevel)?.emoji} {translateLevel(selectedLevel)}</span>
-                  {selectedLevel === 'advanced' && (
-                    <>
-                      <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                      <span>{PERSONAS.find(p => p.id === selectedPersona)?.emoji} {PERSONAS.find(p => p.id === selectedPersona)?.name}</span>
-                    </>
-                  )}
+                <div className="flex-1 min-w-0 pr-2">
+                  <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                    <span className="text-[10px]">{LEVELS.find(l => l.id === session.level)?.emoji}</span>
+                    <span className="text-[9px] font-black uppercase tracking-wider text-gray-400">
+                      {translateLevel(session.level)}
+                    </span>
+                    <span className="text-[9px] font-bold text-gray-300">•</span>
+                    <span className="text-[9px] font-bold text-gray-400">
+                      {PERSONAS.find(p => p.id === session.persona)?.name}
+                    </span>
+                  </div>
+                  <p className="text-xs font-bold truncate leading-tight">{session.title}</p>
+                  <p className="text-[9px] font-semibold text-gray-400 mt-1">{dateStr}</p>
                 </div>
-              )}
-            </div>
+                
+                <button
+                  onClick={(e) => handleDeleteSession(session.id, e)}
+                  className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0 md:opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
+                  title={locale === 'en' ? 'Delete conversation' : 'Hapus percakapan'}
+                >
+                  <FaTrash className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      </aside>
 
-            {/* Reset Button */}
-            <button
-              onClick={handleReset}
-              className="px-3 py-1.5 text-gray-500 hover:text-violet-600 hover:bg-violet-50 rounded-full transition-all flex items-center gap-1.5 text-[11px] sm:text-xs font-bold border border-gray-100 shadow-sm"
-              title="Reset Percakapan"
-            >
-              <FaArrowsRotate className="w-3 h-3" />
-              <span>Reset</span>
-            </button>
-          </div>
+      {/* ===== MAIN CHAT INTERFACE ===== */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
 
-          {/* Collapsible Settings Area */}
-          {showSettings && (
-            <div className="pt-3 pb-2 border-t border-gray-100/50 flex flex-col gap-3.5 animate-fade-in-up">
-              {/* Level Selector */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full">
-                <span className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest shrink-0">Level</span>
-                <div className="flex bg-gray-100/80 p-1 rounded-xl w-full overflow-x-auto hide-scrollbar snap-x">
-                  {LEVELS.map((level) => (
-                    <button
-                      key={level.id}
-                      onClick={() => handleLevelChange(level.id)}
-                      className={`flex-none snap-start px-4 py-2 rounded-lg text-[11px] sm:text-sm font-bold transition-all whitespace-nowrap text-center ${
-                        selectedLevel === level.id
-                          ? level.activeClass
-                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
-                      }`}
-                    >
-                      {level.emoji} <span>{translateLevel(level.id)}</span>
-                    </button>
-                  ))}
-                </div>
+        {/* ===== HEADER & CONTROLS ===== */}
+        <div className="bg-white/60 backdrop-blur-sm border-b border-gray-100/50 shrink-0 z-10">
+          <div className="max-w-3xl mx-auto w-full px-4 py-2.5 sm:px-6 sm:py-3 flex flex-col gap-3">
+            {/* Top Control Bar */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {/* History Toggle Button */}
+                <button
+                  onClick={() => setShowHistorySidebar(!showHistorySidebar)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all border shadow-sm cursor-pointer ${
+                    showHistorySidebar 
+                      ? 'bg-violet-100 text-violet-700 border-violet-200' 
+                      : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                  }`}
+                  title={locale === 'en' ? 'Toggle history' : 'Buka riwayat'}
+                >
+                  <FaHistory className="w-3.5 h-3.5" />
+                  <span>{locale === 'en' ? 'History' : 'Riwayat'}</span>
+                </button>
+
+                <button
+                  onClick={() => setShowSettings(!showSettings)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all border shadow-sm cursor-pointer ${
+                    showSettings 
+                      ? 'bg-violet-100 text-violet-700 border-violet-200' 
+                      : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  <FaSliders className="w-3.5 h-3.5" />
+                  <span>{locale === 'en' ? 'AI Settings' : 'Pengaturan AI'}</span>
+                  <FaChevronDown className={`w-3 h-3 transition-transform ${showSettings ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Active Status Badge (only when collapsed) */}
+                {!showSettings && (
+                  <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold bg-gray-50 border border-gray-100 text-gray-500">
+                    <span>{LEVELS.find(l => l.id === selectedLevel)?.emoji} {translateLevel(selectedLevel)}</span>
+                    {selectedLevel === 'advanced' && (
+                      <>
+                        <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                        <span>{PERSONAS.find(p => p.id === selectedPersona)?.emoji} {PERSONAS.find(p => p.id === selectedPersona)?.name}</span>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Persona Selector — Only Advanced */}
-              {selectedLevel === 'advanced' && (
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 w-full">
-                  <span className="sm:w-[72px] text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest shrink-0 ml-1 sm:ml-0">Persona</span>
-                  
-                  {/* Desktop: inline buttons */}
-                  <div className="hidden sm:flex bg-gray-100/80 p-1 rounded-xl shrink-0">
-                    {PERSONAS.map((persona) => (
+              {/* Reset Button */}
+              <button
+                onClick={handleReset}
+                className="px-3 py-1.5 text-gray-500 hover:text-violet-600 hover:bg-violet-50 rounded-full transition-all flex items-center gap-1.5 text-[11px] sm:text-xs font-bold border border-gray-100 shadow-sm cursor-pointer"
+                title="Reset Percakapan"
+              >
+                <FaArrowsRotate className="w-3 h-3" />
+                <span>Reset</span>
+              </button>
+            </div>
+
+            {/* Collapsible Settings Area */}
+            {showSettings && (
+              <div className="pt-3 pb-2 border-t border-gray-100/50 flex flex-col gap-3.5 animate-fade-in-up">
+                {/* Level Selector */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full">
+                  <span className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest shrink-0">Level</span>
+                  <div className="flex bg-gray-100/80 p-1 rounded-xl w-full overflow-x-auto hide-scrollbar snap-x">
+                    {LEVELS.map((level) => (
                       <button
-                        key={persona.id}
-                        onClick={() => handlePersonaChange(persona.id)}
-                        className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
-                          selectedPersona === persona.id
-                            ? 'bg-white text-violet-700 shadow-sm'
+                        key={level.id}
+                        onClick={() => handleLevelChange(level.id)}
+                        className={`flex-none snap-start px-4 py-2 rounded-lg text-[11px] sm:text-sm font-bold transition-all whitespace-nowrap text-center cursor-pointer ${
+                          selectedLevel === level.id
+                            ? level.activeClass
                             : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                         }`}
-                        title={translatePersonaDesc(persona.id, persona.desc)}
                       >
-                        {persona.emoji} {persona.name}
+                        {level.emoji} <span>{translateLevel(level.id)}</span>
                       </button>
                     ))}
                   </div>
-
-                  {/* Mobile: dropdown */}
-                  <div className="relative sm:hidden w-full">
-                    <button
-                      onClick={() => setShowPersonaDropdown(!showPersonaDropdown)}
-                      className="flex w-full justify-between items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-violet-100 to-fuchsia-100 text-violet-700 ring-1 ring-violet-200 shadow-sm"
-                    >
-                      <span>{activePersona.emoji} {activePersona.name}</span>
-                      <FaChevronDown className={`w-3 h-3 transition-transform ${showPersonaDropdown ? 'rotate-180' : ''}`} />
-                    </button>
-                    {showPersonaDropdown && (
-                      <div className="absolute top-full mt-1 left-0 w-full bg-white rounded-2xl shadow-xl border border-gray-100 p-2 z-50">
-                        {PERSONAS.map((persona) => (
-                          <button
-                            key={persona.id}
-                            onClick={() => handlePersonaChange(persona.id)}
-                            className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                              selectedPersona === persona.id
-                                ? 'bg-violet-50 text-violet-700'
-                                : 'text-gray-500 hover:bg-gray-50'
-                            }`}
-                          >
-                            <span>{persona.emoji}</span>
-                            <div>
-                              <div>{persona.name}</div>
-                              <div className="text-[10px] font-medium text-gray-400">{translatePersonaDesc(persona.id, persona.desc)}</div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
 
-      {/* ===== CHAT AREA ===== */}
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6">
-        <div className="max-w-3xl mx-auto space-y-5 pb-28 md:pb-0">
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in-up`}
-            >
-              <div
-                className={`max-w-[85%] sm:max-w-[75%] rounded-3xl px-5 py-4 ${
-                  message.role === 'user'
-                    ? 'bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-br-lg shadow-lg shadow-violet-200/50'
-                    : 'bg-white text-gray-800 rounded-bl-lg shadow-sm border border-gray-100/80'
-                }`}
-              >
-                {message.role === 'model' ? (
-                  <div className="flex flex-col gap-2">
-                    <div className="prose prose-sm sm:prose-base max-w-none prose-p:leading-relaxed prose-headings:text-gray-900 whitespace-pre-wrap">
-                      <ReactMarkdown>{message.text}</ReactMarkdown>
+                {/* Persona Selector — Only Advanced */}
+                {selectedLevel === 'advanced' && (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 w-full">
+                    <span className="sm:w-[72px] text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest shrink-0 ml-1 sm:ml-0">Persona</span>
+                    
+                    {/* Desktop: inline buttons */}
+                    <div className="hidden sm:flex bg-gray-100/80 p-1 rounded-xl shrink-0">
+                      {PERSONAS.map((persona) => (
+                        <button
+                          key={persona.id}
+                          onClick={() => handlePersonaChange(persona.id)}
+                          className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+                            selectedPersona === persona.id
+                              ? 'bg-white text-violet-700 shadow-sm'
+                              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                          }`}
+                          title={translatePersonaDesc(persona.id, persona.desc)}
+                        >
+                          {persona.emoji} {persona.name}
+                        </button>
+                      ))}
                     </div>
-                    <button
-                      onClick={() => handleListen(message.text)}
-                      className="self-start flex items-center gap-1.5 px-3 py-1.5 mt-1 text-xs font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-full transition-colors border border-violet-100"
-                    >
-                      <FaVolumeHigh className="w-3 h-3" /> Dengarkan
-                    </button>
+
+                    {/* Mobile: dropdown */}
+                    <div className="relative sm:hidden w-full">
+                      <button
+                        onClick={() => setShowPersonaDropdown(!showPersonaDropdown)}
+                        className="flex w-full justify-between items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-violet-100 to-fuchsia-100 text-violet-700 ring-1 ring-violet-200 shadow-sm cursor-pointer"
+                      >
+                        <span>{activePersona.emoji} {activePersona.name}</span>
+                        <FaChevronDown className={`w-3 h-3 transition-transform ${showPersonaDropdown ? 'rotate-180' : ''}`} />
+                      </button>
+                      {showPersonaDropdown && (
+                        <div className="absolute top-full mt-1 left-0 w-full bg-white rounded-2xl shadow-xl border border-gray-100 p-2 z-50">
+                          {PERSONAS.map((persona) => (
+                            <button
+                              key={persona.id}
+                              onClick={() => handlePersonaChange(persona.id)}
+                              className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                                selectedPersona === persona.id
+                                  ? 'bg-violet-50 text-violet-700'
+                                  : 'text-gray-500 hover:bg-gray-50'
+                              }`}
+                            >
+                              <span>{persona.emoji}</span>
+                              <div>
+                                <div>{persona.name}</div>
+                                <div className="text-[10px] font-medium text-gray-400">{translatePersonaDesc(persona.id, persona.desc)}</div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                ) : (
-                  <p className="whitespace-pre-wrap leading-relaxed text-sm sm:text-base">{message.text}</p>
                 )}
               </div>
-            </div>
-          ))}
-
-          {/* Loading Indicator */}
-          {isLoading && (
-            <div className="flex justify-start animate-fade-in-up">
-              <div className="bg-white text-gray-500 rounded-3xl rounded-bl-lg px-5 py-4 shadow-sm border border-gray-100/80 flex items-center gap-3">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                  <span className="w-2 h-2 bg-fuchsia-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                  <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                </div>
-                <span className="text-sm font-bold text-violet-500">{locale === 'en' ? 'Typing...' : 'Sedang mengetik...'}</span>
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-      </main>
-
-      {/* ===== INPUT AREA ===== */}
-      <footer className="chat-footer-mobile left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 p-2.5 sm:p-4 shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] z-40">
-        <div className="max-w-3xl mx-auto flex items-end gap-2">
-          {/* Speech Button */}
-          {hasSpeechSupport && (
-            <button
-              onClick={toggleListening}
-              className={`p-3 rounded-2xl shrink-0 transition-all ${
-                isListening
-                  ? 'bg-violet-100 text-violet-600 animate-pulse ring-2 ring-violet-300 shadow-sm shadow-violet-200'
-                  : 'bg-gray-50 text-gray-400 hover:bg-violet-50 hover:text-violet-500 border border-gray-100'
-              }`}
-              title={isListening ? 'Berhenti mendengarkan' : 'Mulai berbicara (Korea)'}
-            >
-              {isListening ? <FaMicrophoneSlash className="w-5 h-5" /> : <FaMicrophone className="w-5 h-5" />}
-            </button>
-          )}
-
-          {/* Text Input Wrapper */}
-          <div className="flex-1 flex items-end bg-white border border-gray-200 rounded-2xl p-1 focus-within:ring-2 focus-within:ring-violet-400 focus-within:border-transparent transition-all shadow-sm focus-within:shadow-violet-100">
-            <textarea
-              ref={textareaRef}
-              className="flex-1 bg-transparent text-gray-800 pl-3 pr-2 py-2 text-sm sm:text-base focus:outline-none resize-none overflow-hidden min-h-[36px] max-h-[120px] leading-relaxed"
-              rows={1}
-              placeholder={isListening ? (locale === 'en' ? 'Listening...' : 'Mendengarkan...') : t('aiBuddy.placeholder')}
-              value={input}
-              onChange={(e) => {
-                setInput(e.target.value)
-                e.target.style.height = 'auto'
-                e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`
-              }}
-              onKeyDown={handleKeyDown}
-              disabled={isLoading}
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              className="w-9 h-9 shrink-0 flex items-center justify-center bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-xl hover:from-violet-700 hover:to-fuchsia-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md shadow-violet-200/50 hover:shadow-lg active:scale-95"
-            >
-              <FaPaperPlane className="w-3.5 h-3.5" />
-            </button>
+            )}
           </div>
         </div>
-      </footer>
+
+        {/* ===== CHAT AREA ===== */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="max-w-3xl mx-auto space-y-5 pb-28 md:pb-0">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in-up`}
+              >
+                <div
+                  className={`max-w-[85%] sm:max-w-[75%] rounded-3xl px-5 py-4 ${
+                    message.role === 'user'
+                      ? 'bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-br-lg shadow-lg shadow-violet-200/50'
+                      : 'bg-white text-gray-800 rounded-bl-lg shadow-sm border border-gray-100/80'
+                  }`}
+                >
+                  {message.role === 'model' ? (
+                    <div className="flex flex-col gap-2">
+                      <div className="prose prose-sm sm:prose-base max-w-none prose-p:leading-relaxed prose-headings:text-gray-900 whitespace-pre-wrap">
+                        <ReactMarkdown>{message.text}</ReactMarkdown>
+                      </div>
+                      <button
+                        onClick={() => handleListen(message.text)}
+                        className="self-start flex items-center gap-1.5 px-3 py-1.5 mt-1 text-xs font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-full transition-colors border border-violet-100 cursor-pointer"
+                      >
+                        <FaVolumeHigh className="w-3 h-3" /> Dengarkan
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="whitespace-pre-wrap leading-relaxed text-sm sm:text-base">{message.text}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {/* Loading Indicator */}
+            {isLoading && (
+              <div className="flex justify-start animate-fade-in-up">
+                <div className="bg-white text-gray-500 rounded-3xl rounded-bl-lg px-5 py-4 shadow-sm border border-gray-100/80 flex items-center gap-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-2 h-2 bg-fuchsia-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                  </div>
+                  <span className="text-sm font-bold text-violet-500">{locale === 'en' ? 'Typing...' : 'Sedang mengetik...'}</span>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        </main>
+
+        {/* ===== INPUT AREA ===== */}
+        <footer className="chat-footer-mobile left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 p-2.5 sm:p-4 shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] z-40">
+          <div className="max-w-3xl mx-auto flex items-end gap-2">
+            {/* Speech Button */}
+            {hasSpeechSupport && (
+              <button
+                onClick={toggleListening}
+                className={`p-3 rounded-2xl shrink-0 transition-all cursor-pointer ${
+                  isListening
+                    ? 'bg-violet-100 text-violet-600 animate-pulse ring-2 ring-violet-300 shadow-sm shadow-violet-200'
+                    : 'bg-gray-50 text-gray-400 hover:bg-violet-50 hover:text-violet-500 border border-gray-100'
+                }`}
+                title={isListening ? 'Berhenti mendengarkan' : 'Mulai berbicara (Korea)'}
+              >
+                {isListening ? <FaMicrophoneSlash className="w-5 h-5" /> : <FaMicrophone className="w-5 h-5" />}
+              </button>
+            )}
+
+            {/* Text Input Wrapper */}
+            <div className="flex-1 flex items-end bg-white border border-gray-200 rounded-2xl p-1 focus-within:ring-2 focus-within:ring-violet-400 focus-within:border-transparent transition-all shadow-sm focus-within:shadow-violet-100">
+              <textarea
+                ref={textareaRef}
+                className="flex-1 bg-transparent text-gray-800 pl-3 pr-2 py-2 text-sm sm:text-base focus:outline-none resize-none overflow-hidden min-h-[36px] max-h-[120px] leading-relaxed"
+                rows={1}
+                placeholder={isListening ? (locale === 'en' ? 'Listening...' : 'Mendengarkan...') : t('aiBuddy.placeholder')}
+                value={input}
+                onChange={(e) => {
+                  setInput(e.target.value)
+                  e.target.style.height = 'auto'
+                  e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`
+                }}
+                onKeyDown={handleKeyDown}
+                disabled={isLoading}
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || isLoading}
+                className="w-9 h-9 shrink-0 flex items-center justify-center bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-xl hover:from-violet-700 hover:to-fuchsia-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md shadow-violet-200/50 hover:shadow-lg active:scale-95 cursor-pointer"
+              >
+                <FaPaperPlane className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </footer>
+      </div>
+
+      {/* ===== EXIT CONFIRMATION MODAL ===== */}
+      {showExitConfirmation && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100/80 text-center animate-scale-in">
+            <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-100">
+              <FaRobot className="w-8 h-8 text-amber-500 animate-bounce" />
+            </div>
+            <h3 className="text-lg font-extrabold text-gray-900 mb-2">
+              {locale === 'en' ? 'Leave Chat?' : 'Tinggalkan Obrolan?'}
+            </h3>
+            <p className="text-sm text-gray-500 leading-relaxed mb-6">
+              {locale === 'en' 
+                ? 'Your active conversation is safely saved in the history. Are you sure you want to leave?' 
+                : 'Percakapan aktif Anda aman tersimpan di riwayat. Apakah Anda yakin ingin keluar?'}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowExitConfirmation(false)
+                  setPendingNavigationUrl(null)
+                }}
+                className="flex-1 py-3 px-4 rounded-xl text-xs font-bold border border-gray-200 text-gray-700 hover:bg-gray-50 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                {locale === 'en' ? 'Stay Here' : 'Tetap di Sini'}
+              </button>
+              <button
+                onClick={handleConfirmExit}
+                className="flex-1 py-3 px-4 rounded-xl text-xs font-bold bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 text-white shadow-md shadow-violet-100 hover:shadow-lg active:scale-[0.98] transition-all cursor-pointer"
+              >
+                {locale === 'en' ? 'Leave' : 'Keluar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -21,7 +21,7 @@ export default async function AIBuddyPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
-      <AiBuddyClient />
+      <AiBuddyClient userId={user.id} />
     </div>
   )
 }
