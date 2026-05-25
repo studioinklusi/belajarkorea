@@ -11,7 +11,6 @@ import { FaHistory } from 'react-icons/fa'
 import { useTranslation } from '@/lib/i18n'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { createClient } from '@/lib/supabase/client'
 
 // === Types ===
 type KoreanLevel = 'beginner' | 'intermediate' | 'advanced'
