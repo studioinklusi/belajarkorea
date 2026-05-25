@@ -206,13 +206,13 @@ export default async function CertificatePage(props: {
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
               crossOrigin="anonymous"
             />
-            <div className="absolute left-0 top-0 bottom-0 w-[64%] flex flex-col items-center text-center pt-[23%] pb-[8%] px-8">
+            <div className="absolute left-0 top-0 bottom-0 w-[64%] flex flex-col items-center text-center pt-[22%] pb-[10%] px-8">
               
               <p className="text-gray-500 mb-2 uppercase tracking-widest text-xs font-semibold">
                 Sertifikat ini diberikan kepada:
               </p>
               
-              <h2 className="text-4xl font-bold text-violet-900 mb-4 italic border-b border-gray-300 pb-2 px-6 inline-block" style={{ fontFamily: 'Georgia, serif' }}>
+              <h2 className="text-4xl font-bold text-violet-900 mb-4 italic border-b border-gray-300 pb-2 px-6" style={{ display: 'inline-block', fontFamily: 'Georgia, serif' }}>
                 {studentName}
               </h2>
               
@@ -221,7 +221,7 @@ export default async function CertificatePage(props: {
               </p>
               <span className="font-bold text-gray-950 text-xl mb-6">{course.title}</span>
               
-              <div className="flex items-end justify-between w-full max-w-md mt-auto px-2">
+              <div className="flex items-end justify-between w-full max-w-[500px] mt-auto px-2">
                 {/* QR Code Section */}
                 <div className="flex flex-col items-center">
                   <CertificateQR url={verificationUrl} certId={certId} />
