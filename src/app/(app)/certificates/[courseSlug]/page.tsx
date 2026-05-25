@@ -206,41 +206,41 @@ export default async function CertificatePage(props: {
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
               crossOrigin="anonymous"
             />
-            <div className="absolute inset-0 flex flex-col items-center text-center pt-[18%] px-24">
+            <div className="absolute left-0 top-0 bottom-0 w-[64%] flex flex-col items-center text-center pt-[23%] pb-[8%] px-8">
               
-              <p className="text-gray-500 mb-3 uppercase tracking-widest text-sm font-medium">
+              <p className="text-gray-500 mb-2 uppercase tracking-widest text-xs font-semibold">
                 Sertifikat ini diberikan kepada:
               </p>
               
-              <h2 className="text-5xl font-bold text-violet-800 mb-6 italic border-b border-gray-300 pb-3 px-8 inline-block" style={{ fontFamily: 'Georgia, serif' }}>
+              <h2 className="text-4xl font-bold text-violet-900 mb-4 italic border-b border-gray-300 pb-2 px-6 inline-block" style={{ fontFamily: 'Georgia, serif' }}>
                 {studentName}
               </h2>
               
-              <p className="text-gray-600 max-w-2xl text-lg leading-relaxed mb-6">
+              <p className="text-gray-600 max-w-md text-sm leading-relaxed mb-3">
                 Telah berhasil menyelesaikan program kursus bahasa Korea dengan predikat sangat memuaskan pada program:
               </p>
-              <span className="font-bold text-gray-900 text-2xl mb-8">{course.title}</span>
+              <span className="font-bold text-gray-950 text-xl mb-6">{course.title}</span>
               
-              <div className="flex items-end justify-between w-full max-w-3xl mt-auto pb-[6%] px-4">
+              <div className="flex items-end justify-between w-full max-w-md mt-auto px-2">
                 {/* QR Code Section */}
                 <div className="flex flex-col items-center">
                   <CertificateQR url={verificationUrl} certId={certId} />
                 </div>
                 
-                <div className="flex flex-col items-center pb-4">
-                  <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white shadow-lg border-4 border-white mb-2">
-                    <FaAward className="w-8 h-8 drop-shadow-md" />
+                <div className="flex flex-col items-center pb-2">
+                  <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white shadow-lg border-4 border-white mb-1.5">
+                    <FaAward className="w-7 h-7 drop-shadow-md" />
                   </div>
-                  <div className="bg-white text-amber-600 text-[9px] font-black px-3 py-1 rounded-full border border-amber-200 shadow-sm uppercase tracking-widest">
+                  <div className="bg-white text-amber-600 text-[8px] font-black px-2.5 py-0.5 rounded-full border border-amber-200 shadow-sm uppercase tracking-widest">
                     {course.level}
                   </div>
                 </div>
 
-                <div className="text-center pb-4">
-                  <div className="border-b border-gray-400 w-40 pb-2 mb-2 font-bold text-gray-900 text-sm">
+                <div className="text-center pb-2">
+                  <div className="border-b border-gray-400 w-32 pb-1.5 mb-1.5 font-bold text-gray-900 text-xs">
                     {dateStr}
                   </div>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Tanggal Diberikan</p>
+                  <p className="text-[8px] text-gray-500 uppercase tracking-wider font-bold">Tanggal Diberikan</p>
                 </div>
               </div>
             </div>
