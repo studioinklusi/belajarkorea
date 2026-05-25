@@ -703,7 +703,7 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
 
       {/* ===== SIDEBAR RIWAYAT ===== */}
       <aside 
-        className={`absolute md:relative inset-y-0 left-0 w-[280px] sm:w-80 bg-white border-r border-gray-100/80 z-50 flex flex-col h-full transform transition-transform duration-300 md:transform-none shrink-0 ${
+        className={`absolute md:relative inset-y-0 left-0 w-[280px] sm:w-80 bg-white border-r border-gray-100/80 z-50 md:z-30 flex flex-col h-full transform transition-transform duration-300 md:transform-none shrink-0 ${
           showHistorySidebar ? 'translate-x-0' : '-translate-x-full md:hidden'
         }`}
       >

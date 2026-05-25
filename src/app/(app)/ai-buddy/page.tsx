@@ -20,7 +20,7 @@ export default async function AIBuddyPage() {
   const isAdmin = profile?.role === 'super_admin' || profile?.role === 'content_admin'
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAFAFA]">
+    <div className="flex-1 flex flex-col bg-[#FAFAFA]">
       <AiBuddyClient userId={user.id} />
     </div>
   )
