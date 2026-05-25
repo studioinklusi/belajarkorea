@@ -36,9 +36,7 @@ export default function AdminSidebar({ signoutAction }: { signoutAction: () => v
     <aside className="hidden md:flex w-64 bg-white border-r border-gray-200 flex-col shadow-sm sticky top-0 h-screen shrink-0">
       <div className="h-20 flex items-center px-6 border-b border-gray-100">
         <div className="flex-shrink-0 flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-lg flex items-center justify-center text-white font-black text-sm">
-            K
-          </div>
+          <img src="/logo.png" alt="Tsuha.id" className="w-8 h-8 rounded-lg shadow-md shadow-violet-500/20 object-cover" />
           <span className="font-extrabold text-xl tracking-tight text-gray-900">
             Admin<span className="text-violet-600">Panel</span>
           </span>

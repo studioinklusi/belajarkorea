@@ -8,9 +8,7 @@ export default function GlobalLoading() {
         <div className="relative w-24 h-24 mb-8">
           <div className="absolute inset-0 bg-gradient-to-tr from-violet-500 to-fuchsia-500 rounded-3xl animate-pulse blur-md opacity-40"></div>
           <div className="absolute inset-1 bg-white rounded-2xl z-10 flex items-center justify-center shadow-lg">
-            <div className="w-14 h-14 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-xl flex items-center justify-center text-white font-black text-3xl shadow-inner animate-pulse">
-              K
-            </div>
+            <img src="/logo.png" alt="Tsuha.id" className="w-14 h-14 object-contain animate-pulse" />
           </div>
         </div>
         

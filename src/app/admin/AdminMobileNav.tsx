@@ -37,9 +37,7 @@ export default function AdminMobileNav({ signoutAction }: { signoutAction: () =>
     <div className="md:hidden bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="flex items-center justify-between p-4">
         <div className="flex-shrink-0 flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-lg flex items-center justify-center text-white font-black text-sm">
-            K
-          </div>
+          <img src="/logo.png" alt="Tsuha.id" className="w-8 h-8 rounded-lg shadow-md shadow-violet-500/20 object-cover" />
           <span className="font-extrabold text-xl tracking-tight text-gray-900">
             Admin<span className="text-violet-600">Panel</span>
           </span>
