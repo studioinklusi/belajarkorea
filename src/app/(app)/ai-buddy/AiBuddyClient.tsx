@@ -10,6 +10,8 @@ import {
 import { FaHistory } from 'react-icons/fa'
 import { useTranslation } from '@/lib/i18n'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 
 // === Types ===
 type KoreanLevel = 'beginner' | 'intermediate' | 'advanced'
@@ -63,9 +65,17 @@ function getGreeting(level: KoreanLevel, persona: Persona): string {
   return greetings[persona]
 }
 
+// Helpers outside React Component to satisfy compiler purity rules
+function generateSessionId(): string {
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+    return window.crypto.randomUUID()
+  }
+  return Math.random().toString(36).substring(2, 9)
+}
+
 export default function AiBuddyClient({ userId }: { userId?: string }) {
   const router = useRouter()
-  const storageKey = userId ? `ai_buddy_sessions_${userId}` : 'ai_buddy_sessions_guest'
+  const supabase = createClient()
 
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
@@ -83,6 +93,7 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
 
   // Sessions and navigation warning states
   const [sessions, setSessions] = useState<ChatSession[]>([])
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true)
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
   const [showHistorySidebar, setShowHistorySidebar] = useState(false)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false)
@@ -153,65 +164,104 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
     }
   }, [])
 
-  // Load sessions from localStorage on mount
+  // Load sessions from Supabase on mount
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    const stored = localStorage.getItem(storageKey)
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored) as ChatSession[]
-        if (parsed && parsed.length > 0) {
-          setSessions(parsed)
-          const sorted = [...parsed].sort((a, b) => b.timestamp - a.timestamp)
-          const latest = sorted[0]
-          setCurrentSessionId(latest.id)
-          setMessages(latest.messages)
-          setSelectedLevel(latest.level)
-          setSelectedPersona(latest.persona)
-          return
-        }
-      } catch (e) {
-        console.error('Error loading sessions:', e)
-      }
-    }
-    
-    // Fallback: Create first initial session
-    const initialId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9)
-    const defaultSession: ChatSession = {
-      id: initialId,
-      title: locale === 'en' ? 'New Chat' : 'Percakapan Baru',
-      messages: [{ role: 'model', text: getGreeting(selectedLevel, selectedPersona) }],
-      level: selectedLevel,
-      persona: selectedPersona,
-      timestamp: Date.now()
-    }
-    setSessions([defaultSession])
-    setCurrentSessionId(initialId)
-    setMessages(defaultSession.messages)
-    localStorage.setItem(storageKey, JSON.stringify([defaultSession]))
-  }, [storageKey, locale])
+    const loadSessions = async () => {
+      setIsLoadingHistory(true)
+      const { data, error } = await supabase
+        .from('ai_buddy_sessions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
 
-  // Helper to update session content in localStorage and state
-  const updateSessionData = (
+      if (error) {
+        console.error('Error loading sessions:', error)
+        setIsLoadingHistory(false)
+        return
+      }
+
+      if (data && data.length > 0) {
+        const formattedSessions: ChatSession[] = data.map(row => ({
+          id: row.id,
+          title: row.title,
+          messages: row.messages as ChatMessage[],
+          level: row.level as KoreanLevel,
+          persona: row.persona as Persona,
+          timestamp: new Date(row.updated_at).getTime()
+        }))
+        setSessions(formattedSessions)
+        const latest = formattedSessions[0]
+        setCurrentSessionId(latest.id)
+        setMessages(latest.messages)
+        setSelectedLevel(latest.level)
+        setSelectedPersona(latest.persona)
+      } else {
+        // Fallback: Create first initial session in Supabase
+        const initialId = generateSessionId()
+        const initialGreeting = getGreeting(selectedLevel, selectedPersona)
+        const defaultSession: ChatSession = {
+          id: initialId,
+          title: locale === 'en' ? 'New Chat' : 'Percakapan Baru',
+          messages: [{ role: 'model', text: initialGreeting }],
+          level: selectedLevel,
+          persona: selectedPersona,
+          timestamp: Date.now()
+        }
+
+        const { error: insertError } = await supabase
+          .from('ai_buddy_sessions')
+          .insert({
+            id: initialId,
+            user_id: userId,
+            title: defaultSession.title,
+            messages: defaultSession.messages,
+            level: defaultSession.level,
+            persona: defaultSession.persona
+          })
+
+        if (!insertError) {
+          setSessions([defaultSession])
+          setCurrentSessionId(initialId)
+          setMessages(defaultSession.messages)
+        } else {
+          console.error('Error creating initial session:', insertError)
+        }
+      }
+      setIsLoadingHistory(false)
+    }
+
+    if (userId) {
+      loadSessions()
+    }
+  }, [userId, locale])
+
+  // Helper to update session content in Supabase and state
+  const updateSessionData = async (
     sessionId: string,
     updatedMessages: ChatMessage[],
     level: KoreanLevel,
     persona: Persona
   ) => {
+    let title = ''
+    const currentSession = sessions.find(s => s.id === sessionId)
+    if (currentSession) {
+      title = currentSession.title
+      if (title === 'Percakapan Baru' || title === 'New Chat' || title.startsWith('Obrolan') || title.startsWith('Chat')) {
+        const firstUserMessage = updatedMessages.find(m => m.role === 'user')
+        if (firstUserMessage) {
+          title = firstUserMessage.text.substring(0, 30) + (firstUserMessage.text.length > 30 ? '...' : '')
+        } else {
+          const personaName = PERSONAS.find(p => p.id === persona)?.name || ''
+          const levelName = LEVELS.find(l => l.id === level)?.label || ''
+          title = locale === 'en' ? `Chat ${levelName} (${personaName})` : `Obrolan ${levelName} (${personaName})`
+        }
+      }
+    }
+
+    // Update locally first for immediate responsiveness
     setSessions(prevSessions => {
       const updated = prevSessions.map(s => {
         if (s.id === sessionId) {
-          let title = s.title
-          if (title === 'Percakapan Baru' || title === 'New Chat' || title.startsWith('Obrolan') || title.startsWith('Chat')) {
-            const firstUserMessage = updatedMessages.find(m => m.role === 'user')
-            if (firstUserMessage) {
-              title = firstUserMessage.text.substring(0, 30) + (firstUserMessage.text.length > 30 ? '...' : '')
-            } else {
-              const personaName = PERSONAS.find(p => p.id === persona)?.name || ''
-              const levelName = LEVELS.find(l => l.id === level)?.label || ''
-              title = locale === 'en' ? `Chat ${levelName} (${personaName})` : `Obrolan ${levelName} (${personaName})`
-            }
-          }
           return {
             ...s,
             messages: updatedMessages,
@@ -223,9 +273,24 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
         }
         return s
       })
-      localStorage.setItem(storageKey, JSON.stringify(updated))
-      return updated
+      return updated.sort((a, b) => b.timestamp - a.timestamp)
     })
+
+    // Update in Supabase (will trigger database updated_at update)
+    const { error } = await supabase
+      .from('ai_buddy_sessions')
+      .update({
+        title,
+        messages: updatedMessages,
+        level,
+        persona,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', sessionId)
+
+    if (error) {
+      console.error('Error updating session:', error)
+    }
   }
 
   // Intercept anchor tag navigation clicks
@@ -484,8 +549,8 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
   }
 
   // Session Handlers
-  const handleNewChat = () => {
-    const newId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9)
+  const handleNewChat = async () => {
+    const newId = generateSessionId()
     const initialGreeting = getGreeting(selectedLevel, selectedPersona)
     const newSession: ChatSession = {
       id: newId,
@@ -496,11 +561,42 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
       timestamp: Date.now()
     }
     
-    setSessions(prev => {
-      const updated = [newSession, ...prev]
-      localStorage.setItem(storageKey, JSON.stringify(updated))
-      return updated
-    })
+    // Insert into Supabase
+    const { error } = await supabase
+      .from('ai_buddy_sessions')
+      .insert({
+        id: newId,
+        user_id: userId,
+        title: newSession.title,
+        messages: newSession.messages,
+        level: newSession.level,
+        persona: newSession.persona
+      })
+
+    if (error) {
+      console.error('Error creating new session:', error)
+      return
+    }
+
+    // Refresh history from Supabase (the database trigger may prune the oldest session)
+    const { data: updatedData } = await supabase
+      .from('ai_buddy_sessions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false })
+
+    if (updatedData) {
+      const formatted = updatedData.map(row => ({
+        id: row.id,
+        title: row.title,
+        messages: row.messages as ChatMessage[],
+        level: row.level as KoreanLevel,
+        persona: row.persona as Persona,
+        timestamp: new Date(row.updated_at).getTime()
+      }))
+      setSessions(formatted)
+    }
+
     setCurrentSessionId(newId)
     setMessages(newSession.messages)
   }
@@ -520,36 +616,75 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
     }
   }
 
-  const handleDeleteSession = (sessionId: string, e: React.MouseEvent) => {
+  const handleDeleteSession = async (sessionId: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    const updatedSessions = sessions.filter(s => s.id !== sessionId)
     
-    setSessions(updatedSessions)
-    localStorage.setItem(storageKey, JSON.stringify(updatedSessions))
-    
-    if (currentSessionId === sessionId) {
-      if (updatedSessions.length > 0) {
-        const sorted = [...updatedSessions].sort((a, b) => b.timestamp - a.timestamp)
-        const latest = sorted[0]
+    // Delete from Supabase
+    const { error } = await supabase
+      .from('ai_buddy_sessions')
+      .delete()
+      .eq('id', sessionId)
+
+    if (error) {
+      console.error('Error deleting session:', error)
+      return
+    }
+
+    // Refresh list from database
+    const { data: updatedData } = await supabase
+      .from('ai_buddy_sessions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false })
+
+    if (updatedData && updatedData.length > 0) {
+      const formatted = updatedData.map(row => ({
+        id: row.id,
+        title: row.title,
+        messages: row.messages as ChatMessage[],
+        level: row.level as KoreanLevel,
+        persona: row.persona as Persona,
+        timestamp: new Date(row.updated_at).getTime()
+      }))
+      setSessions(formatted)
+      
+      if (currentSessionId === sessionId) {
+        const latest = formatted[0]
         setCurrentSessionId(latest.id)
         setMessages(latest.messages)
         setSelectedLevel(latest.level)
         setSelectedPersona(latest.persona)
-      } else {
-        const newId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9)
-        const initialGreeting = getGreeting(selectedLevel, selectedPersona)
-        const defaultSession: ChatSession = {
+      }
+    } else {
+      // Fallback if no sessions remain: create a default one
+      const newId = generateSessionId()
+      const initialGreeting = getGreeting(selectedLevel, selectedPersona)
+      const defaultSession: ChatSession = {
+        id: newId,
+        title: locale === 'en' ? 'New Chat' : 'Percakapan Baru',
+        messages: [{ role: 'model', text: initialGreeting }],
+        level: selectedLevel,
+        persona: selectedPersona,
+        timestamp: Date.now()
+      }
+
+      const { error: insertError } = await supabase
+        .from('ai_buddy_sessions')
+        .insert({
           id: newId,
-          title: locale === 'en' ? 'New Chat' : 'Percakapan Baru',
-          messages: [{ role: 'model', text: initialGreeting }],
-          level: selectedLevel,
-          persona: selectedPersona,
-          timestamp: Date.now()
-        }
+          user_id: userId,
+          title: defaultSession.title,
+          messages: defaultSession.messages,
+          level: defaultSession.level,
+          persona: defaultSession.persona
+        })
+
+      if (!insertError) {
         setSessions([defaultSession])
         setCurrentSessionId(newId)
         setMessages(defaultSession.messages)
-        localStorage.setItem(storageKey, JSON.stringify([defaultSession]))
+      } else {
+        console.error('Error creating default session after delete:', insertError)
       }
     }
   }
@@ -600,50 +735,65 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
 
         {/* Sessions list */}
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2.5">
-          {sessions.map((session) => {
-            const isActive = session.id === currentSessionId
-            const dateStr = new Date(session.timestamp).toLocaleDateString(locale === 'en' ? 'en-US' : 'id-ID', {
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false
-            })
-            return (
-              <div
-                key={session.id}
-                onClick={() => handleSwitchSession(session.id)}
-                className={`group flex items-center justify-between p-3.5 rounded-2xl cursor-pointer transition-all border ${
-                  isActive
-                    ? 'bg-violet-50/70 border-violet-100 text-violet-700 shadow-sm shadow-violet-50'
-                    : 'bg-white border-gray-100 hover:bg-gray-50/80 text-gray-700'
-                }`}
-              >
-                <div className="flex-1 min-w-0 pr-2">
-                  <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                    <span className="text-[10px]">{LEVELS.find(l => l.id === session.level)?.emoji}</span>
-                    <span className="text-[9px] font-black uppercase tracking-wider text-gray-400">
-                      {translateLevel(session.level)}
-                    </span>
-                    <span className="text-[9px] font-bold text-gray-300">•</span>
-                    <span className="text-[9px] font-bold text-gray-400">
-                      {PERSONAS.find(p => p.id === session.persona)?.name}
-                    </span>
+          {isLoadingHistory ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="p-3.5 bg-white border border-gray-100 rounded-2xl animate-pulse">
+                  <div className="flex gap-1.5 mb-2">
+                    <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/4"></div>
                   </div>
-                  <p className="text-xs font-bold truncate leading-tight">{session.title}</p>
-                  <p className="text-[9px] font-semibold text-gray-400 mt-1">{dateStr}</p>
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-2.5 bg-gray-100 rounded w-1/3"></div>
                 </div>
-                
-                <button
-                  onClick={(e) => handleDeleteSession(session.id, e)}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0 md:opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
-                  title={locale === 'en' ? 'Delete conversation' : 'Hapus percakapan'}
+              ))}
+            </div>
+          ) : (
+            sessions.map((session) => {
+              const isActive = session.id === currentSessionId
+              const dateStr = new Date(session.timestamp).toLocaleDateString(locale === 'en' ? 'en-US' : 'id-ID', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+              })
+              return (
+                <div
+                  key={session.id}
+                  onClick={() => handleSwitchSession(session.id)}
+                  className={`group flex items-center justify-between p-3.5 rounded-2xl cursor-pointer transition-all border ${
+                    isActive
+                      ? 'bg-violet-50/70 border-violet-100 text-violet-700 shadow-sm shadow-violet-50'
+                      : 'bg-white border-gray-100 hover:bg-gray-50/80 text-gray-700'
+                  }`}
                 >
-                  <FaTrash className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )
-          })}
+                  <div className="flex-1 min-w-0 pr-2">
+                    <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                      <span className="text-[10px]">{LEVELS.find(l => l.id === session.level)?.emoji}</span>
+                      <span className="text-[9px] font-black uppercase tracking-wider text-gray-400">
+                        {translateLevel(session.level)}
+                      </span>
+                      <span className="text-[9px] font-bold text-gray-300">•</span>
+                      <span className="text-[9px] font-bold text-gray-400">
+                        {PERSONAS.find(p => p.id === session.persona)?.name}
+                      </span>
+                    </div>
+                    <p className="text-xs font-bold truncate leading-tight">{session.title}</p>
+                    <p className="text-[9px] font-semibold text-gray-400 mt-1">{dateStr}</p>
+                  </div>
+                  
+                  <button
+                    onClick={(e) => handleDeleteSession(session.id, e)}
+                    className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0 md:opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
+                    title={locale === 'en' ? 'Delete conversation' : 'Hapus percakapan'}
+                  >
+                    <FaTrash className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )
+            })
+          )}
         </div>
       </aside>
 
