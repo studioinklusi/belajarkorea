@@ -69,7 +69,12 @@ function generateSessionId(): string {
   if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
     return window.crypto.randomUUID()
   }
-  return Math.random().toString(36).substring(2, 9)
+  // Fallback RFC4122 version 4 compliant UUID generator
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
 }
 
 export default function AiBuddyClient({ userId }: { userId?: string }) {
@@ -245,20 +250,33 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
     const currentSession = sessions.find(s => s.id === sessionId)
     if (currentSession) {
       title = currentSession.title
-      if (title === 'Percakapan Baru' || title === 'New Chat' || title.startsWith('Obrolan') || title.startsWith('Chat')) {
-        const firstUserMessage = updatedMessages.find(m => m.role === 'user')
-        if (firstUserMessage) {
-          title = firstUserMessage.text.substring(0, 30) + (firstUserMessage.text.length > 30 ? '...' : '')
-        } else {
-          const personaName = PERSONAS.find(p => p.id === persona)?.name || ''
-          const levelName = LEVELS.find(l => l.id === level)?.label || ''
-          title = locale === 'en' ? `Chat ${levelName} (${personaName})` : `Obrolan ${levelName} (${personaName})`
-        }
+    }
+
+    if (!title || title === 'Percakapan Baru' || title === 'New Chat' || title.startsWith('Obrolan') || title.startsWith('Chat')) {
+      const firstUserMessage = updatedMessages.find(m => m.role === 'user')
+      if (firstUserMessage) {
+        title = firstUserMessage.text.substring(0, 30) + (firstUserMessage.text.length > 30 ? '...' : '')
+      } else {
+        const personaName = PERSONAS.find(p => p.id === persona)?.name || ''
+        const levelName = LEVELS.find(l => l.id === level)?.label || ''
+        title = locale === 'en' ? `Chat ${levelName} (${personaName})` : `Obrolan ${levelName} (${personaName})`
       }
     }
 
     // Update locally first for immediate responsiveness
     setSessions(prevSessions => {
+      const exists = prevSessions.some(s => s.id === sessionId)
+      if (!exists) {
+        const newSessionObj: ChatSession = {
+          id: sessionId,
+          title,
+          messages: updatedMessages,
+          level,
+          persona,
+          timestamp: Date.now()
+        }
+        return [newSessionObj, ...prevSessions].sort((a, b) => b.timestamp - a.timestamp)
+      }
       const updated = prevSessions.map(s => {
         if (s.id === sessionId) {
           return {
@@ -725,7 +743,8 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
         <div className="p-4 shrink-0">
           <button 
             onClick={handleNewChat}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 text-white font-bold text-sm shadow-md shadow-violet-200/50 hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer"
+            disabled={isLoadingHistory}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 hover:from-violet-700 hover:to-fuchsia-600 text-white font-bold text-sm shadow-md shadow-violet-200/50 hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FaPlus className="w-3.5 h-3.5" />
             <span>{locale === 'en' ? 'New Chat' : 'Percakapan Baru'}</span>
@@ -849,7 +868,8 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
               {/* Reset Button */}
               <button
                 onClick={handleReset}
-                className="px-3 py-1.5 text-gray-500 hover:text-violet-600 hover:bg-violet-50 rounded-full transition-all flex items-center gap-1.5 text-[11px] sm:text-xs font-bold border border-gray-100 shadow-sm cursor-pointer"
+                disabled={isLoadingHistory}
+                className="px-3 py-1.5 text-gray-500 hover:text-violet-600 hover:bg-violet-50 rounded-full transition-all flex items-center gap-1.5 text-[11px] sm:text-xs font-bold border border-gray-100 shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Reset Percakapan"
               >
                 <FaArrowsRotate className="w-3 h-3" />
@@ -999,11 +1019,12 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
             {hasSpeechSupport && (
               <button
                 onClick={toggleListening}
+                disabled={isLoadingHistory}
                 className={`p-3 rounded-2xl shrink-0 transition-all cursor-pointer ${
                   isListening
                     ? 'bg-violet-100 text-violet-600 animate-pulse ring-2 ring-violet-300 shadow-sm shadow-violet-200'
                     : 'bg-gray-50 text-gray-400 hover:bg-violet-50 hover:text-violet-500 border border-gray-100'
-                }`}
+                } ${isLoadingHistory ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title={isListening ? 'Berhenti mendengarkan' : 'Mulai berbicara (Korea)'}
               >
                 {isListening ? <FaMicrophoneSlash className="w-5 h-5" /> : <FaMicrophone className="w-5 h-5" />}
@@ -1014,9 +1035,15 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
             <div className="flex-1 flex items-end bg-white border border-gray-200 rounded-2xl p-1 focus-within:ring-2 focus-within:ring-violet-400 focus-within:border-transparent transition-all shadow-sm focus-within:shadow-violet-100">
               <textarea
                 ref={textareaRef}
-                className="flex-1 bg-transparent text-gray-800 pl-3 pr-2 py-2 text-sm sm:text-base focus:outline-none resize-none overflow-hidden min-h-[36px] max-h-[120px] leading-relaxed"
+                className="flex-1 bg-transparent text-gray-800 pl-3 pr-2 py-2 text-sm sm:text-base focus:outline-none resize-none overflow-hidden min-h-[36px] max-h-[120px] leading-relaxed disabled:opacity-50"
                 rows={1}
-                placeholder={isListening ? (locale === 'en' ? 'Listening...' : 'Mendengarkan...') : t('aiBuddy.placeholder')}
+                placeholder={
+                  isLoadingHistory
+                    ? (locale === 'en' ? 'Loading history...' : 'Memuat riwayat...')
+                    : isListening
+                      ? (locale === 'en' ? 'Listening...' : 'Mendengarkan...')
+                      : t('aiBuddy.placeholder')
+                }
                 value={input}
                 onChange={(e) => {
                   setInput(e.target.value)
@@ -1024,11 +1051,11 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
                   e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`
                 }}
                 onKeyDown={handleKeyDown}
-                disabled={isLoading}
+                disabled={isLoading || isLoadingHistory}
               />
               <button
                 onClick={handleSend}
-                disabled={!input.trim() || isLoading}
+                disabled={!input.trim() || isLoading || isLoadingHistory}
                 className="w-9 h-9 shrink-0 flex items-center justify-center bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-xl hover:from-violet-700 hover:to-fuchsia-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md shadow-violet-200/50 hover:shadow-lg active:scale-95 cursor-pointer"
               >
                 <FaPaperPlane className="w-3.5 h-3.5" />

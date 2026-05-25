@@ -30,7 +30,17 @@ CREATE POLICY "Users can delete their own AI Buddy sessions"
   ON public.ai_buddy_sessions FOR DELETE
   USING (auth.uid() = user_id);
 
+-- Function to automatically update updated_at timestamp
+CREATE OR REPLACE FUNCTION public.handle_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Trigger to automatically update updated_at
+DROP TRIGGER IF EXISTS on_ai_buddy_sessions_updated ON public.ai_buddy_sessions;
 CREATE TRIGGER on_ai_buddy_sessions_updated
   BEFORE UPDATE ON public.ai_buddy_sessions
   FOR EACH ROW
