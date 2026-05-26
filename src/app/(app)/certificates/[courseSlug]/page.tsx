@@ -206,7 +206,7 @@ export default async function CertificatePage(props: {
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
               crossOrigin="anonymous"
             />
-            <div className="absolute left-0 top-0 bottom-0 w-[64%] flex flex-col items-start text-left pt-[283px] pb-[51px] pl-[72px] pr-8">
+            <div className="absolute left-0 top-0 bottom-0 w-[64%] flex flex-col items-start text-left pt-[283px] pb-[39px] pl-[72px] pr-8">
               
               <p className="text-gray-500 mb-2 uppercase tracking-widest text-xs font-semibold">
                 Sertifikat ini diberikan kepada:
