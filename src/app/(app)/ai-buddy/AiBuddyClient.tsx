@@ -447,28 +447,42 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
     }
   }, [])
 
-  const handleLevelChange = (level: KoreanLevel) => {
+  const handleLevelChange = async (level: KoreanLevel) => {
     if (level === selectedLevel) return
-    setSelectedLevel(level)
-    const newPersona = level !== 'advanced' ? 'teman' : selectedPersona
-    if (level !== 'advanced') setSelectedPersona('teman')
     
-    const initialMessages = [{ role: 'model', text: getGreeting(level, newPersona) }] as ChatMessage[]
-    setMessages(initialMessages)
-    if (currentSessionId) {
-      updateSessionData(currentSessionId, initialMessages, level, newPersona)
+    const newPersona = level !== 'advanced' ? 'teman' : selectedPersona
+    const isCurrentSessionEmpty = messages.length <= 1
+
+    if (isCurrentSessionEmpty && currentSessionId) {
+      // Sesi kosong: update level & sapaan pada sesi aktif saat ini
+      setSelectedLevel(level)
+      if (level !== 'advanced') setSelectedPersona('teman')
+      
+      const initialMessages = [{ role: 'model', text: getGreeting(level, newPersona) }] as ChatMessage[]
+      setMessages(initialMessages)
+      await updateSessionData(currentSessionId, initialMessages, level, newPersona)
+    } else {
+      // Sesi sudah berjalan: otomatis buat sesi baru (auto-branching)
+      await handleNewChat(level, newPersona)
     }
   }
 
-  const handlePersonaChange = (persona: Persona) => {
+  const handlePersonaChange = async (persona: Persona) => {
     if (persona === selectedPersona) return
-    setSelectedPersona(persona)
-    setShowPersonaDropdown(false)
     
-    const initialMessages = [{ role: 'model', text: getGreeting(selectedLevel, persona) }] as ChatMessage[]
-    setMessages(initialMessages)
-    if (currentSessionId) {
-      updateSessionData(currentSessionId, initialMessages, selectedLevel, persona)
+    setShowPersonaDropdown(false)
+    const isCurrentSessionEmpty = messages.length <= 1
+
+    if (isCurrentSessionEmpty && currentSessionId) {
+      // Sesi kosong: update persona & sapaan pada sesi aktif saat ini
+      setSelectedPersona(persona)
+      
+      const initialMessages = [{ role: 'model', text: getGreeting(selectedLevel, persona) }] as ChatMessage[]
+      setMessages(initialMessages)
+      await updateSessionData(currentSessionId, initialMessages, selectedLevel, persona)
+    } else {
+      // Sesi sudah berjalan: otomatis buat sesi baru (auto-branching)
+      await handleNewChat(selectedLevel, persona)
     }
   }
 
@@ -566,15 +580,18 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
   }
 
   // Session Handlers
-  const handleNewChat = async () => {
+  const handleNewChat = async (overrideLevel?: KoreanLevel, overridePersona?: Persona) => {
+    const levelToUse = overrideLevel || selectedLevel
+    const personaToUse = overridePersona || selectedPersona
+
     const newId = generateSessionId()
-    const initialGreeting = getGreeting(selectedLevel, selectedPersona)
+    const initialGreeting = getGreeting(levelToUse, personaToUse)
     const newSession: ChatSession = {
       id: newId,
       title: locale === 'en' ? 'New Chat' : 'Percakapan Baru',
       messages: [{ role: 'model', text: initialGreeting }],
-      level: selectedLevel,
-      persona: selectedPersona,
+      level: levelToUse,
+      persona: personaToUse,
       timestamp: Date.now()
     }
     
@@ -616,6 +633,8 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
 
     setCurrentSessionId(newId)
     setMessages(newSession.messages)
+    setSelectedLevel(levelToUse)
+    setSelectedPersona(personaToUse)
   }
 
   const handleSwitchSession = (sessionId: string) => {
