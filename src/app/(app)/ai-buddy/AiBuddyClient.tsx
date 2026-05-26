@@ -714,14 +714,14 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
       {/* ===== SIDEBAR DRAWER BACKDROP (Mobile only) ===== */}
       {showHistorySidebar && (
         <div 
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm z-45 md:hidden animate-fade-in"
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm z-[51] md:hidden animate-fade-in"
           onClick={() => setShowHistorySidebar(false)}
         />
       )}
 
       {/* ===== SIDEBAR RIWAYAT ===== */}
       <aside 
-        className={`absolute md:relative inset-y-0 left-0 w-[280px] sm:w-80 bg-white border-r border-gray-100/80 z-50 md:z-30 flex flex-col h-full transform transition-transform duration-300 md:transform-none shrink-0 ${
+        className={`absolute md:relative inset-y-0 left-0 w-[280px] sm:w-80 bg-white border-r border-gray-100/80 z-[52] md:z-30 flex flex-col h-full transform transition-transform duration-300 md:transform-none shrink-0 ${
           showHistorySidebar ? 'translate-x-0' : '-translate-x-full md:hidden'
         }`}
       >
@@ -779,14 +779,16 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
               return (
                 <div
                   key={session.id}
-                  onClick={() => handleSwitchSession(session.id)}
-                  className={`group flex items-center justify-between p-3.5 rounded-2xl cursor-pointer transition-all border ${
+                  className={`group flex items-center justify-between p-3.5 rounded-2xl transition-all border ${
                     isActive
                       ? 'bg-violet-50/70 border-violet-100 text-violet-700 shadow-sm shadow-violet-50'
                       : 'bg-white border-gray-100 hover:bg-gray-50/80 text-gray-700'
                   }`}
                 >
-                  <div className="flex-1 min-w-0 pr-2">
+                  <button
+                    onClick={() => handleSwitchSession(session.id)}
+                    className="flex-1 text-left min-w-0 pr-2 cursor-pointer focus:outline-none"
+                  >
                     <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                       <span className="text-[10px]">{LEVELS.find(l => l.id === session.level)?.emoji}</span>
                       <span className="text-[9px] font-black uppercase tracking-wider text-gray-400">
@@ -799,7 +801,7 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
                     </div>
                     <p className="text-xs font-bold truncate leading-tight">{session.title}</p>
                     <p className="text-[9px] font-semibold text-gray-400 mt-1">{dateStr}</p>
-                  </div>
+                  </button>
                   
                   <button
                     onClick={(e) => handleDeleteSession(session.id, e)}
