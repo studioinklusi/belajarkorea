@@ -33,18 +33,18 @@ export default async function LessonPage(props: {
     .order('sort_order', { ascending: true })
 
   // 3. Ambil progress user
-  let progressMap: Record<string, string> = {}
+  let progressMap: Record<string, { status: string; watch_duration: number }> = {}
   if (user) {
     const { data: progress } = await supabase
       .from('user_progress')
-      .select('lesson_id, status')
+      .select('lesson_id, status, watch_duration')
       .eq('user_id', user.id)
     
     if (progress) {
       progressMap = progress.reduce((acc, p) => {
-        acc[p.lesson_id] = p.status
+        acc[p.lesson_id] = { status: p.status, watch_duration: p.watch_duration }
         return acc
-      }, {} as Record<string, string>)
+      }, {} as Record<string, { status: string; watch_duration: number }>)
     }
   }
 
@@ -58,7 +58,7 @@ export default async function LessonPage(props: {
 
   let isLocked = error || !currentLesson
   
-  // 5. Ambil nilai quiz terbaik jika ada
+  // 5. Ambil nilai kuis terbaik jika ada
   let bestAttempt = null
   if (!isLocked && user) {
     const { data: attempt } = await supabase
@@ -74,12 +74,12 @@ export default async function LessonPage(props: {
       bestAttempt = attempt
     }
   }
+
+  // 6. Validasi Paket & Role Admin
+  const { data: profile } = user ? await supabase.from('profiles').select('role').eq('id', user.id).single() : { data: null }
+  const isAdmin = profile?.role === 'super_admin' || profile?.role === 'content_admin'
   
-  // 5. Validasi Paket Spesifik
   if (!isLocked && currentLesson && !currentLesson.is_preview && user) {
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    const isAdmin = profile?.role === 'super_admin' || profile?.role === 'content_admin'
-    
     if (!isAdmin) {
       if (course.required_package && course.required_package.length > 0) {
         const { data: activeSubs } = await supabase
@@ -97,12 +97,42 @@ export default async function LessonPage(props: {
     }
   }
 
-  const isCompleted = progressMap[params.lessonId] === 'completed'
+  // 7. Validasi Sequence Locking (Harus menyelesaikan materi sebelumnya)
+  let prevUncompletedLesson = null
+  if (!isLocked && currentLesson && allLessons && user && !isAdmin) {
+    for (const lesson of allLessons) {
+      if (lesson.sort_order < currentLesson.sort_order) {
+        const isDone = progressMap[lesson.id]?.status === 'completed'
+        if (!isDone) {
+          prevUncompletedLesson = lesson
+          break
+        }
+      }
+    }
+  }
+
+  const isCompleted = progressMap[params.lessonId]?.status === 'completed'
 
   // Hitung progress keseluruhan
   const totalLessons = allLessons?.length || 0
-  const completedLessons = allLessons?.filter(l => progressMap[l.id] === 'completed').length || 0
+  const completedLessons = allLessons?.filter(l => progressMap[l.id]?.status === 'completed').length || 0
   const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
+
+  // 8. Cek pemenuhan syarat kelulusan/complete untuk materi ini
+  const progressData = progressMap[params.lessonId]
+  const watchDuration = progressData?.watch_duration || 0
+  const duration = currentLesson?.duration_seconds || 0
+  const hasWatchedVideo = !currentLesson?.youtube_video_id || duration === 0 || watchDuration >= duration * 0.8
+
+  const { count: quizQuestionsCount } = await supabase
+    .from('quiz_questions')
+    .select('id', { count: 'exact', head: true })
+    .eq('lesson_id', params.lessonId)
+
+  const hasQuiz = (quizQuestionsCount || 0) > 0
+  const hasPassedQuiz = !hasQuiz || (bestAttempt && bestAttempt.passed)
+
+  const canMarkComplete = hasWatchedVideo && hasPassedQuiz
 
   const handleMarkComplete = markLessonComplete.bind(null, params.lessonId, course.slug)
 
@@ -160,6 +190,22 @@ export default async function LessonPage(props: {
                 Buka Akses Belajar
               </Link>
             </div>
+          ) : prevUncompletedLesson ? (
+            <div className="w-full aspect-video bg-[#0B1120] flex flex-col items-center justify-center border-b border-gray-800 p-6 text-center">
+              <div className="w-20 h-20 bg-violet-500/10 text-violet-400 rounded-full flex items-center justify-center mb-6 ring-4 ring-violet-500/20">
+                <FaLock className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-3">Materi Belum Terbuka</h2>
+              <p className="text-gray-400 max-w-md mb-8">
+                Kamu harus menyelesaikan materi sebelumnya (<span className="text-violet-400 font-bold">{prevUncompletedLesson.title}</span>) dengan menonton video dan lulus kuis pemahaman terlebih dahulu.
+              </p>
+              <Link 
+                href={`/courses/${course.slug}/lessons/${prevUncompletedLesson.id}`}
+                className="px-8 py-3.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-bold rounded-full transition-all transform hover:-translate-y-1 shadow-lg shadow-violet-600/20"
+              >
+                Ke Materi Sebelumnya
+              </Link>
+            </div>
           ) : (
             <div className="w-full">
               {/* Video Player with Watch Tracking */}
@@ -186,7 +232,7 @@ export default async function LessonPage(props: {
                     </div>
                     <h1 className="text-3xl font-extrabold text-white mb-3">{currentLesson.title}</h1>
                     <p className="text-gray-400 text-lg leading-relaxed mb-6">{currentLesson.description}</p>
-
+ 
                     {/* Materi Pendukung / Attachment */}
                     {currentLesson.resource_url && (
                       <div className="inline-block">
@@ -213,14 +259,29 @@ export default async function LessonPage(props: {
                   {/* Action Buttons */}
                   <div className="flex flex-col sm:flex-row gap-3 min-w-[200px] shrink-0">
                     {!isCompleted ? (
-                      <form action={handleMarkComplete} className="w-full sm:w-auto">
-                        <SubmitButton 
-                          pendingText="Menyimpan..."
-                          className="!w-full !rounded-full !py-3 !bg-emerald-600 hover:!bg-emerald-500 !shadow-emerald-600/20"
-                        >
-                          <span className="flex w-full items-center justify-center gap-2 font-bold whitespace-nowrap px-2"><FaCircleCheck className="w-5 h-5 shrink-0" /> Tandai Selesai</span>
-                        </SubmitButton>
-                      </form>
+                      canMarkComplete ? (
+                        <form action={handleMarkComplete} className="w-full sm:w-auto">
+                          <SubmitButton 
+                            pendingText="Menyimpan..."
+                            className="!w-full !rounded-full !py-3 !bg-emerald-600 hover:!bg-emerald-500 !shadow-emerald-600/20"
+                          >
+                            <span className="flex w-full items-center justify-center gap-2 font-bold whitespace-nowrap px-2"><FaCircleCheck className="w-5 h-5 shrink-0" /> Tandai Selesai</span>
+                          </SubmitButton>
+                        </form>
+                      ) : (
+                        <div className="flex flex-col items-center sm:items-end gap-1 w-full sm:w-auto">
+                          <button disabled className="w-full py-3 px-6 rounded-full font-bold text-gray-400 bg-gray-800 cursor-not-allowed flex items-center justify-center gap-2 border border-gray-700">
+                            <FaLock className="w-4 h-4 shrink-0" /> Belum Memenuhi Syarat
+                          </button>
+                          <span className="text-[10px] text-gray-500 font-semibold text-center sm:text-right max-w-[250px]">
+                            {!hasWatchedVideo && !hasPassedQuiz 
+                              ? "Tonton video (min 80%) & lulus kuis pemahaman materi ini terlebih dahulu." 
+                              : !hasWatchedVideo 
+                                ? "Tonton video (min 80%) materi ini terlebih dahulu." 
+                                : "Lulus kuis pemahaman materi ini terlebih dahulu."}
+                          </span>
+                        </div>
+                      )
                     ) : (
                       <button disabled className="w-full py-3 px-6 rounded-full font-bold text-white bg-gray-700/50 cursor-not-allowed flex items-center justify-center gap-2 border border-gray-600">
                         <FaCircleCheck className="text-emerald-400" /> Sudah Selesai
@@ -228,14 +289,14 @@ export default async function LessonPage(props: {
                     )}
                   </div>
                 </div>
-
+ 
                 {/* Quiz Section */}
                 <LessonClient lessonId={params.lessonId} lessonName={currentLesson.title} bestAttempt={bestAttempt} />
               </div>
             </div>
           )}
         </div>
-
+ 
         {/* Right Column: Playlist Sidebar */}
         <div className="w-full xl:w-[400px] bg-[#1E293B] border-t xl:border-t-0 xl:border-l border-gray-800 flex flex-col h-[500px] xl:h-[calc(100vh-73px)]">
           <div className="p-5 border-b border-gray-800 bg-[#1E293B]/80 backdrop-blur-md sticky top-0 z-10">
@@ -248,9 +309,21 @@ export default async function LessonPage(props: {
           <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2">
             {allLessons?.map((lesson, idx) => {
               const isCurrent = lesson.id === params.lessonId
-              const isDone = progressMap[lesson.id] === 'completed'
-              // Default ke false jika tidak ada data sub untuk sementara, tapi logikanya kalau user bisa buka, dia bebas navigasi, yang terkunci nanti ketahuan pas di-klik.
-              // Untuk UI list, kita buat semua clickable saja.
+              const isDone = progressMap[lesson.id]?.status === 'completed'
+              
+              // Cek apakah lesson ini terkunci karena ada materi sebelumnya yang belum selesai
+              let isLessonLocked = false
+              if (user && !isAdmin && allLessons) {
+                for (const prevLesson of allLessons) {
+                  if (prevLesson.sort_order < lesson.sort_order) {
+                    const isPrevDone = progressMap[prevLesson.id]?.status === 'completed'
+                    if (!isPrevDone) {
+                      isLessonLocked = true
+                      break
+                    }
+                  }
+                }
+              }
               
               const formatDuration = (seconds: number | null) => {
                 if (!seconds) return '00:00'
@@ -258,7 +331,7 @@ export default async function LessonPage(props: {
                 const s = seconds % 60
                 return `${m}:${s.toString().padStart(2, '0')}`
               }
-
+ 
               return (
                 <Link 
                   key={lesson.id}
@@ -273,6 +346,10 @@ export default async function LessonPage(props: {
                     {isDone ? (
                       <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
                         <FaCircleCheck className="w-4 h-4" />
+                      </div>
+                    ) : isLessonLocked ? (
+                      <div className="w-6 h-6 rounded-full bg-gray-800 text-gray-500 flex items-center justify-center border border-gray-700">
+                        <FaLock className="w-3 h-3" />
                       </div>
                     ) : isCurrent ? (
                       <div className="w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center text-white">

@@ -65,30 +65,77 @@ export default async function CertificatePage(props: {
   // Pastikan user sudah lulus 100% (Hitung manual akurat)
   const { data: courseLessons } = await supabase
     .from('lessons')
-    .select('id')
+    .select('id, title, youtube_video_id, duration_seconds')
     .eq('course_id', course.id)
     .eq('is_published', true)
 
   const { data: userCompletedLessons } = await supabase
     .from('user_progress')
-    .select('lesson_id')
+    .select('lesson_id, watch_duration, status')
     .eq('user_id', user.id)
-    .eq('status', 'completed')
 
-  const totalLessons = courseLessons?.length || 0
-  const completedLessonIds = new Set(userCompletedLessons?.map(up => up.lesson_id) || [])
-  const completedCount = courseLessons?.filter(l => completedLessonIds.has(l.id)).length || 0
-  const completionPercentage = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0
+  const { data: quizAttempts } = await supabase
+    .from('quiz_attempts')
+    .select('lesson_id, passed')
+    .eq('user_id', user.id)
+    .eq('passed', true)
 
-  if (!isAdmin && completionPercentage < 100) {
+  // Ambil semua lesson_id yang mempunyai pertanyaan kuis
+  const { data: allQuestions } = await supabase
+    .from('quiz_questions')
+    .select('lesson_id')
+
+  // Build lookup maps
+  const completedProgressMap = new Map(userCompletedLessons?.map(up => [up.lesson_id, up]) || [])
+  const passedQuizLessons = new Set(quizAttempts?.map(qa => qa.lesson_id) || [])
+  const quizLessonIds = new Set(allQuestions?.map(q => q.lesson_id) || [])
+
+  // Cek setiap materi
+  let unmetRequirements: string[] = []
+  
+  if (courseLessons) {
+    for (const lesson of courseLessons) {
+      const progress = completedProgressMap.get(lesson.id)
+      const hasVideo = !!lesson.youtube_video_id
+      const duration = lesson.duration_seconds || 0
+      const isVideoWatched = !hasVideo || duration === 0 || (progress && progress.watch_duration >= duration * 0.8)
+      
+      const hasQuiz = quizLessonIds.has(lesson.id)
+      const isQuizPassed = !hasQuiz || passedQuizLessons.has(lesson.id)
+
+      if (progress?.status !== 'completed' || !isVideoWatched || !isQuizPassed) {
+        let reason = lesson.title
+        if (!isVideoWatched && !isQuizPassed) {
+          reason += ' (Video belum selesai & kuis belum lulus)'
+        } else if (!isVideoWatched) {
+          reason += ' (Video belum selesai)'
+        } else if (!isQuizPassed) {
+          reason += ' (Kuis belum lulus)'
+        }
+        unmetRequirements.push(reason)
+      }
+    }
+  }
+
+  const isEligibleForCertificate = unmetRequirements.length === 0
+
+  if (!isAdmin && !isEligibleForCertificate) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
           <FaAward className="mx-auto h-16 w-16 text-gray-300 mb-6" />
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Belum Memenuhi Syarat</h2>
-          <p className="text-gray-500 mb-8">
-            Anda harus menyelesaikan seluruh materi ({course.title}) hingga 100% untuk mendapatkan sertifikat.
+          <p className="text-gray-500 mb-6 text-sm">
+            Anda harus menyelesaikan seluruh materi ({course.title}) hingga 100%, termasuk menonton video dan lulus kuis pemahaman materi.
           </p>
+          <div className="mb-8 text-left bg-rose-50 border border-rose-100 rounded-2xl p-4 max-h-48 overflow-y-auto custom-scrollbar">
+            <p className="text-xs font-bold text-rose-800 mb-2">Materi yang belum selesai:</p>
+            <ul className="list-disc list-inside text-xs text-rose-700 space-y-1">
+              {unmetRequirements.map((req, idx) => (
+                <li key={idx}>{req}</li>
+              ))}
+            </ul>
+          </div>
           <Link 
             href={`/dashboard`}
             className="inline-flex justify-center w-full rounded-full bg-violet-600 px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-violet-500"

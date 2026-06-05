@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 // ========== GET QUIZZES FOR STUDENT ==========
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient()
+    const supabase = (await createClient()) as any
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
 // ========== SUBMIT QUIZ ATTEMPT ==========
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
+    const supabase = (await createClient()) as any
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
     }
 
     let correctCount = 0
-    questions.forEach((q) => {
+    questions.forEach((q: any) => {
       if (answers[q.id] === q.correct_answer) {
         correctCount++
       }
@@ -113,6 +113,55 @@ export async function POST(request: Request) {
 
     if (aError) {
       return NextResponse.json({ error: `Gagal menyimpan skor: ${aError.message}` }, { status: 500 })
+    }
+
+    // Jika kuis lulus, cek apakah video juga sudah selesai ditonton agar status materi bisa complete
+    if (passed) {
+      const { data: lesson } = await supabase
+        .from('lessons')
+        .select('youtube_video_id, duration_seconds')
+        .eq('id', lesson_id)
+        .single()
+
+      if (lesson) {
+        const { data: progress } = await supabase
+          .from('user_progress')
+          .select('id, watch_duration, status')
+          .eq('user_id', user.id)
+          .eq('lesson_id', lesson_id)
+          .single()
+
+        const watchDuration = progress?.watch_duration || 0
+        const duration = lesson.duration_seconds || 0
+        const hasWatchedVideo = !lesson.youtube_video_id || duration === 0 || watchDuration >= duration * 0.8
+
+        if (hasWatchedVideo) {
+          const updateData = {
+            status: 'completed',
+            completed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+
+          if (progress) {
+            await supabase
+              .from('user_progress')
+              .update(updateData)
+              .eq('id', progress.id)
+          } else {
+            await supabase
+              .from('user_progress')
+              .insert({
+                user_id: user.id,
+                lesson_id,
+                status: 'completed',
+                watch_duration: 0,
+                completed_at: new Date().toISOString(),
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              })
+          }
+        }
+      }
     }
 
     return NextResponse.json({ 

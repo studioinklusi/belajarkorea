@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
+    const supabase = (await createClient()) as any
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
@@ -31,8 +31,36 @@ export async function POST(request: Request) {
 
     // Auto-complete if 80%+ watched
     if (mark_complete && existing?.status !== 'completed') {
-      updateData.status = 'completed'
-      updateData.completed_at = new Date().toISOString()
+      // Cek apakah ada kuis untuk materi ini
+      const { count: quizQuestionsCount } = await supabase
+        .from('quiz_questions')
+        .select('id', { count: 'exact', head: true })
+        .eq('lesson_id', lesson_id)
+      
+      const hasQuiz = (quizQuestionsCount || 0) > 0
+      let canComplete = true
+
+      if (hasQuiz) {
+        const { data: bestAttempt } = await supabase
+          .from('quiz_attempts')
+          .select('passed')
+          .eq('user_id', user.id)
+          .eq('lesson_id', lesson_id)
+          .eq('passed', true)
+          .limit(1)
+          .single()
+
+        if (!bestAttempt) {
+          canComplete = false
+        }
+      }
+
+      if (canComplete) {
+        updateData.status = 'completed'
+        updateData.completed_at = new Date().toISOString()
+      } else {
+        updateData.status = 'in_progress'
+      }
     }
 
     if (existing) {
@@ -43,14 +71,44 @@ export async function POST(request: Request) {
         .eq('id', existing.id)
     } else {
       // Insert new record
+      let status: 'completed' | 'in_progress' = 'in_progress'
+      if (mark_complete) {
+        const { count: quizQuestionsCount } = await supabase
+          .from('quiz_questions')
+          .select('id', { count: 'exact', head: true })
+          .eq('lesson_id', lesson_id)
+        
+        const hasQuiz = (quizQuestionsCount || 0) > 0
+        let canComplete = true
+
+        if (hasQuiz) {
+          const { data: bestAttempt } = await supabase
+            .from('quiz_attempts')
+            .select('passed')
+            .eq('user_id', user.id)
+            .eq('lesson_id', lesson_id)
+            .eq('passed', true)
+            .limit(1)
+            .single()
+
+          if (!bestAttempt) {
+            canComplete = false
+          }
+        }
+        
+        if (canComplete) {
+          status = 'completed'
+        }
+      }
+
       await supabase
         .from('user_progress')
         .insert({
           user_id: user.id,
           lesson_id,
-          status: mark_complete ? 'completed' : 'in_progress',
+          status,
           watch_duration: watch_duration,
-          completed_at: mark_complete ? new Date().toISOString() : null,
+          completed_at: status === 'completed' ? new Date().toISOString() : null,
         })
     }
 
