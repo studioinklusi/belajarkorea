@@ -1,9 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import Script from "next/script";
 import { I18nProvider } from "@/lib/i18n";
-import InstallPrompt from "@/components/InstallPrompt";
-import SWUpdateNotifier from "@/components/SWUpdateNotifier";
+import PWAPrompts from "@/components/PWAPrompts";
 import "./globals.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -115,15 +113,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans">
         <I18nProvider>
           {children}
-          <InstallPrompt />
-          <SWUpdateNotifier />
+          <PWAPrompts />
         </I18nProvider>
-        {/* Midtrans Snap Script */}
-        <Script
-          src={process.env.NEXT_PUBLIC_MIDTRANS_SNAP_URL || "https://app.sandbox.midtrans.com/snap/snap.js"}
-          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
-          strategy="lazyOnload"
-        />
       </body>
     </html>
   );

@@ -25,10 +25,20 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // Refresh session — IMPORTANT: don't remove this
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Check if a Supabase auth cookie is present in the request
+  const hasAuthCookie = request.cookies.getAll().some(cookie => 
+    cookie.name.startsWith('sb-') || cookie.name.includes('auth-token')
+  )
+
+  let user = null
+
+  if (hasAuthCookie) {
+    // Refresh session — IMPORTANT: don't remove this
+    const {
+      data: { user: supabaseUser },
+    } = await supabase.auth.getUser()
+    user = supabaseUser
+  }
 
   // Protected routes — redirect to login if not authenticated
   const protectedPaths = ['/dashboard', '/courses', '/admin']

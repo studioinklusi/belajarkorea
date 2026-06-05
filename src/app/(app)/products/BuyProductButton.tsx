@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Script from 'next/script'
 
 export default function BuyProductButton({ 
   productId, 
@@ -66,14 +67,21 @@ export default function BuyProductButton({
   }
 
   return (
-    <button
-      onClick={handleBuy}
-      disabled={isLoading}
-      className={`w-full py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white ${
-        isLoading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
-      } transition-colors`}
-    >
-      {isLoading ? 'Memproses...' : `Beli Sekarang (${formatPrice(price)})`}
-    </button>
+    <>
+      <Script
+        src={process.env.NEXT_PUBLIC_MIDTRANS_SNAP_URL || "https://app.sandbox.midtrans.com/snap/snap.js"}
+        data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+        strategy="lazyOnload"
+      />
+      <button
+        onClick={handleBuy}
+        disabled={isLoading}
+        className={`w-full py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white ${
+          isLoading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
+        } transition-colors`}
+      >
+        {isLoading ? 'Memproses...' : `Beli Sekarang (${formatPrice(price)})`}
+      </button>
+    </>
   )
 }

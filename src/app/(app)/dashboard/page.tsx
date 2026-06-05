@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { signout } from '../(auth)/auth/actions'
 import { PlayCircleIcon } from '@heroicons/react/24/solid'
 import { FaTicket, FaLock, FaBullseye, FaBookOpen, FaCircleQuestion, FaHandSparkles, FaRobot, FaAward, FaWhatsapp } from 'react-icons/fa6'
@@ -15,35 +16,93 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  // 1. Ambil Profil User
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  // Hitung Target Harian terlebih dahulu menggunakan WIB (UTC+7)
+  const nowUTC = new Date()
+  const wibOffset = 7 * 60 * 60 * 1000 // 7 jam dalam ms
+  const nowInWIB = new Date(nowUTC.getTime() + wibOffset)
+  const todayWIBMidnightUTC = new Date(
+    Date.UTC(nowInWIB.getUTCFullYear(), nowInWIB.getUTCMonth(), nowInWIB.getUTCDate()) - wibOffset
+  )
+  const todayStr = todayWIBMidnightUTC.toISOString()
 
-  // 2. Ambil Data Langganan Aktif
-  const { data: subscription } = await supabase
-    .from('v_active_subscriptions')
-    .select('*')
-    .eq('user_id', user.id).neq('computed_status', 'expired')
-    .single()
+  // Ambil semua data secara paralel untuk menghindari waterfall query
+  const [
+    profileResult,
+    subscriptionResult,
+    coursesResult,
+    lessonsResult,
+    userProgressesResult,
+    todayProgressResult,
+    todayQuizResult,
+    activePromoResult,
+    featuredProductsResult,
+    purchasedProductsResult
+  ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single(),
+    supabase
+      .from('v_active_subscriptions')
+      .select('*')
+      .eq('user_id', user.id)
+      .neq('computed_status', 'expired')
+      .maybeSingle(),
+    supabase
+      .from('courses')
+      .select('id, title, level, slug')
+      .eq('is_published', true),
+    supabase
+      .from('lessons')
+      .select('id, course_id')
+      .eq('is_published', true),
+    supabase
+      .from('user_progress')
+      .select('lesson_id, status')
+      .eq('user_id', user.id),
+    supabase
+      .from('user_progress')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('status', 'completed')
+      .gte('completed_at', todayStr)
+      .limit(1),
+    supabase
+      .from('quiz_attempts')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('passed', true)
+      .gte('completed_at', todayStr)
+      .limit(1),
+    supabase
+      .from('promos')
+      .select('*')
+      .eq('is_active', true)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('digital_products')
+      .select('id, title, description, price, thumbnail_url, product_type')
+      .eq('is_active', true)
+      .limit(3),
+    supabase
+      .from('product_purchases')
+      .select('product_id')
+      .eq('user_id', user.id)
+  ])
 
-  // 3. Ambil Progress Belajar (Dihitung manual agar lebih akurat dibanding View)
-  const { data: courses } = await supabase
-    .from('courses')
-    .select('id, title, level, slug')
-    .eq('is_published', true)
-
-  const { data: lessons } = await supabase
-    .from('lessons')
-    .select('id, course_id')
-    .eq('is_published', true)
-
-  const { data: userProgresses } = await supabase
-    .from('user_progress')
-    .select('lesson_id, status')
-    .eq('user_id', user.id)
+  const profile = profileResult.data
+  const subscription = subscriptionResult.data
+  const courses = coursesResult.data
+  const lessons = lessonsResult.data
+  const userProgresses = userProgressesResult.data
+  const todayProgress = todayProgressResult.data
+  const todayQuiz = todayQuizResult.data
+  const activePromo = activePromoResult.data
+  const featuredProducts = featuredProductsResult.data
+  const purchasedProducts = purchasedProductsResult.data
 
   let accurateProgresses: any[] = []
   let courseSlugs: Record<string, string> = {}
@@ -84,66 +143,10 @@ export default async function DashboardPage() {
   }
 
   const progresses = accurateProgresses
-
-  // 4. Hitung Target Harian
-  // Gunakan WIB (UTC+7) untuk menentukan "hari ini"
-  // Dapatkan tanggal hari ini di WIB, lalu set ke 00:00:00 WIB = 17:00:00 UTC kemarin
-  const nowUTC = new Date()
-  // Offset WIB = UTC+7 → kurangi 7 jam dari UTC untuk cari midnight WIB dalam UTC
-  const wibOffset = 7 * 60 * 60 * 1000 // 7 jam dalam ms
-  const nowInWIB = new Date(nowUTC.getTime() + wibOffset)
-  // Set ke midnight WIB: ambil tanggal WIB, reset waktu ke 00:00:00, lalu konversi balik ke UTC
-  const todayWIBMidnightUTC = new Date(
-    Date.UTC(nowInWIB.getUTCFullYear(), nowInWIB.getUTCMonth(), nowInWIB.getUTCDate()) - wibOffset
-  )
-  const todayStr = todayWIBMidnightUTC.toISOString()
-
-  // Cek apakah ada video yang diselesaikan hari ini
-  const { data: todayProgress } = await supabase
-    .from('user_progress')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('status', 'completed')
-    .gte('completed_at', todayStr)
-    .limit(1)
-
   const hasWatchedVideoToday = todayProgress && todayProgress.length > 0
-
-  // Cek apakah ada kuis yang lulus hari ini
-  const { data: todayQuiz } = await supabase
-    .from('quiz_attempts')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('passed', true)
-    .gte('completed_at', todayStr)
-    .limit(1)
-
   const hasPassedQuizToday = todayQuiz && todayQuiz.length > 0
-
-  // 5. Fetch Active Promo
-  const { data: activePromo } = await supabase
-    .from('promos')
-    .select('*')
-    .eq('is_active', true)
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .single()
-
   const isSubscribed = !!subscription
   const isAdmin = profile?.role === 'content_admin' || profile?.role === 'super_admin'
-
-  // 6. Ambil Produk Digital Pilihan untuk Rekomendasi Cross-selling
-  const { data: featuredProducts } = await supabase
-    .from('digital_products')
-    .select('id, title, description, price, thumbnail_url, product_type')
-    .eq('is_active', true)
-    .limit(3)
-
-  // Ambil daftar pembelian produk oleh user saat ini
-  const { data: purchasedProducts } = await supabase
-    .from('product_purchases')
-    .select('product_id')
-    .eq('user_id', user.id)
 
   const purchasedIds = new Set(purchasedProducts?.map((p: any) => p.product_id) || [])
   const recommendProducts = featuredProducts?.filter((p: any) => !purchasedIds.has(p.id)) || []
@@ -160,7 +163,14 @@ export default async function DashboardPage() {
           <div className="mb-8 rounded-3xl overflow-hidden relative shadow-lg group">
             <div className={`absolute inset-0 z-0 ${activePromo.image_url ? 'bg-gray-900' : 'bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600'}`}>
               {activePromo.image_url && (
-                <img src={activePromo.image_url} alt="Promo" className="w-full h-full object-cover opacity-40 mix-blend-overlay group-hover:scale-105 transition-transform duration-700" />
+                <Image 
+                  src={activePromo.image_url} 
+                  alt="Promo" 
+                  fill 
+                  className="object-cover opacity-40 mix-blend-overlay group-hover:scale-105 transition-transform duration-700" 
+                  sizes="(max-width: 768px) 100vw, 1200px"
+                  priority 
+                />
               )}
             </div>
             <div className="relative z-10 p-6 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6">

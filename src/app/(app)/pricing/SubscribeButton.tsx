@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Script from 'next/script'
 
 // Declare window.snap for TypeScript
 declare global {
@@ -148,6 +149,11 @@ export default function SubscribeButton({
 
   return (
     <div className={`w-full ${variant === 'default' ? 'mt-6' : 'mt-4'}`}>
+      <Script
+        src={process.env.NEXT_PUBLIC_MIDTRANS_SNAP_URL || "https://app.sandbox.midtrans.com/snap/snap.js"}
+        data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+        strategy="lazyOnload"
+      />
       {/* Promo Code Section — Always visible as a clear input */}
       {!voucherResult && (
         <div className="mb-4">

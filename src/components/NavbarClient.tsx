@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { 
   FaHandSparkles, FaRobot, FaHouse, FaBookOpen, FaUser, FaBox, FaDownload,
   FaChevronDown, FaUserShield, FaArrowRightFromBracket, FaGraduationCap, FaLayerGroup,
@@ -76,7 +77,14 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
         <div className="flex justify-between h-20">
           <div className="flex items-center md:gap-6">
             <Link href="/" className="flex-shrink-0 flex items-center gap-2">
-              <img src="/logo.png" alt="Tsuha.id" className="w-10 h-10 rounded-xl shadow-lg shadow-violet-500/30 object-cover" />
+              <Image 
+                src="/logo.png" 
+                alt="Tsuha.id" 
+                width={40} 
+                height={40} 
+                className="w-10 h-10 rounded-xl shadow-lg shadow-violet-500/30 object-cover" 
+                priority 
+              />
               <span className="font-extrabold text-xl sm:text-2xl tracking-tight text-gray-900">
                 Tsuha<span className="text-violet-600">.id</span>
               </span>
