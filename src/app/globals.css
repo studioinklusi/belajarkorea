@@ -10,10 +10,67 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
   
+  /* Brand-specific Colors from Mockup */
+  --color-brand-primary: #7c3aed;
+  --color-brand-primary-container: #6d28d9;
+  --color-brand-on-primary: #ffffff;
+  --color-brand-on-primary-container: #ede9fe;
+  --color-brand-primary-fixed: #ede9fe;
+  --color-brand-primary-fixed-dim: #ddd6fe;
+  --color-brand-on-primary-fixed: #4c1d95;
+  --color-brand-on-primary-fixed-variant: #5b21b6;
+
+  --color-brand-secondary: #5f5d6a;
+  --color-brand-secondary-container: #e4e0f0;
+  --color-brand-on-secondary: #ffffff;
+  --color-brand-on-secondary-container: #656370;
+  --color-brand-secondary-fixed: #e4e0f0;
+  --color-brand-secondary-fixed-dim: #c8c4d4;
+  --color-brand-on-secondary-fixed: #1b1a25;
+  --color-brand-on-secondary-fixed-variant: #474552;
+
+  --color-brand-tertiary: #6c4300;
+  --color-brand-tertiary-container: #8c5900;
+  --color-brand-on-tertiary: #ffffff;
+  --color-brand-on-tertiary-container: #ffdcb4;
+  --color-brand-tertiary-fixed: #ffddb7;
+  --color-brand-tertiary-fixed-dim: #ffb95c;
+  --color-brand-on-tertiary-fixed: #2a1700;
+  --color-brand-on-tertiary-fixed-variant: #653e00;
+
+  --color-brand-background: #fcf9f8;
+  --color-brand-on-background: #1c1b1b;
+
+  --color-brand-surface: #fcf9f8;
+  --color-brand-on-surface: #1c1b1b;
+  --color-brand-surface-dim: #dcd9d9;
+  --color-brand-surface-bright: #fcf9f8;
+  --color-brand-surface-variant: #e5e2e1;
+  --color-brand-on-surface-variant: #484456;
+  --color-brand-surface-container: #f0eded;
+  --color-brand-surface-container-low: #f6f3f2;
+  --color-brand-surface-container-lowest: #ffffff;
+  --color-brand-surface-container-high: #eae7e7;
+  --color-brand-surface-container-highest: #e5e2e1;
+  --color-brand-surface-tint: #5d2ff9;
+
+  --color-brand-inverse-surface: #313030;
+  --color-brand-inverse-on-surface: #f3f0ef;
+  --color-brand-inverse-primary: #c9bfff;
+
+  --color-brand-outline: #797488;
+  --color-brand-outline-variant: #c9c3d9;
+
+  --color-brand-error: #ba1a1a;
+  --color-brand-on-error: #ffffff;
+  --color-brand-error-container: #ffdad6;
+  --color-brand-on-error-container: #93000a;
+  
   /* Animasi Custom untuk Landing Page */
   --animate-blob: blob 7s infinite;
   --animate-fade-in-up: fadeInUp 0.8s ease-out forwards;
   --animate-slide-up: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-float: float 6s ease-in-out infinite;
 }
 
 
@@ -24,6 +81,12 @@ body {
 }
 
 /* Keyframes */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
 @keyframes blob {
   0% { transform: translate(0px, 0px) scale(1); }
   33% { transform: translate(30px, -50px) scale(1.1); }

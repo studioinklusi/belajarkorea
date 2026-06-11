@@ -20,11 +20,12 @@ interface NavbarClientProps {
   profile: { role: string; full_name: string | null } | null
   isAdmin: boolean
   isLandingPage?: boolean
+  isAuthPage?: boolean
   signoutAction: () => void
   isPremium?: boolean
 }
 
-export default function NavbarClient({ user, profile, isAdmin, isLandingPage, signoutAction, isPremium = false }: NavbarClientProps) {
+export default function NavbarClient({ user, profile, isAdmin, isLandingPage, isAuthPage, signoutAction, isPremium = false }: NavbarClientProps) {
   const { t, locale } = useTranslation()
   const pathname = usePathname()
   
@@ -91,7 +92,8 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
             </Link>
             
             <div className="hidden md:flex items-center space-x-2">
-              {isLandingPage ? (
+              {!isAuthPage && (
+                isLandingPage ? (
                 <>
                   <Link href="/courses" className="text-gray-600 hover:text-violet-600 px-4 py-2.5 font-bold transition-colors">{t('common.courses')}</Link>
                   <Link href="/products" className="text-gray-600 hover:text-violet-600 px-4 py-2.5 font-bold transition-colors">{t('common.products')}</Link>
@@ -201,123 +203,153 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
                   <Link href="/products" className={linkClass('products')}>{t('common.products')}</Link>
                   <Link href="/pricing" className={linkClass('pricing')}>{t('common.pricing')}</Link>
                 </>
-              )}
+              ))}
             </div>
           </div>
           
           <div className="flex items-center gap-3">
             {/* <LanguageSwitcher /> - Disabled temporarily as requested */}
-            {user ? (
-              isLandingPage ? (
+            {isAuthPage && (
+              <div className="hidden md:flex items-center space-x-2">
                 <Link 
-                  href="/dashboard" 
-                  className="hidden md:block bg-gray-900 text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-gray-800 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                  href="/about" 
+                  className={pathname === '/about' 
+                    ? "bg-violet-50 text-violet-700 px-4 py-2.5 rounded-full text-sm font-bold shadow-sm" 
+                    : "text-gray-500 hover:text-violet-600 px-4 py-2.5 rounded-full text-sm font-bold transition-colors"}
                 >
-                  {t('dashboard.myCourses')}
+                  Tentang Kami
                 </Link>
-              ) : (
-                <div className="relative hidden md:block">
-                  <button
-                    id="profile-dropdown-btn"
-                    onClick={() => {
-                      setIsProfileOpen(!isProfileOpen);
-                      setIsLearningOpen(false);
-                    }}
-                    className="flex items-center gap-2.5 p-1.5 pr-3 bg-gray-50 hover:bg-gray-100 rounded-full border border-gray-100 transition-all cursor-pointer shadow-xs"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 flex items-center justify-center text-white text-xs font-black shadow-sm shrink-0">
-                      {profile?.full_name?.charAt(0).toUpperCase() || 'U'}
-                    </div>
-                    <span className="text-xs font-extrabold text-gray-700 max-w-[90px] truncate leading-none">
-                      {profile?.full_name?.split(' ')[0] || 'Chingu'}
-                    </span>
-                    <FaChevronDown className={`w-2.5 h-2.5 text-gray-400 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  {isProfileOpen && (
-                    <div 
-                      id="profile-dropdown-menu" 
-                      className="absolute right-0 mt-3 w-64 bg-white rounded-3xl border border-gray-100 shadow-2xl py-3 z-50 animate-in fade-in slide-in-from-top-2 duration-200"
-                    >
-                      <div className="px-5 py-2.5 border-b border-gray-50 mb-2">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider leading-none mb-1">Masuk Sebagai</p>
-                        <p className="text-sm font-extrabold text-gray-900 truncate leading-tight">{profile?.full_name || 'User Tsuha'}</p>
-                        <p className="text-[11px] font-semibold text-gray-500 truncate mt-0.5">{user.email}</p>
-                        <div className="inline-block mt-2 px-2.5 py-0.5 bg-violet-50 text-violet-700 text-[10px] font-black uppercase tracking-wider rounded-md">
-                          {profile?.role === 'super_admin' ? 'Super Admin' : profile?.role === 'content_admin' ? 'Admin Konten' : 'Member'}
-                        </div>
-                      </div>
-
-                      <div className="px-2 space-y-0.5">
-                        <Link
-                          href="/profile"
-                          onClick={() => setIsProfileOpen(false)}
-                          className="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-extrabold text-gray-600 hover:text-violet-700 hover:bg-violet-50/50 rounded-2xl transition-colors"
-                        >
-                          <FaUser className="w-4 h-4 text-violet-500" /> Profil Saya
-                        </Link>
-
-                        {isAdmin && (
-                          <Link
-                            href="/admin"
-                            onClick={() => setIsProfileOpen(false)}
-                            className="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-extrabold text-gray-600 hover:text-rose-700 hover:bg-rose-50/50 rounded-2xl transition-colors"
-                          >
-                            <FaUserShield className="w-4 h-4 text-rose-500" /> Panel Admin
-                          </Link>
-                        )}
-
-                        <button
-                          onClick={() => {
-                            setIsProfileOpen(false);
-                            window.dispatchEvent(new Event('trigger-pwa-install'));
-                          }}
-                          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-extrabold text-gray-600 hover:text-blue-700 hover:bg-blue-50/50 rounded-2xl transition-colors text-left cursor-pointer"
-                        >
-                          <FaDownload className="w-4 h-4 text-blue-500" /> Install Aplikasi
-                        </button>
-                      </div>
-
-                      <div className="border-t border-gray-50 my-2"></div>
-
-                      <div className="px-2">
-                        <form 
-                          action="/auth/signout" 
-                          method="POST" 
-                          className="w-full"
-                          onSubmit={() => setIsLoggingOut(true)}
-                        >
-                          <button
-                            type="submit"
-                            disabled={isLoggingOut}
-                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-extrabold text-gray-600 hover:text-red-700 hover:bg-red-50/50 rounded-2xl transition-all active:scale-[0.98] text-left cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {isLoggingOut ? (
-                              <>
-                                <FaSpinner className="w-4 h-4 text-red-500 animate-spin" /> Keluar...
-                              </>
-                            ) : (
-                              <>
-                                <FaArrowRightFromBracket className="w-4 h-4 text-red-500" /> Keluar
-                              </>
-                            )}
-                          </button>
-                        </form>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )
-            ) : (
-              <div className="hidden md:flex items-center gap-2">
-                <Link href="/login" className="text-gray-600 font-bold hover:text-gray-900 px-4 py-2">{t('common.login')}</Link>
+                <Link 
+                  href="/login" 
+                  className={pathname === '/login' 
+                    ? "bg-violet-50 text-violet-700 px-4 py-2.5 rounded-full text-sm font-bold shadow-sm" 
+                    : "text-gray-500 hover:text-violet-600 px-4 py-2.5 rounded-full text-sm font-bold transition-colors"}
+                >
+                  Masuk
+                </Link>
                 <Link 
                   href="/register" 
-                  className="bg-violet-600 text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-violet-700 transition-all shadow-md shadow-violet-200 hover:shadow-lg transform hover:-translate-y-0.5"
+                  className={pathname === '/register' 
+                    ? "bg-violet-50 text-violet-700 px-4 py-2.5 rounded-full text-sm font-bold shadow-sm" 
+                    : "text-gray-500 hover:text-violet-600 px-4 py-2.5 rounded-full text-sm font-bold transition-colors"}
                 >
-                  {locale === 'en' ? 'Start Learning' : 'Mulai Belajar'}
+                  Daftar
                 </Link>
               </div>
+            )}
+            {!isAuthPage && (
+              user ? (
+                isLandingPage ? (
+                  <Link 
+                    href="/dashboard" 
+                    className="hidden md:block bg-gray-900 text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-gray-800 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                  >
+                    {t('dashboard.myCourses')}
+                  </Link>
+                ) : (
+                  <div className="relative hidden md:block">
+                    <button
+                      id="profile-dropdown-btn"
+                      onClick={() => {
+                        setIsProfileOpen(!isProfileOpen);
+                        setIsLearningOpen(false);
+                      }}
+                      className="flex items-center gap-2.5 p-1.5 pr-3 bg-gray-50 hover:bg-gray-100 rounded-full border border-gray-100 transition-all cursor-pointer shadow-xs"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-500 flex items-center justify-center text-white text-xs font-black shadow-sm shrink-0">
+                        {profile?.full_name?.charAt(0).toUpperCase() || 'U'}
+                      </div>
+                      <span className="text-xs font-extrabold text-gray-700 max-w-[90px] truncate leading-none">
+                        {profile?.full_name?.split(' ')[0] || 'Chingu'}
+                      </span>
+                      <FaChevronDown className={`w-2.5 h-2.5 text-gray-400 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {isProfileOpen && (
+                      <div 
+                        id="profile-dropdown-menu" 
+                        className="absolute right-0 mt-3 w-64 bg-white rounded-3xl border border-gray-100 shadow-2xl py-3 z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+                      >
+                        <div className="px-5 py-2.5 border-b border-gray-50 mb-2">
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider leading-none mb-1">Masuk Sebagai</p>
+                          <p className="text-sm font-extrabold text-gray-900 truncate leading-tight">{profile?.full_name || 'User Tsuha'}</p>
+                          <p className="text-[11px] font-semibold text-gray-500 truncate mt-0.5">{user.email}</p>
+                          <div className="inline-block mt-2 px-2.5 py-0.5 bg-violet-50 text-violet-700 text-[10px] font-black uppercase tracking-wider rounded-md">
+                            {profile?.role === 'super_admin' ? 'Super Admin' : profile?.role === 'content_admin' ? 'Admin Konten' : 'Member'}
+                          </div>
+                        </div>
+
+                        <div className="px-2 space-y-0.5">
+                          <Link
+                            href="/profile"
+                            onClick={() => setIsProfileOpen(false)}
+                            className="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-extrabold text-gray-600 hover:text-violet-700 hover:bg-violet-50/50 rounded-2xl transition-colors"
+                          >
+                            <FaUser className="w-4 h-4 text-violet-500" /> Profil Saya
+                          </Link>
+
+                          {isAdmin && (
+                            <Link
+                              href="/admin"
+                              onClick={() => setIsProfileOpen(false)}
+                              className="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-extrabold text-gray-600 hover:text-rose-700 hover:bg-rose-50/50 rounded-2xl transition-colors"
+                            >
+                              <FaUserShield className="w-4 h-4 text-rose-500" /> Panel Admin
+                            </Link>
+                          )}
+
+                          <button
+                            onClick={() => {
+                              setIsProfileOpen(false);
+                              window.dispatchEvent(new Event('trigger-pwa-install'));
+                            }}
+                            className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-extrabold text-gray-600 hover:text-blue-700 hover:bg-blue-50/50 rounded-2xl transition-colors text-left cursor-pointer"
+                          >
+                            <FaDownload className="w-4 h-4 text-blue-500" /> Install Aplikasi
+                          </button>
+                        </div>
+
+                        <div className="border-t border-gray-50 my-2"></div>
+
+                        <div className="px-2">
+                          <form 
+                            action="/auth/signout" 
+                            method="POST" 
+                            className="w-full"
+                            onSubmit={() => setIsLoggingOut(true)}
+                          >
+                            <button
+                              type="submit"
+                              disabled={isLoggingOut}
+                              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-extrabold text-gray-600 hover:text-red-700 hover:bg-red-50/50 rounded-2xl transition-all active:scale-[0.98] text-left cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {isLoggingOut ? (
+                                <>
+                                  <FaSpinner className="w-4 h-4 text-red-500 animate-spin" /> Keluar...
+                                </>
+                              ) : (
+                                <>
+                                  <FaArrowRightFromBracket className="w-4 h-4 text-red-500" /> Keluar
+                                </>
+                              )}
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              ) : (
+                <div className="hidden md:flex items-center gap-2">
+                  <Link href="/login" className="text-gray-600 font-bold hover:text-gray-900 px-4 py-2">{t('common.login')}</Link>
+                  <Link 
+                    href="/register" 
+                    className="bg-violet-600 text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-violet-700 transition-all shadow-md shadow-violet-200 hover:shadow-lg transform hover:-translate-y-0.5"
+                  >
+                    {locale === 'en' ? 'Start Learning' : 'Mulai Belajar'}
+                  </Link>
+                </div>
+              )
             )}
           </div>
         </div>
@@ -325,7 +357,8 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
     </nav>
 
       {/* Mobile Bottom Navigation (PWA style) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+      {!isAuthPage && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-100 pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
         <div className="flex justify-around items-center h-16 px-2">
           {/* 1. Beranda / Dashboard */}
           <Link 
@@ -421,6 +454,7 @@ export default function NavbarClient({ user, profile, isAdmin, isLandingPage, si
           </div>
         </div>
       </div>
+      )}
 
       {/* Mobile Learning Modules Bottom Sheet */}
       {isMobileLearningOpen && (

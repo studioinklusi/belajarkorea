@@ -1,7 +1,6 @@
 import Link from 'next/link'
-import { signup } from '../auth/actions'
-import { SubmitButton } from '@/components/SubmitButton'
-import { PasswordInput } from '@/components/PasswordInput'
+import RegisterForm from './RegisterForm'
+import Navbar from '@/components/Navbar'
 
 export default async function RegisterPage(props: {
   searchParams: Promise<{ error?: string }>
@@ -10,120 +9,93 @@ export default async function RegisterPage(props: {
   const error = searchParams?.error
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-b from-blue-100 to-indigo-100 rounded-full blur-3xl opacity-50"></div>
-        <div className="absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-t from-pink-100 to-purple-100 rounded-full blur-3xl opacity-50"></div>
-      </div>
+    <div className="bg-brand-background text-brand-on-surface min-h-screen flex flex-col font-sans">
+      {/* Google Fonts Material Symbols */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet"
+      />
 
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl border border-gray-100 relative z-10 backdrop-blur-sm bg-white/90">
-        <div>
-          <h2 className="mt-4 text-center text-3xl font-extrabold text-gray-900 tracking-tight">
-            Daftar Akun Baru
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sudah punya akun?{' '}
-            <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
-              Masuk di sini
-            </Link>
-          </p>
-        </div>
+      {/* Header / TopAppBar */}
+      <Navbar isAuthPage={true} />
 
-        {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <form className="mt-8 space-y-6" action={signup}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
-                Nama Lengkap
-              </label>
-              <input
-                id="fullName"
-                name="fullName"
-                type="text"
-                autoComplete="name"
-                required
-                minLength={3}
-                maxLength={50}
-                pattern="^[a-zA-Z\s'. -]+$"
-                title="Nama Lengkap minimal 3 karakter dan hanya boleh mengandung huruf, spasi, dan tanda baca dasar ('.-)."
-                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all"
-                placeholder="John Doe"
-              />
-            </div>
-            <div>
-              <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">
-                Alamat Email
-              </label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                maxLength={255}
-                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all"
-                placeholder="email@contoh.com"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <PasswordInput
-                id="password"
-                name="password"
-                autoComplete="new-password"
-                required
-                minLength={8}
-                maxLength={64}
-                pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}"
-                title="Password harus mengandung minimal 8 karakter, 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter spesial."
-                placeholder="Min. 8 karakter, huruf besar, angka, & simbol"
-              />
-              <p className="mt-1.5 text-xs text-gray-500">
-                Gunakan minimal 8 karakter dengan kombinasi huruf besar, huruf kecil, angka, dan simbol khusus (seperti @, !, #).
+      {/* Main Content Area */}
+      <main className="flex-grow flex items-center justify-center py-12 px-6">
+        <div className="w-full max-w-[1200px] grid grid-cols-1 lg:grid-cols-2 gap-16 lg:items-start items-center">
+          
+          {/* Left Column: Branding / Visual */}
+          <div className="hidden lg:flex flex-col space-y-12 animate-fade-in-up">
+            <div className="space-y-3">
+              <h1 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight leading-[1.15] text-brand-on-surface">
+                Belajar Bahasa Korea <br />
+                Jadi <span className="text-brand-primary">Seru &amp; Praktis!</span>
+              </h1>
+              <p className="text-sm lg:text-base text-brand-on-surface-variant max-w-md leading-relaxed">
+                Akses video microlearning terstruktur, kuis pemahaman, dan modul mnemonik interaktif untuk menguasai Hangeul dengan cepat.
               </p>
+              <ul className="space-y-2.5 pt-1 text-xs lg:text-sm font-semibold text-brand-on-surface/90">
+                <li className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-green-500 font-bold text-lg">check_circle</span>
+                  Video Microlearning &amp; Kuis Evaluasi
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-green-500 font-bold text-lg">check_circle</span>
+                  Modul Mnemonik Interaktif (Drag &amp; Drop, Flashcards)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-green-500 font-bold text-lg">check_circle</span>
+                  Progress Tracker &amp; Sertifikat Kelulusan
+                </li>
+              </ul>
             </div>
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                Ulangi Password
-              </label>
-              <PasswordInput
-                id="confirmPassword"
-                name="confirmPassword"
-                autoComplete="new-password"
-                required
-                minLength={8}
-                maxLength={64}
-                pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}"
-                title="Password harus mengandung minimal 8 karakter, 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter spesial."
-                placeholder="Ketik ulang password"
+            
+            <div className="relative w-full aspect-square max-w-[400px] lg:ml-0 animate-float">
+              {/* Background Glow Blobs */}
+              <div className="absolute top-0 -left-4 w-60 h-60 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob"></div>
+              <div className="absolute top-0 -right-4 w-60 h-60 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob animation-delay-2000"></div>
+              <div className="absolute -bottom-8 left-20 w-60 h-60 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob animation-delay-4000"></div>
+              
+              {/* Core Image Asset */}
+              <img
+                src="/hero-image-placeholder.png"
+                alt="Belajar Bahasa Korea Interaktif"
+                className="relative rounded-[32px] shadow-xl border-4 border-white/50 backdrop-blur-sm transform rotate-2 hover:rotate-0 transition-all duration-500 w-full h-full object-cover"
               />
+              
+              {/* Floating Bubble: 안녕하세요! */}
+              <div className="absolute -right-4 top-10 bg-white px-5 py-3 rounded-2xl shadow-lg border border-brand-surface-variant/30 animate-bounce delay-700 hidden md:block">
+                <span className="text-lg font-bold text-brand-on-surface">안녕하세요!</span>
+              </div>
+              
+              {/* Floating Card: Korean Flag */}
+              <div className="absolute -left-4 bottom-20 bg-white p-3 rounded-2xl shadow-lg border border-brand-surface-variant/30 animate-bounce delay-1000 hidden md:block">
+                <img src="/korea.png" alt="Bendera Korea" className="w-8 h-8 rounded-full object-cover shadow-md" />
+              </div>
             </div>
           </div>
 
-          <div>
-            <SubmitButton pendingText="Mendaftar...">
-              Daftar Sekarang
-            </SubmitButton>
+          {/* Right Column: Registration Card */}
+          <div className="flex justify-center lg:justify-end">
+            <RegisterForm error={error} />
           </div>
-        </form>
-      </div>
+
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="w-full py-8 mt-auto border-t border-brand-surface-variant/50">
+        <div className="max-w-[1200px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-brand-outline">© 2026 Tsuha.id. Hak Cipta Dilindungi.</p>
+          <div className="flex gap-6">
+            <Link href="/terms" className="text-xs font-semibold text-brand-outline hover:text-brand-primary transition-colors">
+              Syarat &amp; Ketentuan
+            </Link>
+            <Link href="/privacy" className="text-xs font-semibold text-brand-outline hover:text-brand-primary transition-colors">
+              Kebijakan Privasi
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
