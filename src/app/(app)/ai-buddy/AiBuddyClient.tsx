@@ -728,10 +728,11 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
   const activePersona = PERSONAS.find(p => p.id === selectedPersona)!
 
   return (
-    <div className="flex w-full chat-container-mobile bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900 overflow-hidden relative">
-      
-      {/* ===== SIDEBAR DRAWER BACKDROP (Mobile only) ===== */}
-      {showHistorySidebar && (
+    <div className="max-w-7xl mx-auto w-full md:px-6 lg:px-8 flex-grow flex flex-col md:py-6 bg-[#FAFAFA] font-sans selection:bg-violet-200 selection:text-violet-900">
+      <div className="flex w-full chat-container-mobile bg-[#FAFAFA] md:bg-white md:rounded-[32px] md:border md:border-gray-100/80 md:shadow-xs overflow-hidden relative">
+        
+        {/* ===== SIDEBAR DRAWER BACKDROP (Mobile only) ===== */}
+        {showHistorySidebar && (
         <div 
           className="absolute inset-0 bg-black/50 backdrop-blur-sm z-[51] md:hidden animate-fade-in"
           onClick={() => setShowHistorySidebar(false)}
@@ -837,7 +838,7 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
       </aside>
 
       {/* ===== MAIN CHAT INTERFACE ===== */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+      <div className="flex-1 flex flex-col h-full bg-[#FAFAFA] overflow-hidden relative">
 
         {/* ===== HEADER & CONTROLS ===== */}
         <div className="bg-white/60 backdrop-blur-sm border-b border-gray-100/50 shrink-0 z-10">
@@ -1123,6 +1124,7 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
