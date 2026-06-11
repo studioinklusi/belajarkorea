@@ -43,7 +43,7 @@ export default function LoginForm({ error, message, redirectTo }: LoginFormProps
   const [showPassword, setShowPassword] = useState(false)
 
   return (
-    <div className="max-w-md w-full space-y-8 bg-white p-8 lg:p-12 rounded-[32px] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] border border-brand-surface-variant/30 relative z-10 animate-fade-in-up">
+    <div className="max-w-md w-full space-y-6 bg-white p-6 lg:p-10 rounded-[32px] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] border border-brand-surface-variant/30 relative z-10 animate-fade-in-up">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-brand-on-surface mb-2">Masuk ke Akun</h2>
         <p className="text-sm text-brand-on-surface-variant">
@@ -80,7 +80,7 @@ export default function LoginForm({ error, message, redirectTo }: LoginFormProps
         </div>
       )}
 
-      <form className="space-y-6" action={login}>
+      <form className="space-y-4" action={login}>
         <input type="hidden" name="redirectTo" value={redirectTo || ''} />
         
         {/* Email */}

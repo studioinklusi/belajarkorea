@@ -51,8 +51,8 @@ export default function RegisterForm({ error }: RegisterFormProps) {
   ]
 
   return (
-    <div className="w-full max-w-[520px] bg-white rounded-[32px] p-8 lg:p-12 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] border border-brand-surface-variant/30 animate-fade-in-up">
-      <div className="text-center lg:text-left mb-10">
+    <div className="w-full max-w-[520px] bg-white rounded-[32px] p-6 lg:p-10 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] border border-brand-surface-variant/30 animate-fade-in-up">
+      <div className="text-center lg:text-left mb-6">
         <h2 className="text-2xl font-bold text-brand-on-surface mb-2">Daftar Akun Baru</h2>
         <p className="text-sm text-brand-on-surface-variant">Mulai perjalanan belajar bahasa Korea Anda hari ini.</p>
       </div>
@@ -70,7 +70,7 @@ export default function RegisterForm({ error }: RegisterFormProps) {
         </div>
       )}
 
-      <form className="space-y-6" action={signup}>
+      <form className="space-y-4" action={signup}>
         {/* Full Name */}
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-brand-on-surface-variant" htmlFor="fullName">

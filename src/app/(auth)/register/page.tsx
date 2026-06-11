@@ -24,7 +24,7 @@ export default async function RegisterPage(props: {
         <div className="w-full max-w-[1200px] grid grid-cols-1 lg:grid-cols-2 gap-16 lg:items-start items-center">
           
           {/* Left Column: Branding / Visual */}
-          <div className="hidden lg:flex flex-col space-y-12 animate-fade-in-up">
+          <div className="hidden lg:flex flex-col space-y-6 xl:space-y-8 animate-fade-in-up">
             <div className="space-y-3">
               <h1 className="text-3xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight leading-[1.15] text-brand-on-surface">
                 Belajar Bahasa Korea <br />
@@ -49,7 +49,7 @@ export default async function RegisterPage(props: {
               </ul>
             </div>
             
-            <div className="relative w-full aspect-square max-w-[340px] lg:ml-0 animate-float">
+            <div className="relative w-full aspect-square max-w-[300px] xl:max-w-[340px] lg:ml-0 animate-float">
               {/* Background Glow Blobs */}
               <div className="absolute top-0 -left-4 w-60 h-60 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob"></div>
               <div className="absolute top-0 -right-4 w-60 h-60 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob animation-delay-2000"></div>
