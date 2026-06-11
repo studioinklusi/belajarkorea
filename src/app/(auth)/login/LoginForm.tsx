@@ -125,7 +125,7 @@ export default function LoginForm({ error, message, redirectTo }: LoginFormProps
               autoComplete="current-password"
               required
               className="w-full pl-12 pr-12 py-3 bg-brand-surface rounded-2xl border border-brand-outline-variant focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all outline-none text-base text-brand-on-surface"
-              placeholder="••••••••"
+              placeholder="Masukkan kata sandi"
             />
             <button
               className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-outline hover:text-brand-primary transition-colors focus:outline-none cursor-pointer"

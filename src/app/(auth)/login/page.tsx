@@ -37,21 +37,21 @@ export default async function LoginPage(props: {
               </p>
               <ul className="space-y-2.5 pt-1 text-xs lg:text-sm font-semibold text-brand-on-surface/90">
                 <li className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-green-500 font-bold text-lg">check_circle</span>
+                  <span className="material-symbols-outlined text-emerald-500 font-bold text-lg">check_circle</span>
                   Video Microlearning &amp; Kuis Evaluasi
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-green-500 font-bold text-lg">check_circle</span>
+                  <span className="material-symbols-outlined text-emerald-500 font-bold text-lg">check_circle</span>
                   Modul Mnemonik Interaktif (Drag &amp; Drop, Flashcards)
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-green-500 font-bold text-lg">check_circle</span>
+                  <span className="material-symbols-outlined text-emerald-500 font-bold text-lg">check_circle</span>
                   Progress Tracker &amp; Sertifikat Kelulusan
                 </li>
               </ul>
             </div>
             
-            <div className="relative w-full aspect-square max-w-[400px] lg:ml-0 animate-float">
+            <div className="relative w-full aspect-square max-w-[340px] lg:ml-0 animate-float">
               {/* Background Glow Blobs */}
               <div className="absolute top-0 -left-4 w-60 h-60 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob"></div>
               <div className="absolute top-0 -right-4 w-60 h-60 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob animation-delay-2000"></div>
