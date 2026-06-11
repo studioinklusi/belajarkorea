@@ -68,7 +68,7 @@ export default function AboutPage() {
               Menghafal ribuan karakter Hangul baru serta memahami tata bahasa Korea (S-O-V) yang terbalik seringkali menjadi penghalang terbesar bagi pemula. Metode belajar tradisional dengan buku tebal atau video berdurasi 1 jam sering kali membuat lelah dan tidak konsisten.
             </p>
             <p className="text-gray-500 leading-relaxed text-sm sm:text-base">
-              Kami hadir untuk mengubah cara belajar Anda. Dengan memecah materi menjadi **video microlearning (3-5 menit)** dan memadukannya dengan **gamifikasi interaktif**, kami ingin membantu Anda menikmati proses belajar layaknya bermain game petualangan, kapan saja dan di mana saja.
+              Kami hadir untuk mengubah cara belajar Anda. Dengan memecah materi menjadi <strong className="font-bold text-gray-900">video microlearning (3-5 menit)</strong> dan memadukannya dengan <strong className="font-bold text-gray-900">gamifikasi interaktif</strong>, kami ingin membantu Anda menikmati proses belajar layaknya bermain game petualangan, kapan saja dan di mana saja.
             </p>
           </div>
 
