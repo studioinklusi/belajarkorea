@@ -140,7 +140,7 @@ export default function RegisterForm({ error }: RegisterFormProps) {
               maxLength={64}
               pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}"
               title="Password harus mengandung minimal 8 karakter, 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter spesial."
-              placeholder="••••••••"
+              placeholder="Masukkan password baru"
             />
             <button
               className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-outline hover:text-brand-primary transition-colors focus:outline-none cursor-pointer"
@@ -157,10 +157,10 @@ export default function RegisterForm({ error }: RegisterFormProps) {
           <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 pt-1.5 pl-1">
             {passwordRules.map((rule, idx) => (
               <div key={idx} className="flex items-center gap-1.5 text-xs">
-                <span className={`material-symbols-outlined text-[14px] select-none ${rule.valid ? 'text-green-500 font-bold' : 'text-brand-outline'}`}>
+                <span className={`material-symbols-outlined text-[14px] select-none ${rule.valid ? 'text-emerald-500 font-bold' : 'text-brand-outline'}`}>
                   {rule.valid ? 'check_circle' : 'circle'}
                 </span>
-                <span className={rule.valid ? 'text-green-600 font-semibold transition-all' : 'text-brand-outline'}>
+                <span className={rule.valid ? 'text-emerald-600 font-semibold transition-all' : 'text-brand-outline'}>
                   {rule.label}
                 </span>
               </div>
@@ -188,7 +188,7 @@ export default function RegisterForm({ error }: RegisterFormProps) {
               maxLength={64}
               pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}"
               title="Password harus mengandung minimal 8 karakter, 1 huruf besar, 1 huruf kecil, 1 angka, dan 1 karakter spesial."
-              placeholder="••••••••"
+              placeholder="Konfirmasi password baru"
             />
             <button
               className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-outline hover:text-brand-primary transition-colors focus:outline-none cursor-pointer"
