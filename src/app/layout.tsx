@@ -103,6 +103,16 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* Preconnect to Google Fonts for faster loading */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        
+        {/* Material Symbols Outlined - loaded globally to prevent FOUT */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block"
+          rel="stylesheet"
+        />
+        
         {/* PWA / Apple Touch Icon */}
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         

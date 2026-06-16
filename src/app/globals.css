@@ -80,6 +80,29 @@ body {
   color: var(--foreground);
 }
 
+/* Material Symbols - prevent FOUT (Flash of Unstyled Text) */
+/* Hide the text content of icon spans until the font loads */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  /* Prevent text from showing before font loads */
+  overflow: hidden;
+  width: 1em;
+  height: 1em;
+}
+
 /* Keyframes */
 @keyframes float {
   0% { transform: translateY(0px); }
