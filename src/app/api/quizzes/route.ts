@@ -133,7 +133,7 @@ export async function POST(request: Request) {
 
         const watchDuration = progress?.watch_duration || 0
         const duration = lesson.duration_seconds || 0
-        const hasWatchedVideo = !lesson.youtube_video_id || duration === 0 || watchDuration >= duration * 0.8
+        const hasWatchedVideo = !lesson.youtube_video_id || duration === 0 || progress?.status === 'completed' || watchDuration >= duration * 0.8
 
         if (hasWatchedVideo) {
           const updateData = {

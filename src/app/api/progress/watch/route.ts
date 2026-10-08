@@ -16,6 +16,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'lesson_id dan watch_duration diperlukan' }, { status: 400 })
     }
 
+    // Fetch lesson duration
+    const { data: lesson } = await supabase
+      .from('lessons')
+      .select('duration_seconds')
+      .eq('id', lesson_id)
+      .single()
+
+    const lessonDuration = lesson?.duration_seconds || 0
+
     // Check existing progress
     const { data: existing } = await supabase
       .from('user_progress')
@@ -24,12 +33,18 @@ export async function POST(request: Request) {
       .eq('lesson_id', lesson_id)
       .single()
 
+    const calculatedWatchDuration = Math.max(
+      Math.round(watch_duration),
+      existing?.watch_duration || 0,
+      mark_complete ? lessonDuration : 0
+    )
+
     const updateData: Record<string, any> = {
-      watch_duration: Math.max(watch_duration, existing?.watch_duration || 0), // Keep highest
+      watch_duration: calculatedWatchDuration,
       updated_at: new Date().toISOString(),
     }
 
-    // Auto-complete if 80%+ watched
+    // Auto-complete if 80%+ watched or video ended
     if (mark_complete && existing?.status !== 'completed') {
       // Cek apakah ada kuis untuk materi ini
       const { count: quizQuestionsCount } = await supabase
@@ -107,7 +122,7 @@ export async function POST(request: Request) {
           user_id: user.id,
           lesson_id,
           status,
-          watch_duration: watch_duration,
+          watch_duration: calculatedWatchDuration,
           completed_at: status === 'completed' ? new Date().toISOString() : null,
         })
     }

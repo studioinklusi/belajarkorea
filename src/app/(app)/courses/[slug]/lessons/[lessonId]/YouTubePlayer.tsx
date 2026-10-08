@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { FaCircleCheck } from 'react-icons/fa6'
 
 // Extend Window interface for YouTube IFrame API
 declare global {
   interface Window {
-    YT: unknown
+    YT: any
     onYouTubeIframeAPIReady: (() => void) | undefined
   }
 }
@@ -15,61 +17,63 @@ interface YouTubePlayerProps {
   lessonId: string
   title: string
   durationSeconds: number | null
+  isCompleted?: boolean
+  initialWatchDuration?: number
 }
 
-export default function YouTubePlayer({ videoId, lessonId, title, durationSeconds }: YouTubePlayerProps) {
+export default function YouTubePlayer({
+  videoId,
+  lessonId,
+  title,
+  durationSeconds,
+  isCompleted = false,
+  initialWatchDuration = 0,
+}: YouTubePlayerProps) {
+  const router = useRouter()
   const playerRef = useRef<any>(null)
   const containerRef = useRef<string>(`yt-player-${lessonId}`)
-  const watchedSecondsRef = useRef(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const lastSaveRef = useRef(0)
-  const [watchPercent, setWatchPercent] = useState(0)
-  const [autoCompleted, setAutoCompleted] = useState(false)
+  const autoCompletedRef = useRef(isCompleted)
+  const [showAutoCompletedToast, setShowAutoCompletedToast] = useState(false)
 
   // Save watch progress to server
-  const saveProgress = useCallback(async (seconds: number) => {
-    // Only save every 15 seconds to avoid too many requests
-    if (Math.abs(seconds - lastSaveRef.current) < 15) return
+  const saveProgress = useCallback(async (seconds: number, markComplete = false) => {
+    // Only throttle normal periodic saves, but always save when markComplete is true
+    if (!markComplete && Math.abs(seconds - lastSaveRef.current) < 15) return
     lastSaveRef.current = seconds
 
     try {
-      await fetch('/api/progress/watch', {
+      const res = await fetch('/api/progress/watch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           lesson_id: lessonId,
           watch_duration: Math.round(seconds),
+          mark_complete: markComplete,
         }),
       })
+
+      if (markComplete && res.ok) {
+        autoCompletedRef.current = true
+        setShowAutoCompletedToast(true)
+        router.refresh()
+      }
     } catch (err) {
       console.error('Failed to save watch progress:', err)
     }
-  }, [lessonId])
+  }, [lessonId, router])
 
   // Auto-mark as completed when 80%+ watched
-  const checkAutoComplete = useCallback(async (seconds: number) => {
-    if (autoCompleted || !durationSeconds || durationSeconds === 0) return
-    
-    const percent = Math.min(100, Math.round((seconds / durationSeconds) * 100))
-    setWatchPercent(percent)
+  const checkAutoComplete = useCallback((currentTime: number, actualDuration: number) => {
+    if (autoCompletedRef.current) return
 
-    if (percent >= 80) {
-      setAutoCompleted(true)
-      try {
-        await fetch('/api/progress/watch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lesson_id: lessonId,
-            watch_duration: Math.round(seconds),
-            mark_complete: true,
-          }),
-        })
-      } catch (err) {
-        console.error('Failed to auto-complete:', err)
-      }
+    const duration = actualDuration > 0 ? actualDuration : (durationSeconds || 0)
+    if (duration > 0 && currentTime >= duration * 0.8) {
+      autoCompletedRef.current = true
+      saveProgress(duration, true)
     }
-  }, [lessonId, durationSeconds, autoCompleted])
+  }, [durationSeconds, saveProgress])
 
   useEffect(() => {
     // Load YouTube IFrame API
@@ -82,7 +86,7 @@ export default function YouTubePlayer({ videoId, lessonId, title, durationSecond
 
     const initPlayer = () => {
       if (playerRef.current) {
-        playerRef.current.destroy()
+        try { playerRef.current.destroy() } catch {}
       }
 
       playerRef.current = new window.YT.Player(containerRef.current, {
@@ -93,25 +97,40 @@ export default function YouTubePlayer({ videoId, lessonId, title, durationSecond
           autoplay: 1,
         },
         events: {
-          onStateChange: (event: unknown) => {
+          onStateChange: (event: any) => {
+            const playerState = event.data
+
             // YT.PlayerState.PLAYING === 1
-            if (event.data === 1) {
-              // Start tracking when video is playing
+            if (playerState === 1) {
               if (intervalRef.current) clearInterval(intervalRef.current)
               intervalRef.current = setInterval(() => {
-                watchedSecondsRef.current += 1
-                saveProgress(watchedSecondsRef.current)
-                checkAutoComplete(watchedSecondsRef.current)
+                if (!playerRef.current || typeof playerRef.current.getCurrentTime !== 'function') return
+
+                const currentTime = playerRef.current.getCurrentTime() || 0
+                const actualDuration = (typeof playerRef.current.getDuration === 'function' ? playerRef.current.getDuration() : 0) || durationSeconds || 0
+
+                saveProgress(currentTime, false)
+                checkAutoComplete(currentTime, actualDuration)
               }, 1000)
-            } else {
-              // Pause tracking when video is paused/ended/buffering
+            } else if (playerState === 0) {
+              // YT.PlayerState.ENDED === 0 -> Video finished completely!
               if (intervalRef.current) {
                 clearInterval(intervalRef.current)
                 intervalRef.current = null
               }
-              // Save immediately on pause/end
-              if (watchedSecondsRef.current > 0) {
-                saveProgress(watchedSecondsRef.current)
+              const actualDuration = (playerRef.current && typeof playerRef.current.getDuration === 'function' ? playerRef.current.getDuration() : 0) || durationSeconds || 1
+              saveProgress(actualDuration, true)
+            } else {
+              // Pause tracking when video is paused/buffering
+              if (intervalRef.current) {
+                clearInterval(intervalRef.current)
+                intervalRef.current = null
+              }
+              if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
+                const currentTime = playerRef.current.getCurrentTime() || 0
+                if (currentTime > 0) {
+                  saveProgress(currentTime, false)
+                }
               }
             }
           },
@@ -132,29 +151,17 @@ export default function YouTubePlayer({ videoId, lessonId, title, durationSecond
       }
       window.onYouTubeIframeAPIReady = undefined
     }
-  }, [videoId, saveProgress, checkAutoComplete])
+  }, [videoId, durationSeconds, saveProgress, checkAutoComplete])
 
   return (
     <div className="relative w-full bg-black aspect-video shadow-2xl">
       <div id={containerRef.current} className="absolute top-0 left-0 w-full h-full" />
-      
-      {/* Watch Progress Indicator */}
-      {durationSeconds && durationSeconds > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 z-10">
-          <div className="h-1 bg-black/50">
-            <div
-              className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 transition-all duration-1000 ease-out"
-              style={{ width: `${watchPercent}%` }}
-            />
-          </div>
-          {autoCompleted && (
-            <div className="absolute bottom-2 right-2 bg-emerald-500/90 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-1.5 animate-bounce">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-              </svg>
-              Otomatis ditandai selesai!
-            </div>
-          )}
+
+      {/* Floating Auto-Completed Notification Toast */}
+      {showAutoCompletedToast && (
+        <div className="absolute top-4 right-4 z-20 bg-emerald-600/95 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl backdrop-blur-md flex items-center gap-2 border border-emerald-400/40 animate-bounce">
+          <FaCircleCheck className="w-4 h-4 text-emerald-200" />
+          <span>Materi otomatis diselesaikan!</span>
         </div>
       )}
     </div>

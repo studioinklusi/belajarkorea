@@ -121,8 +121,6 @@ export default async function LessonPage(props: {
   // 8. Cek pemenuhan syarat kelulusan/complete untuk materi ini
   const progressData = progressMap[params.lessonId]
   const watchDuration = progressData?.watch_duration || 0
-  const duration = currentLesson?.duration_seconds || 0
-  const hasWatchedVideo = !currentLesson?.youtube_video_id || duration === 0 || watchDuration >= duration * 0.8
 
   const { count: quizQuestionsCount } = await supabase
     .from('quiz_questions')
@@ -132,7 +130,8 @@ export default async function LessonPage(props: {
   const hasQuiz = (quizQuestionsCount || 0) > 0
   const hasPassedQuiz = !hasQuiz || (bestAttempt && bestAttempt.passed)
 
-  const canMarkComplete = hasWatchedVideo && hasPassedQuiz
+  // Tombol manual aktif jika kuis sudah lulus (atau tidak ada kuis). Video juga otomatis menyelesaikan saat ditonton.
+  const canMarkComplete = hasPassedQuiz
 
   const handleMarkComplete = markLessonComplete.bind(null, params.lessonId, course.slug)
 
@@ -210,10 +209,12 @@ export default async function LessonPage(props: {
             <div className="w-full">
               {/* Video Player with Watch Tracking */}
               <YouTubePlayer
-                videoId={currentLesson.youtube_video_id}
+                videoId={currentLesson?.youtube_video_id || ''}
                 lessonId={params.lessonId}
-                title={currentLesson.title}
-                durationSeconds={currentLesson.duration_seconds}
+                title={currentLesson?.title || ''}
+                durationSeconds={currentLesson?.duration_seconds || null}
+                isCompleted={isCompleted}
+                initialWatchDuration={watchDuration}
               />
               
               {/* Lesson Details & Actions */}
@@ -271,14 +272,10 @@ export default async function LessonPage(props: {
                       ) : (
                         <div className="flex flex-col items-center sm:items-end gap-1 w-full sm:w-auto">
                           <button disabled className="w-full py-3 px-6 rounded-full font-bold text-gray-400 bg-gray-800 cursor-not-allowed flex items-center justify-center gap-2 border border-gray-700">
-                            <FaLock className="w-4 h-4 shrink-0" /> Belum Memenuhi Syarat
+                            <FaLock className="w-4 h-4 shrink-0" /> Belum Lulus Kuis
                           </button>
                           <span className="text-[10px] text-gray-500 font-semibold text-center sm:text-right max-w-[250px]">
-                            {!hasWatchedVideo && !hasPassedQuiz 
-                              ? "Tonton video (min 80%) & lulus kuis pemahaman materi ini terlebih dahulu." 
-                              : !hasWatchedVideo 
-                                ? "Tonton video (min 80%) materi ini terlebih dahulu." 
-                                : "Lulus kuis pemahaman materi ini terlebih dahulu."}
+                            Lulus kuis pemahaman materi ini terlebih dahulu untuk menandai selesai.
                           </span>
                         </div>
                       )

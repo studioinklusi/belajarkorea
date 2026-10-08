@@ -98,7 +98,7 @@ export default async function CertificatePage(props: {
       const progress = completedProgressMap.get(lesson.id)
       const hasVideo = !!lesson.youtube_video_id
       const duration = lesson.duration_seconds || 0
-      const isVideoWatched = !hasVideo || duration === 0 || (progress && progress.watch_duration >= duration * 0.8)
+      const isVideoWatched = !hasVideo || duration === 0 || (progress && (progress.status === 'completed' || progress.watch_duration >= duration * 0.8))
       
       const hasQuiz = quizLessonIds.has(lesson.id)
       const isQuizPassed = !hasQuiz || passedQuizLessons.has(lesson.id)
