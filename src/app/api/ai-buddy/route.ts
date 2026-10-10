@@ -244,7 +244,8 @@ export async function POST(request: Request) {
         role: "system", 
         content: getSystemInstruction(level, persona || 'teman') 
       },
-      ...(history || []).map((msg: ChatMessage) => ({
+      // Sliding window: ambil maksimal 8 pesan terakhir untuk menghemat token
+      ...(history || []).slice(-8).map((msg: ChatMessage) => ({
         role: msg.role === 'model' ? 'assistant' : 'user',
         content: msg.text
       })),
@@ -259,7 +260,7 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'qwen-plus', // You can also use qwen-turbo or qwen-max
+        model: process.env.ALIBABA_AI_MODEL || 'qwen-turbo',
         messages: messages,
       }),
     });

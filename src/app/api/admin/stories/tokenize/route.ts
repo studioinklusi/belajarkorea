@@ -54,7 +54,7 @@ ${content_ko}`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'qwen-plus',
+        model: process.env.ALIBABA_AI_MODEL || 'qwen-turbo',
         messages: [
           { role: 'system', content: 'You are a precise JSON generator.' },
           { role: 'user', content: prompt }

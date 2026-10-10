@@ -57,7 +57,7 @@ Return ONLY the raw JSON string, do not include markdown blocks or any additiona
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'qwen-plus',
+        model: process.env.ALIBABA_AI_MODEL || 'qwen-turbo',
         messages: [
           { role: 'system', content: 'You are a precise JSON translator.' },
           { role: 'user', content: prompt }
