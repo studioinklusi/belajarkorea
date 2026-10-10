@@ -537,7 +537,10 @@ export default function AiBuddyClient({ userId }: { userId?: string }) {
       const data = await res.json()
       if (data.error) {
         if (data.error === "LIMIT_REACHED") {
-          const limitMessages: ChatMessage[] = [...newMessages, { role: 'model', text: `🔒 **KUOTA HABIS**\n\n${data.message}\n\n[➡️ Klik di sini untuk Upgrade Paket](/pricing)` }]
+          const limitText = data.isFup
+            ? `🔒 **BATAS HARIAN TERCAPAI**\n\n${data.message}`
+            : `🔒 **KUOTA HABIS**\n\n${data.message}\n\n[➡️ Klik di sini untuk Upgrade Paket](/pricing)`
+          const limitMessages: ChatMessage[] = [...newMessages, { role: 'model', text: limitText }]
           setMessages(limitMessages)
           if (currentSessionId) {
             updateSessionData(currentSessionId, limitMessages, selectedLevel, selectedPersona)

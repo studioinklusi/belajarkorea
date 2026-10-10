@@ -190,12 +190,19 @@ export async function POST(request: Request) {
       isBasic = activeBaseSlugs.includes('basic');
     }
 
-    // Tentukan batas pesan harian
-    let dailyLimit = 14; // Gratis
-    if (isBasic) dailyLimit = 37; // Paket Basic
+    // Tentukan batas pesan harian (FUP & Kuota)
+    let dailyLimit = 10; // Gratis (Trial): 10 pesan/hari
+    let isFup = false;
 
-    // Cek kuota jika bukan admin atau pro/premium
-    if (!isAdmin && !isProOrPremium) {
+    if (isProOrPremium) {
+      dailyLimit = 100; // FUP untuk Pro / Premium: 100 pesan/hari
+      isFup = true;
+    } else if (isBasic) {
+      dailyLimit = 15; // Paket Basic: 15 pesan/hari
+    }
+
+    // Cek kuota jika bukan admin
+    if (!isAdmin) {
       const today = new Date().toISOString().split('T')[0]; // Mendapatkan YYYY-MM-DD (UTC)
       
       const { data: usageData } = await supabase
@@ -208,13 +215,19 @@ export async function POST(request: Request) {
       const messageCount = usageData ? usageData.message_count : 0;
       
       if (messageCount >= dailyLimit) {
+        let errorMessage = `Anda telah mencapai batas ${dailyLimit} pesan gratis hari ini. Berlangganan paket untuk ngobrol sepuasnya!`;
+        if (isFup) {
+          errorMessage = `Kamu telah mencapai batas wajar harian (${dailyLimit} pesan/hari). Istirahat sejenak dan lanjutkan belajarmu besok ya! 🌸`;
+        } else if (isBasic) {
+          errorMessage = `Anda telah mencapai batas ${dailyLimit} pesan/hari untuk paket Basic. Upgrade ke Pro untuk akses harian hingga 100 pesan/hari!`;
+        }
+
         return Response.json(
           { 
             error: "LIMIT_REACHED", 
-            message: isBasic 
-              ? `Anda telah mencapai batas ${dailyLimit} pesan/hari untuk paket Basic. Upgrade ke Pro untuk fitur tanpa batas!`
-              : `Anda telah mencapai batas ${dailyLimit} pesan gratis hari ini. Upgrade ke paket Pro untuk ngobrol tanpa batas!`,
-            limit: dailyLimit 
+            message: errorMessage,
+            limit: dailyLimit,
+            isFup
           },
           { status: 403 }
         );
@@ -262,6 +275,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         model: process.env.ALIBABA_AI_MODEL || 'qwen-turbo',
         messages: messages,
+        max_tokens: 450,
       }),
     });
 
@@ -274,8 +288,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. Increment Kuota jika berhasil (untuk selain admin dan pro/premium)
-    if (!isAdmin && !isProOrPremium) {
+    // 2. Increment Kuota jika berhasil (untuk semua pengguna selain admin)
+    if (!isAdmin) {
       const today = new Date().toISOString().split('T')[0];
       
       const { data: usageData } = await supabase
